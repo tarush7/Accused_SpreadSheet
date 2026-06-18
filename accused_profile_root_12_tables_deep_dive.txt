@@ -1,0 +1,3767 @@
+ACCUSED PROFILE ROOT: 12 MAIN TABLES DEEP DIVE
+========================================================================
+
+Purpose
+-------
+This document explains the 12 main tables in the Accused Profile Root flow: how they link, what each table means, what each column generally represents, and which fields require lookup/master decoding.
+
+Important identity rule
+-----------------------
+1. accused_vid identifies the exact accused profile row/version in t_fir_accused_info.
+2. fir_reg_num + accused_srno identifies the accused person inside one FIR.
+3. Most direct accused lifecycle tables link using accused_vid. Some rows also carry fir_reg_num + accused_srno as fallback/context.
+4. t_accused_remand links to t_arrest_memo using arr_surr_srno, not directly to accused root.
+5. t_summon_warrant is a weak/context link through fir_reg_num and needs issued-to fields to isolate accused-specific records.
+
+Lookup reading note
+-------------------
+Lookup/master values are decoded using the lookup mapping available in the workbook. When the workbook gives a precise lookup source, use that source. When a column points only to the common mdm.m_lookup_masters table, the same numeric code can mean different things under different master categories, so the examples shown are possible workbook master examples, not guaranteed final UI labels for every column. Treat them as guidance until the exact API code/master category is confirmed.
+
+Relationship summary
+--------------------
+- t_fir_accused_info: PK=accused_vid; parent=ROOT; FK/link=-; parent key=-; note=Root table. Other accused lifecycle tables link back here.
+- t_accused_procl_offender: PK=procl_offend_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused branch; fallback can be fir_reg_num + accused_srno when accused_vid is not reliable.
+- t_fir_multi_accused: PK=fir_multi_acc_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct mapping branch; also carries existing FIR/accused fields for cross-linking.
+- t_fir_notice_requests_accused: PK=accused_person_cd; parent=t_fir_accused_info; FK/link=accused_srno / fir_accused_srno; parent key=accused_srno / fir_accused_srno; note=Notice module may store local/manual accused person data; sample has accused_srno=0/fir_accused_srno=0.
+- t_freezing_order_accused: PK=accused_person_cd; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct when accused_vid is populated; otherwise notice_req_num + accused_person_cd identifies the local freezing-order person.
+- t_summon_warrant: PK=summ_warr_num; parent=t_fir_accused_info; FK/link=fir_reg_num; parent key=fir_reg_num; note=Weak FIR-level/court context; filter issued-to accused using iss_to_type_cd/accused_type_cd/person fields.
+- t_arrest_memo: PK=arr_surr_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused arrest/surrender branch; also carries fir_reg_num + accused_srno.
+- t_accused_remand: PK=remand_srno; parent=t_arrest_memo; FK/link=arr_surr_srno; parent key=arr_surr_srno; note=Child of arrest memo. Remand belongs to an arrest/surrender event, not directly to root.
+- t_accused_bail_details: PK=bailer_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused bail branch; sample may use fir_reg_num/arr_surr_srno when accused_vid is null.
+- t_accused_chargesheet: PK=chargesheet_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused chargesheet/final-report branch.
+- t_accused_disposal: PK=accused_disposal_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused disposal/punishment branch.
+- t_accused_appeal: PK=accused_appeal_srno; parent=t_fir_accused_info; FK/link=accused_vid; parent key=accused_vid; note=Direct accused appeal branch.
+
+
+t_fir_accused_info
+------------------
+Purpose: Root accused profile. This is the central record that stores who the accused is inside an FIR.
+Primary key: accused_vid
+Connects to: ROOT
+FK/link used: -
+Parent key: -
+Linking note: Root table. Other accused lifecycle tables link back here.
+Example key values: accused_vid=119802; accused_vid=119802; fir_reg_num=381010012650004; accused_srno=92681020110000210; arr_surr_srno=3810100426000007
+
+Columns
+~~~~~~~
+1. accused_vid
+   Role: PK
+   Sample: 119802
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Primary key for t_fir_accused_info.
+
+2. accused_srno
+   Role: Key/context
+   Sample: 92681020110000210
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+3. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+4. accused_srno_migr
+   Role: Data
+   Sample: 92681020110000210
+   Meaning: Migrated/legacy value for accused serial number.
+
+5. fir_accused_srno_migr
+   Role: Data
+   Sample: 92681020110000210
+   Meaning: Migrated/legacy value for fir accused serial number.
+
+6. fir_reg_num
+   Role: Key/context
+   Sample: 381010012650004
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. crm_detail_srno
+   Role: Data
+   Sample: 181828
+   Meaning: Field for crime detail serial number.
+
+8. crm_seq_num
+   Role: Data
+   Sample: 15
+   Meaning: Number/reference for crime seq.
+
+9. reg_type_cd
+   Role: Lookup
+   Sample: 25
+   Meaning: Code value for reg type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 25: Crime Head types/m_crime_head -> PROHIBITION ACT; Major Place types/m_place_type -> HOTEL; Nationality Types/m_nationality -> BRAZIL; Types of GD entry/m_gd_entry_type -> Non-Cognizable Report; Types of court/m_court_type -> ADDL PRINCIPAL CIVIL JUDGE(JR DV) COURT
+
+10. accused_rcn
+   Role: Data
+   Sample: RCN12345
+   Meaning: Field for accused RCN.
+
+11. accused_ncn
+   Role: Data
+   Sample: NCN54321
+   Meaning: Field for accused NCN.
+
+12. accused_known
+   Role: Data
+   Sample: True
+   Meaning: Field for accused known.
+
+13. first_name
+   Role: Data
+   Sample: Zulfiqar Hussan 
+   Meaning: First name of the person.
+
+14. middle_name
+   Role: Data
+   Sample: Zunoon 
+   Meaning: Middle name of the person.
+
+15. last_name
+   Role: Data
+   Sample: Zeya
+   Meaning: Last name of the person.
+
+16. first_name_eng
+   Role: Data
+   Sample: TEst TEst TEst
+   Meaning: Field for first name eng.
+
+17. middle_name_eng
+   Role: Data
+   Sample: test data
+   Meaning: Field for middle name eng.
+
+18. last_name_eng
+   Role: Data
+   Sample: yadav
+   Meaning: Field for last name eng.
+
+19. relation_type_cd
+   Role: Lookup
+   Sample: 52
+   Meaning: Code value for relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 52: Types of GD entry/m_gd_entry_type -> Bandobast; Types of court/m_court_type -> DIST & SESSION JUDGE (DIST); Types of work place/m_work_place -> BLOCK OFFICE; Crime Head types/m_crime_head -> CRIMINAL MISAPPROPRIATION; Types of motive of crime/m_crime_motive -> POLITICAL
+
+20. relative_name
+   Role: Data
+   Sample: Zulfikar Ali
+   Meaning: Name of relative.
+
+21. relative_name_eng
+   Role: Data
+   Sample: Suresh Sharma
+   Meaning: Field for relative name eng.
+
+22. othr_rel_type_cd
+   Role: Lookup
+   Sample: 9
+   Meaning: Code value for other relative type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 9: Reason for leaving School/New -> Absenteeism followed by running away from school; Types of links to FIR/m_fir_linked_to -> LOST PROPERTY; Types of motive of crime/m_crime_motive -> INJURY CAUSING; Address types/m_address_type -> Reference Address; Fir arms makers/m_firearms_maker -> Winchester
+
+23. othr_rel_name
+   Role: Data
+   Sample: ssssss
+   Meaning: Name of other relative.
+
+24. othr_rel_name_eng
+   Role: Data
+   Sample: sssssss
+   Meaning: Field for other relative name eng.
+
+25. othr_rel_mobile_num
+   Role: Data
+   Sample: 9999999999
+   Meaning: Number/reference for other relative mobile.
+
+26. age_type_cd
+   Role: Lookup
+   Sample: 3
+   Meaning: Code value for age type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 3: Types of other features/m_other_features -> REPETITIVE REMARKS; Reason for leaving School/New -> Indifferent attitude of the teachers; Security category/m_security_category -> Y Category; NCR action types/m_ncr_action -> No Action; Types of weakness/m_weakness -> Women
+
+27. age_yrs
+   Role: Data
+   Sample: 145
+   Meaning: Field for age years.
+
+28. age_mnths
+   Role: Data
+   Sample: 9
+   Meaning: Field for age mnths.
+
+29. yob
+   Role: Data
+   Sample: 2013
+   Meaning: Year of birth.
+
+30. dob
+   Role: Data
+   Sample: 2011-11-20
+   Meaning: Date of birth.
+
+31. age_from_yrs
+   Role: Data
+   Sample: 99
+   Meaning: Field for age from years.
+
+32. age_to_yrs
+   Role: Data
+   Sample: 70
+   Meaning: Field for age to years.
+
+33. mobile_num
+   Role: Data
+   Sample: 9988776655
+   Meaning: Mobile phone number.
+
+34. telephone
+   Role: Data
+   Sample: 91--51079690
+   Meaning: Telephone number.
+
+35. email
+   Role: Data
+   Sample: yousaflankarckey@email.com
+   Meaning: Email address.
+
+36. nationality_cd
+   Role: Lookup
+   Sample: 209
+   Meaning: Code value for nationality; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 209: Types of court/m_court_type -> ADDITIONAL DISTRICT JUDGE, NO.2; Types of cultural property/m_cultural_property_name -> NEMINATHA; Major Place types/m_place_type -> WEIGH BRIDGE; Nationality Types/m_nationality -> ENGLAND; Types of caste/m_caste_tribe -> LINGAYAT
+
+37. category_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for category; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+38. occupation_cd
+   Role: Lookup
+   Sample: 216
+   Meaning: Code value for occupation; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 216: Types of court/m_court_type -> ADDL. CIVIL JUDGE (JR. DIV) & METROPOLITAN MAGISTRATE, NO. 12 METROPOLITAN; Types of cultural property/m_cultural_property_name -> PALLIARAI CHACKAR; Major Place types/m_place_type -> EXPRESS/MAIL TRAIN - A/C CHAIR CAR; Nationality Types/m_nationality -> UNKNOWN; Types of caste/m_caste_tribe -> MOONDRUMANDAI EMBATHUNALU
+
+39. age_proof_type_cd
+   Role: Lookup
+   Sample: 3
+   Meaning: Code value for age proof type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 3: Types of other features/m_other_features -> REPETITIVE REMARKS; Reason for leaving School/New -> Indifferent attitude of the teachers; Security category/m_security_category -> Y Category; NCR action types/m_ncr_action -> No Action; Types of weakness/m_weakness -> Women
+
+40. income_group_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for income group; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+41. gender_cd
+   Role: Lookup
+   Sample: 4
+   Meaning: Code value for gender; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 4: Reason for leaving School/New -> Peer group influence; CIS Witness Types/New -> Prison Officer; Complaint NCR Status/New -> Enquiry Report Approved; Types of weakness/m_weakness -> Wealth (Money); Address Verification Status/New -> Address Verified - Criminal Record Found
+
+42. religion_cd
+   Role: Lookup
+   Sample: 12
+   Meaning: Code value for religion; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 12: Reason for leaving School/New -> Humiliation in school; GD Duty Types/New -> HM Administration Night; Assigned Tasks/New -> SHO - Own Esign; Types of GD entry/m_gd_entry_type -> Accused in Police Custody; Major Place of Occurance/m_parent_code_2 -> RELIGIOUS PLACES
+
+43. marital_status_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for marital status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+44. edu_qual_cd
+   Role: Lookup
+   Sample: ["8", "17"]
+   Meaning: Code value for edu qual; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value ["8", "17"]: Reason for leaving School/New -> Rigid school atmosphere; GD Duty Types/New -> PSO; Type of Roles/m_roles -> Duty Officer; Types of GD entry/m_gd_entry_type -> Malkhana Inspection; Details for Juvenile/m_jcl_master_info -> OTHER
+
+45. is_accused_police
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether accused police.
+
+46. is_acc_pol_witnin_ps
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether acc police witnin police station.
+
+47. police_gpf_num
+   Role: Data
+   Sample: 0
+   Meaning: Number/reference for police GPF.
+
+48. police_office_name
+   Role: Data
+   Sample: N/A
+   Meaning: Name of police office.
+
+49. acc_police_cd
+   Role: Lookup
+   Sample: 14271510911575
+   Meaning: Code value for acc police; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 14271510911575 not resolved from workbook master sample, or value is blank.
+
+50. is_proclaimed_offender
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether proclaimed offender.
+
+51. is_accused_infirm
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether accused infirm.
+
+52. has_dysp_apprv_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether DySP apprv taken exists/was done.
+
+53. has_dysp_apprv
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether DySP apprv exists/was done.
+
+54. dysp_apprv_dt
+   Role: Data
+   Sample: 2026-03-01T10:15:30
+   Meaning: Date/time for DySP apprv.
+
+55. sent_to_dysp_dt
+   Role: Data
+   Sample: 2026-05-19T12:51:07.443815
+   Meaning: Date/time for sent to DySP.
+
+56. dysp_sending_remrk
+   Role: Data
+   Sample: Sent for approval
+   Meaning: Field for DySP sending remarks.
+
+57. dysp_login_id
+   Role: Lookup
+   Sample: 2001
+   Meaning: Identifier for DySP login; often links to a master/reference table.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 2001
+
+58. dysp_app_rej_remrk
+   Role: Data
+   Sample: Approved
+   Meaning: Field for DySP approval rejection remarks.
+
+59. accused_priority
+   Role: Data
+   Sample: 362
+   Meaning: Field for accused priority.
+
+60. is_juvenile
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether juvenile.
+
+61. is_accused_disable
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether accused disable.
+
+62. physical_cond_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for physical cond; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+63. is_age_proof_req
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether age proof requested.
+
+64. is_med_exam_req
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether medical exam requested.
+
+65. rel_mobile_num
+   Role: Data
+   Sample: 9999999999
+   Meaning: Number/reference for relative mobile.
+
+66. rel_telephone
+   Role: Data
+   Sample: 1212121233213213123
+   Meaning: Field for relative telephone.
+
+67. height_from_cm
+   Role: Data
+   Sample: 99.06
+   Meaning: Field for height from cm.
+
+68. height_to_cm
+   Role: Data
+   Sample: 99.06
+   Meaning: Field for height to cm.
+
+69. is_photo_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether photo taken.
+
+70. criminal_gang_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for criminal gang; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+71. injury_details
+   Role: Data
+   Sample: No visible injury
+   Meaning: Field for injury details.
+
+72. arrest_type_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for arrest type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+73. arr_surr_srno
+   Role: Key/context
+   Sample: 3810100426000007
+   Meaning: Unique arrest/surrender record id.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+74. surrenderd_estbl_cd
+   Role: Lookup
+   Sample: EST123
+   Meaning: Code value for surrenderd establishment; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: EST123
+
+75. arrest_surr_stat_id
+   Role: Lookup
+   Sample: 10
+   Meaning: Identifier for arrest surrender stat; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_state.state_id | Display: state, state_cd | Sample value: 10
+
+76. arrest_surr_dist_id
+   Role: Lookup
+   Sample: 101
+   Meaning: Identifier for arrest surrender dist; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_district.district_id | Display: district, district_cd | Sample value: 101
+
+77. acc_surr_magistrate
+   Role: Data
+   Sample: Name Name Name Name 
+   Meaning: Field for acc surrender magistrate.
+
+78. arrest_surr_dt
+   Role: Data
+   Sample: 2026-05-26T11:41:00
+   Meaning: Date/time for arrest surrender.
+
+79. arrest_action_taken_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for arrest action taken; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+80. is_re_arrested
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether re arrested.
+
+81. re_arr_surr_srno
+   Role: Data
+   Sample: 0
+   Meaning: Field for re arrest surrender serial number.
+
+82. custody_action_other
+   Role: Data
+   Sample: Produced before magistrate
+   Meaning: Field for custody action other.
+
+83. arr_intimate_rel_cd
+   Role: Lookup
+   Sample: 28
+   Meaning: Code value for arrest intimate relative; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 28: Types of special features/m_special_feature -> DISCONNECTING ELECTRIC SUPPLY; Types of GD entry/m_gd_entry_type -> Dead Animal; Major Place of Occurance/m_parent_code_2 -> RURAL AREA; Types of witness evidences/m_evidence_tendered -> Photography; Types of court/m_court_type -> ADDL. DIST MAGISTRATE
+
+84. arr_intimate_rel_name
+   Role: Data
+   Sample: Suresh Patil
+   Meaning: Name of arrest intimate relative.
+
+85. arr_intimate_dt
+   Role: Data
+   Sample: 2026-05-25T00:09:00
+   Meaning: Date/time for arrest intimate.
+
+86. arr_intimate_mode_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for arrest intimate mode; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+87. is_acc_fp_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc fp taken.
+
+88. is_acc_fp_chance
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc fp chance.
+
+89. is_acc_dangerous
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc dangerous.
+
+90. has_acc_prev_jump_bail
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc prev jump bail exists/was done.
+
+91. is_acc_gen_armed
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc gen armed.
+
+92. is_acc_operates_accompl
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc operates accompl.
+
+93. is_acc_known_criminal
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc known criminal.
+
+94. is_acc_recidivist
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc recidivist.
+
+95. does_acc_likely_jump_bail
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether acc likely jump bail.
+
+96. after_bail_commits_crime
+   Role: Data
+   Sample: True
+   Meaning: Field for after bail commits crime.
+
+97. is_wanted_other_case
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether wanted other case.
+
+98. accused_status_cd
+   Role: Lookup
+   Sample: 26
+   Meaning: Code value for accused status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 26: Types of GD entry/m_gd_entry_type -> Bail; Types of court/m_court_type -> ADDL SESSION COURT; Types of work place/m_work_place -> REST HOUSE; Types of major task/m_major_task_performed -> Sketch/Photo of Accused released; Crime Head types/m_crime_head -> REGISTRATION OF FOREIGHNERS ACT
+
+99. crpi_id
+   Role: Data
+   Sample: CRPI123456
+   Meaning: Identifier for CRPI; often links to a master/reference table.
+
+100. eprison_id
+   Role: Data
+   Sample: EPR123456
+   Meaning: Identifier for e-prison; often links to a master/reference table.
+
+101. other_occupation
+   Role: Data
+   Sample: Tourist at Leh
+   Meaning: Field for other occupation.
+
+102. other_living_status
+   Role: Data
+   Sample: Tenant
+   Meaning: Status value for other living.
+
+103. interro_srno
+   Role: Data
+   Sample: 5001
+   Meaning: Field for interro serial number.
+
+104. blood_group_cd
+   Role: Lookup
+   Sample: 9
+   Meaning: Code value for blood group; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 9: Reason for leaving School/New -> Absenteeism followed by running away from school; Types of links to FIR/m_fir_linked_to -> LOST PROPERTY; Types of motive of crime/m_crime_motive -> INJURY CAUSING; Address types/m_address_type -> Reference Address; Fir arms makers/m_firearms_maker -> Winchester
+
+105. intimation_given_to
+   Role: Data
+   Sample: Family
+   Meaning: Field for intimation given to.
+
+106. oth_identification_marks
+   Role: Data
+   Sample: Yet to find
+   Meaning: Field for other identification marks.
+
+107. bg_report_srno
+   Role: Data
+   Sample: 3001
+   Meaning: Field for bg report serial number.
+
+108. record_status
+   Role: Data
+   Sample: D
+   Meaning: Current record status flag such as created/updated/deleted.
+
+109. record_created_on
+   Role: Data
+   Sample: 2026-05-26T16:17:13.520216
+   Meaning: Timestamp when the record was created.
+
+110. record_created_by
+   Role: Lookup
+   Sample: 4891
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4891
+
+111. record_updated_on
+   Role: Data
+   Sample: 2026-05-26T16:17:13.520224
+   Meaning: Timestamp when the record was last updated.
+
+112. record_updated_by
+   Role: Lookup
+   Sample: 4881
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4881
+
+113. record_sync_on
+   Role: Data
+   Sample: 2026-03-16T00:00:00
+   Meaning: Timestamp/date of synchronization.
+
+114. record_sync_from
+   Role: Data
+   Sample: MIGR_BATCH_1_2026-05-15_14_21
+   Meaning: Source system/batch from which record was synchronized.
+
+115. social_media
+   Role: Data
+   Sample: [{"id": "ffff1d51-7f93-490f-9785-da91c45084c9", "socialMediaUrl": "test1234567890", "socialMediaTypeCd": 5}]
+   Meaning: Field for social media.
+
+116. language_used
+   Role: Data
+   Sample: ["Hindi", "Eng"]
+   Meaning: Field for language used.
+
+117. alias
+   Role: Data
+   Sample: [{"id": null, "alias": "test data", "aliasEng": "test data"}]
+   Meaning: Field for alias.
+
+118. other_reg_type_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for other reg type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+119. other_reg_num
+   Role: Data
+   Sample: 0
+   Meaning: Number/reference for other reg.
+
+120. arrest_surr_ps_id
+   Role: Lookup
+   Sample: 20661
+   Meaning: Identifier for arrest surrender police station; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_police_station.ps_id | Display: ps, ps_cd | Sample value: 20661
+
+121. is_med_assis_req
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether medical assis requested.
+
+122. med_mode_of_transport
+   Role: Data
+   Sample: 
+   Meaning: Field for medical mode of transport.
+
+123. nfn_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for nfn.
+
+124. build_type_cd
+   Role: Lookup
+   Sample: 6
+   Meaning: Code value for build type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 6: Reason for leaving School/New -> Sudden demise of parents; Classification of Vehicle/m_mv_classification -> SUV; CIS Witness Types/New -> Public Institutional Officer; Cyber Property category/m_cyber_property -> HDD Type; Types of GD entry/m_gd_entry_type -> Criminal case
+
+125. complexion_type_cd
+   Role: Lookup
+   Sample: 570
+   Meaning: Code value for complexion type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 570: Types of caste/m_caste_tribe -> PHANS; Types of Explosive/m_explosive_type -> PLASTIC EXPLOSIVES; Minor Type of Property/m_property_type -> PLASTIC EXPLOSIVES; Types of Body Complexion/m_physical_features -> SALLOW; Modus Operandi Types/m_modus_method -> POISONING BY INJECTING
+
+126. living_status_cd
+   Role: Lookup
+   Sample: 9
+   Meaning: Code value for living status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 9: Reason for leaving School/New -> Absenteeism followed by running away from school; Types of links to FIR/m_fir_linked_to -> LOST PROPERTY; Types of motive of crime/m_crime_motive -> INJURY CAUSING; Address types/m_address_type -> Reference Address; Fir arms makers/m_firearms_maker -> Winchester
+
+
+t_accused_procl_offender
+------------------------
+Purpose: Proclaimed offender process/order details for an accused who is absconding or not appearing.
+Primary key: procl_offend_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused branch; fallback can be fir_reg_num + accused_srno when accused_vid is not reliable.
+Example key values: procl_offend_srno=12412; accused_vid=107342; fir_reg_num=381010012600017; accused_srno=38101001260000015
+
+Columns
+~~~~~~~
+1. procl_offend_srno
+   Role: PK
+   Sample: 12412
+   Meaning: Unique proclaimed-offender record id.
+   Linking significance: Primary key for t_accused_procl_offender.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. accused_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused serial number.
+
+4. fir_reg_num
+   Role: Key/context
+   Sample: 381010012600017
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+5. accused_srno
+   Role: Key/context
+   Sample: 38101001260000015
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+6. procl_offend_cd_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for proclaimed offender code serial number.
+
+7. procl_offend_cd_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for proclaimed offender code.
+
+8. procl_court_estbl_cd
+   Role: Lookup
+   Sample: LDLH01
+   Meaning: Code value for proclaimed court establishment; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: LDLH01
+
+9. procl_offend_court_name
+   Role: Data
+   Sample: dscsdcsddccdc
+   Meaning: Name of proclaimed offender court.
+
+10. procl_offend_court_loc
+   Role: Data
+   Sample: 
+   Meaning: Field for proclaimed offender court loc.
+
+11. procl_offend_remarks
+   Role: Data
+   Sample: gbgfdbgfdbgfbfgb
+   Meaning: Remarks/notes for proclaimed offender.
+
+12. procl_offend_order_num
+   Role: Data
+   Sample: 52311
+   Meaning: Number/reference for proclaimed offender order.
+
+13. procl_offend_order_dt
+   Role: Data
+   Sample: 2026-05-13T00:00:00
+   Meaning: Date/time for proclaimed offender order.
+
+14. is_procl_read_out
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether proclaimed read out.
+
+15. reason_procl_read_out
+   Role: Data
+   Sample: dcdsdscds
+   Meaning: Reason text for proclaimed read out.
+
+16. is_video_recorded
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether video recorded.
+
+17. reason_video_recorded
+   Role: Data
+   Sample: 
+   Meaning: Reason text for video recorded.
+
+18. is_video_attach
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether video attach.
+
+19. reason_video_attach
+   Role: Data
+   Sample: dcadscdsacsd
+   Meaning: Reason text for video attach.
+
+20. is_house_identified
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether house identified.
+
+21. reason_house_identified
+   Role: Data
+   Sample: 
+   Meaning: Reason text for house identified.
+
+22. is_house_photo_capture
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether house photo capture.
+
+23. reason_house_photo_capture
+   Role: Data
+   Sample: 
+   Meaning: Reason text for house photo capture.
+
+24. is_house_photo_attach
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether house photo attach.
+
+25. reason_house_photo_attach
+   Role: Data
+   Sample: dcsacdss
+   Meaning: Reason text for house photo attach.
+
+26. is_procl_affixed
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether proclaimed affixed.
+
+27. reason_procl_affixed
+   Role: Data
+   Sample: 
+   Meaning: Reason text for proclaimed affixed.
+
+28. is_affixed_photo_capture
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether affixed photo capture.
+
+29. reason_affixed_photo_capture
+   Role: Data
+   Sample: dcsacasdc
+   Meaning: Reason text for affixed photo capture.
+
+30. is_homestead_photo_attach
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether homestead photo attach.
+
+31. reason_homestead_photo_attach
+   Role: Data
+   Sample: 
+   Meaning: Reason text for homestead photo attach.
+
+32. record_status
+   Role: Data
+   Sample: D
+   Meaning: Current record status flag such as created/updated/deleted.
+
+33. record_created_on
+   Role: Data
+   Sample: 2026-05-26T09:52:21.832142
+   Meaning: Timestamp when the record was created.
+
+34. record_created_by
+   Role: Lookup
+   Sample: 4370
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+35. record_updated_on
+   Role: Data
+   Sample: 2026-05-26T09:51:05.9271
+   Meaning: Timestamp when the record was last updated.
+
+36. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+37. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+38. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+39. accused_vid
+   Role: FK/link
+   Sample: 107342
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+40. case_diary_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for case diary serial number.
+
+
+t_fir_multi_accused
+-------------------
+Purpose: Bridge/mapping table for linking the same accused or related accused across FIRs/records.
+Primary key: fir_multi_acc_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct mapping branch; also carries existing FIR/accused fields for cross-linking.
+Example key values: fir_multi_acc_srno=16; accused_vid=119755; fir_reg_num=381010012600043; accused_srno=3810100126000042
+
+Columns
+~~~~~~~
+1. fir_multi_acc_srno
+   Role: PK
+   Sample: 16
+   Meaning: Unique multi-accused/FIR mapping record id.
+   Linking significance: Primary key for t_fir_multi_accused.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. crm_multi_acc_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for crm multi acc serial number.
+
+4. fir_reg_num
+   Role: Key/context
+   Sample: 381010012600043
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+5. accused_vid
+   Role: FK/link
+   Sample: 119755
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+6. accused_srno
+   Role: Key/context
+   Sample: 3810100126000042
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. exist_fir_reg_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for exist FIR reg.
+
+8. exist_accused_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for exist accused serial number.
+
+9. exist_accused_uniq_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for exist accused unique.
+
+10. full_name
+   Role: Data
+   Sample: Ramu singh bhagat
+   Meaning: Complete person name.
+
+11. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+12. record_created_on
+   Role: Data
+   Sample: 2026-05-19T10:18:06.034742
+   Meaning: Timestamp when the record was created.
+
+13. record_created_by
+   Role: Lookup
+   Sample: 4370
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+14. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+15. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+
+t_fir_notice_requests_accused
+-----------------------------
+Purpose: Accused/person details captured inside a notice request. It can be manually captured and may not always link cleanly to accused_vid.
+Primary key: accused_person_cd
+Connects to: t_fir_accused_info
+FK/link used: accused_srno / fir_accused_srno
+Parent key: accused_srno / fir_accused_srno
+Linking note: Notice module may store local/manual accused person data; sample has accused_srno=0/fir_accused_srno=0.
+Example key values: accused_person_cd=22; accused_srno=0; fir_accused_srno=0; notice_req_num=38101001260025
+
+Columns
+~~~~~~~
+1. accused_person_cd
+   Role: PK
+   Sample: 22
+   Meaning: Local accused/person id inside notice or freezing-order module.
+   Linking significance: Primary key for t_fir_notice_requests_accused.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. notice_req_num
+   Role: Data
+   Sample: 38101001260025
+   Meaning: Notice/freezing request number.
+
+4. accused_person_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused person cd.
+
+5. fir_accused_srno
+   Role: FK/link
+   Sample: 0
+   Meaning: FIR accused serial number/reference used by some modules.
+   Linking significance: Links this table to t_fir_accused_info using accused_srno / fir_accused_srno.
+
+6. accused_srno
+   Role: FK/link
+   Sample: 0
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Links this table to t_fir_accused_info using accused_srno / fir_accused_srno.
+
+7. crm_detail_srno
+   Role: Data
+   Sample: 0
+   Meaning: Field for crime detail serial number.
+
+8. crm_seq_num
+   Role: Data
+   Sample: 0
+   Meaning: Number/reference for crime seq.
+
+9. acc_first_name
+   Role: Data
+   Sample: Kushagra
+   Meaning: Name of acc first.
+
+10. acc_middle_name
+   Role: Data
+   Sample: 
+   Meaning: Name of acc middle.
+
+11. acc_last_name
+   Role: Data
+   Sample: Srivastava
+   Meaning: Name of acc last.
+
+12. acc_full_name
+   Role: Data
+   Sample: 
+   Meaning: Name of acc full.
+
+13. acc_alias
+   Role: Data
+   Sample: string
+   Meaning: Field for acc alias.
+
+14. acc_relation_type_cd
+   Role: Lookup
+   Sample: 1
+   Meaning: Code value for acc relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 1: Types of advertise medium/m_advertise_medium -> Radio; Crime Head types/m_crime_head -> MURDER; Trial Stages/m_trial_stages -> PENDING ARGUMENT; Types of weakness/m_weakness -> Drugs; Address Verification Status/New -> Pending
+
+15. acc_relative_name
+   Role: Data
+   Sample: Relative
+   Meaning: Name of acc relative.
+
+16. acc_age_yrs
+   Role: Data
+   Sample: 25
+   Meaning: Field for acc age years.
+
+17. acc_age_months
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc age months.
+
+18. acc_yob
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc yob.
+
+19. acc_dob
+   Role: Data
+   Sample: 2000-05-04T00:00:00
+   Meaning: Field for acc dob.
+
+20. acc_age_from_yrs
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc age from years.
+
+21. acc_age_to_yrs
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc age to years.
+
+22. acc_gender_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for acc gender; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+23. acc_mob_std_cd
+   Role: Lookup
+   Sample: 91
+   Meaning: Code value for acc mobile STD; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 91: GD Sub-Types/New -> Visitors to meet the arrested accused; Types of GD entry/m_gd_entry_type -> Property Release from Malkhana; Types of court/m_court_type -> MUNSIF COURT; Types of work place/m_work_place -> SANATORIUM; Crime Head types/m_crime_head -> CHILD
+
+24. acc_mobile_num
+   Role: Data
+   Sample: 9648844469
+   Meaning: Number/reference for acc mobile.
+
+25. acc_telephone
+   Role: Data
+   Sample: string
+   Meaning: Field for acc telephone.
+
+26. acc_email
+   Role: Data
+   Sample: email@gmail.com
+   Meaning: Field for acc email.
+
+27. acc_nationality_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for acc nationality; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+28. is_complainant_avl
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether complainant available.
+
+29. compl_name
+   Role: Data
+   Sample: string
+   Meaning: Name of compl.
+
+30. compl_relation_type_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for compl relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+31. compl_relative_name
+   Role: Data
+   Sample: string
+   Meaning: Name of compl relative.
+
+32. is_accused_suspect
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether accused suspect.
+
+33. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+34. record_created_on
+   Role: Data
+   Sample: 2026-05-21T15:34:24.779324
+   Meaning: Timestamp when the record was created.
+
+35. record_created_by
+   Role: Lookup
+   Sample: 4370
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+36. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+37. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+38. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+39. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+
+t_freezing_order_accused
+------------------------
+Purpose: Accused/person header for freezing-order proceedings, used before storing bank/email/property/etc. freezing details.
+Primary key: accused_person_cd
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct when accused_vid is populated; otherwise notice_req_num + accused_person_cd identifies the local freezing-order person.
+Example key values: accused_person_cd=14; accused_vid=; accused_srno=0; fir_accused_srno=0; notice_req_num=38101001260013
+
+Columns
+~~~~~~~
+1. accused_person_cd
+   Role: PK
+   Sample: 14
+   Meaning: Local accused/person id inside notice or freezing-order module.
+   Linking significance: Primary key for t_freezing_order_accused.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. notice_req_num
+   Role: Data
+   Sample: 38101001260013
+   Meaning: Notice/freezing request number.
+
+4. accused_person_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused person cd.
+
+5. fir_accused_srno
+   Role: Key/context
+   Sample: 0
+   Meaning: FIR accused serial number/reference used by some modules.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+6. accused_srno
+   Role: Key/context
+   Sample: 0
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. crm_detail_srno
+   Role: Data
+   Sample: 0
+   Meaning: Field for crime detail serial number.
+
+8. crm_seq_num
+   Role: Data
+   Sample: 0
+   Meaning: Number/reference for crime seq.
+
+9. acc_first_name
+   Role: Data
+   Sample: Unknown1
+   Meaning: Name of acc first.
+
+10. acc_middle_name
+   Role: Data
+   Sample: string
+   Meaning: Name of acc middle.
+
+11. acc_last_name
+   Role: Data
+   Sample: string
+   Meaning: Name of acc last.
+
+12. acc_full_name
+   Role: Data
+   Sample: Unknown1 dfadsfasd Sharma
+   Meaning: Name of acc full.
+
+13. acc_relation_type_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for acc relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+14. acc_relative_name
+   Role: Data
+   Sample: Unknown
+   Meaning: Name of acc relative.
+
+15. acc_age_yrs
+   Role: Data
+   Sample: 21
+   Meaning: Field for acc age years.
+
+16. acc_age_months
+   Role: Data
+   Sample: 3
+   Meaning: Field for acc age months.
+
+17. acc_yob
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc yob.
+
+18. acc_dob
+   Role: Data
+   Sample: 2026-05-04T00:00:00
+   Meaning: Field for acc dob.
+
+19. acc_age_from_yrs
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc age from years.
+
+20. acc_age_to_yrs
+   Role: Data
+   Sample: 0
+   Meaning: Field for acc age to years.
+
+21. acc_gender_cd
+   Role: Lookup
+   Sample: 3
+   Meaning: Code value for acc gender; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 3: Types of other features/m_other_features -> REPETITIVE REMARKS; Reason for leaving School/New -> Indifferent attitude of the teachers; Security category/m_security_category -> Y Category; NCR action types/m_ncr_action -> No Action; Types of weakness/m_weakness -> Women
+
+22. acc_mobile_num
+   Role: Data
+   Sample: 9615757999
+   Meaning: Number/reference for acc mobile.
+
+23. acc_telephone
+   Role: Data
+   Sample: string
+   Meaning: Field for acc telephone.
+
+24. acc_email
+   Role: Data
+   Sample: string
+   Meaning: Field for acc email.
+
+25. acc_nationality_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for acc nationality; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+26. is_complainant_avl
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether complainant available.
+
+27. compl_name
+   Role: Data
+   Sample: string
+   Meaning: Name of compl.
+
+28. compl_relation_type_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for compl relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+29. compl_relative_name
+   Role: Data
+   Sample: string
+   Meaning: Name of compl relative.
+
+30. is_accused_suspect
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether accused suspect.
+
+31. action_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for action.
+
+32. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+33. record_created_on
+   Role: Data
+   Sample: 2026-05-21T15:34:55.540707
+   Meaning: Timestamp when the record was created.
+
+34. record_created_by
+   Role: Lookup
+   Sample: 0
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 0
+
+35. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+36. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+37. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+38. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+39. accused_vid
+   Role: FK/link
+   Sample: 
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+40. acc_alias
+   Role: Data
+   Sample: string
+   Meaning: Field for acc alias.
+
+
+t_summon_warrant
+----------------
+Purpose: Court summon/warrant/notice context. It is FIR-level and only accused-specific when issued-to type/person identifies an accused.
+Primary key: summ_warr_num
+Connects to: t_fir_accused_info
+FK/link used: fir_reg_num
+Parent key: fir_reg_num
+Linking note: Weak FIR-level/court context; filter issued-to accused using iss_to_type_cd/accused_type_cd/person fields.
+Example key values: summ_warr_num=; fir_reg_num=
+
+Columns
+~~~~~~~
+1. summ_warr_num
+   Role: PK
+   Sample: 
+   Meaning: Unique summon/warrant/notice record number.
+   Linking significance: Primary key for t_summon_warrant.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+3. trial_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for trial serial number.
+
+4. fir_reg_num
+   Role: FK/link
+   Sample: 
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Links this table to t_fir_accused_info using fir_reg_num.
+
+5. ncr_reg_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for NCR reg.
+
+6. petty_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for petty case.
+
+7. court_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for court case.
+
+8. summ_warr_nature
+   Role: Lookup
+   Sample: 
+   Meaning: Field for summon warrant nature.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+9. warr_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for warrant type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+10. notice_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for notice type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+11. iss_to_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for iss to type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+12. notice_oth_src
+   Role: Data
+   Sample: 
+   Meaning: Field for notice other src.
+
+13. issue_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for issue.
+
+14. iss_to_pers_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for iss to person; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 
+
+15. iss_to_io_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for iss to investigating officer; decode through lookup/master when mapped.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+16. to_be_fwd_not
+   Role: Data
+   Sample: 
+   Meaning: Field for to be fwd not.
+
+17. receiv_ps_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for received police station.
+
+18. delv_status
+   Role: Data
+   Sample: 
+   Meaning: Status value for delivery.
+
+19. exec_pol_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for execution police; decode through lookup/master when mapped.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+20. exec_last_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for execution last.
+
+21. exec_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for execution.
+
+22. exec_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for execution type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+23. exec_cnt
+   Role: Data
+   Sample: 
+   Meaning: Count of execution.
+
+24. exec_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for execution.
+
+25. next_hearing_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for next hearing.
+
+26. final_rep_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for final rep serial number.
+
+27. sent_to_address_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for sent to address; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 
+
+28. accused_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for accused type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+29. is_message_sent
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether message sent.
+
+30. record_status
+   Role: Data
+   Sample: 
+   Meaning: Current record status flag such as created/updated/deleted.
+
+31. record_created_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was created.
+
+32. record_created_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+33. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+34. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+35. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+36. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+37. exec_district_id
+   Role: Lookup
+   Sample: 
+   Meaning: Identifier for execution district; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_district.district_id | Display: district, district_cd | Sample value: 
+
+38. exec_ps_id
+   Role: Lookup
+   Sample: 
+   Meaning: Identifier for execution police station; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_police_station.ps_id | Display: ps, ps_cd | Sample value: 
+
+39. exec_state_id
+   Role: Lookup
+   Sample: 
+   Meaning: Identifier for execution state; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_state.state_id | Display: state, state_cd | Sample value: 
+
+40. receiv_ps_id
+   Role: Lookup
+   Sample: 
+   Meaning: Identifier for received police station; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_police_station.ps_id | Display: ps, ps_cd | Sample value: 
+
+
+t_arrest_memo
+-------------
+Purpose: Arrest or surrender event for the accused.
+Primary key: arr_surr_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused arrest/surrender branch; also carries fir_reg_num + accused_srno.
+Example key values: arr_surr_srno=3810100426000007; accused_vid=119793; fir_reg_num=381010012600041; accused_srno=92681020110000205; fir_accused_srno=92681020110000205; arr_surr_srno=3810100426000007
+
+Columns
+~~~~~~~
+1. arr_surr_srno
+   Role: PK
+   Sample: 3810100426000007
+   Meaning: Unique arrest/surrender record id.
+   Linking significance: Primary key for t_arrest_memo.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. accused_vid
+   Role: FK/link
+   Sample: 119793
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+4. accused_srno
+   Role: Key/context
+   Sample: 92681020110000205
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+5. fir_accused_srno
+   Role: Key/context
+   Sample: 92681020110000205
+   Meaning: FIR accused serial number/reference used by some modules.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+6. accused_srno_migr
+   Role: Data
+   Sample: 92681020110000205
+   Meaning: Migrated/legacy value for accused serial number.
+
+7. state_id
+   Role: Lookup
+   Sample: 27
+   Meaning: State identifier.
+   Lookup: Lookup source: mdm.m_state.state_id | Display: state, state_cd | Sample value: 27
+
+8. district_id
+   Role: Lookup
+   Sample: 20411
+   Meaning: District identifier.
+   Lookup: Lookup source: mdm.m_district.district_id | Display: district, district_cd | Sample value: 20411
+
+9. ps_id
+   Role: Lookup
+   Sample: 20411020
+   Meaning: Police station identifier.
+   Lookup: Lookup source: mdm.m_police_station.ps_id | Display: ps, ps_cd | Sample value: 20411020
+
+10. arrest_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for arrest serial number.
+
+11. arrest_year
+   Role: Data
+   Sample: 2026
+   Meaning: Field for arrest year.
+
+12. fir_reg_num
+   Role: Key/context
+   Sample: 381010012600041
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+13. is_from_gd
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether from general diary.
+
+14. gd_num
+   Role: Data
+   Sample: GD2025/02
+   Meaning: Number/reference for general diary.
+
+15. gt_dt
+   Role: Data
+   Sample: 2026-05-26T11:41:21.18
+   Meaning: Date/time for gt.
+
+16. petty_case_num
+   Role: Data
+   Sample: 38101001260065
+   Meaning: Number/reference for petty case.
+
+17. petty_case_dt
+   Role: Data
+   Sample: 2026-05-26T11:04:00.805289
+   Meaning: Date/time for petty case.
+
+18. kalandra_acc_srno
+   Role: Data
+   Sample: 3454353535
+   Meaning: Field for kalandra acc serial number.
+
+19. is_arr_by_warrnt
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether arrest by warrnt.
+
+20. warrant_type
+   Role: Data
+   Sample: NBW
+   Meaning: Type/category of warrant.
+
+21. warrant_num
+   Role: Data
+   Sample: WR-2026-001
+   Meaning: Number/reference for warrant.
+
+22. warrant_issue_dt
+   Role: Data
+   Sample: 2026-05-25T00:03:00
+   Meaning: Date/time for warrant issue.
+
+23. court_order_dt
+   Role: Data
+   Sample: 2026-04-09T11:00:00
+   Meaning: Date/time for court order.
+
+24. court_order_no
+   Role: Data
+   Sample: CO987654321
+   Meaning: Field for court order no.
+
+25. warrant_details
+   Role: Data
+   Sample: Non-bailable warrant details
+   Meaning: Field for warrant details.
+
+26. arrest_type_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for arrest type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+27. arrest_surrender_dt
+   Role: Data
+   Sample: 2026-05-26T11:41:00
+   Meaning: Date/time for arrest surrender.
+
+28. arrest_alphanum
+   Role: Data
+   Sample: Zemasthang
+   Meaning: Field for arrest alphanumeric.
+
+29. first_name
+   Role: Data
+   Sample: Zulfikar Ali 
+   Meaning: First name of the person.
+
+30. middle_name
+   Role: Data
+   Sample: Zunoon 
+   Meaning: Middle name of the person.
+
+31. last_name
+   Role: Data
+   Sample: Yountan
+   Meaning: Last name of the person.
+
+32. first_name_eng
+   Role: Data
+   Sample: TEst TEst TEst
+   Meaning: Field for first name eng.
+
+33. middle_name_eng
+   Role: Data
+   Sample: Kumar
+   Meaning: Field for middle name eng.
+
+34. last_name_eng
+   Role: Data
+   Sample: Verma
+   Meaning: Field for last name eng.
+
+35. is_re_arrested
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether re arrested.
+
+36. re_arr_surr_srno
+   Role: Data
+   Sample: 2041100526000574
+   Meaning: Field for re arrest surrender serial number.
+
+37. relation_type_cd
+   Role: Lookup
+   Sample: 52
+   Meaning: Code value for relation type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 52: Types of GD entry/m_gd_entry_type -> Bandobast; Types of court/m_court_type -> DIST & SESSION JUDGE (DIST); Types of work place/m_work_place -> BLOCK OFFICE; Crime Head types/m_crime_head -> CRIMINAL MISAPPROPRIATION; Types of motive of crime/m_crime_motive -> POLITICAL
+
+38. relative_name
+   Role: Data
+   Sample: Zulfikar Ali
+   Meaning: Name of relative.
+
+39. relative_name_eng
+   Role: Data
+   Sample: Suresh Patil
+   Meaning: Field for relative name eng.
+
+40. relative_alias
+   Role: Data
+   Sample: 
+   Meaning: Field for relative alias.
+
+41. rel_mobile_num
+   Role: Data
+   Sample: 9876543212
+   Meaning: Number/reference for relative mobile.
+
+42. rel_telephone
+   Role: Data
+   Sample: 1212121233213213123
+   Meaning: Field for relative telephone.
+
+43. othr_rel_type_cd
+   Role: Lookup
+   Sample: 9
+   Meaning: Code value for other relative type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 9: Reason for leaving School/New -> Absenteeism followed by running away from school; Types of links to FIR/m_fir_linked_to -> LOST PROPERTY; Types of motive of crime/m_crime_motive -> INJURY CAUSING; Address types/m_address_type -> Reference Address; Fir arms makers/m_firearms_maker -> Winchester
+
+44. othr_rel_name
+   Role: Data
+   Sample: NA
+   Meaning: Name of other relative.
+
+45. othr_rel_name_eng
+   Role: Data
+   Sample: othrRelNameEng
+   Meaning: Field for other relative name eng.
+
+46. othr_rel_mobile_num
+   Role: Data
+   Sample: 9876543211
+   Meaning: Number/reference for other relative mobile.
+
+47. religion_cd
+   Role: Lookup
+   Sample: 12
+   Meaning: Code value for religion; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 12: Reason for leaving School/New -> Humiliation in school; GD Duty Types/New -> HM Administration Night; Assigned Tasks/New -> SHO - Own Esign; Types of GD entry/m_gd_entry_type -> Accused in Police Custody; Major Place of Occurance/m_parent_code_2 -> RELIGIOUS PLACES
+
+48. national_id_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for national id type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+49. gender_cd
+   Role: Lookup
+   Sample: 4
+   Meaning: Code value for gender; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 4: Reason for leaving School/New -> Peer group influence; CIS Witness Types/New -> Prison Officer; Complaint NCR Status/New -> Enquiry Report Approved; Types of weakness/m_weakness -> Wealth (Money); Address Verification Status/New -> Address Verified - Criminal Record Found
+
+50. category_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for category; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+51. edu_qual_cd
+   Role: Lookup
+   Sample: [null]
+   Meaning: Code value for edu qual; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value [null] not resolved from workbook master sample, or value is blank.
+
+52. living_status_cd
+   Role: Lookup
+   Sample: 25
+   Meaning: Code value for living status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 25: Crime Head types/m_crime_head -> PROHIBITION ACT; Major Place types/m_place_type -> HOTEL; Nationality Types/m_nationality -> BRAZIL; Types of GD entry/m_gd_entry_type -> Non-Cognizable Report; Types of court/m_court_type -> ADDL PRINCIPAL CIVIL JUDGE(JR DV) COURT
+
+53. marital_status_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for marital status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+54. occupation_cd
+   Role: Lookup
+   Sample: 216
+   Meaning: Code value for occupation; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 216: Types of court/m_court_type -> ADDL. CIVIL JUDGE (JR. DIV) & METROPOLITAN MAGISTRATE, NO. 12 METROPOLITAN; Types of cultural property/m_cultural_property_name -> PALLIARAI CHACKAR; Major Place types/m_place_type -> EXPRESS/MAIL TRAIN - A/C CHAIR CAR; Nationality Types/m_nationality -> UNKNOWN; Types of caste/m_caste_tribe -> MOONDRUMANDAI EMBATHUNALU
+
+55. age_proof_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for age proof type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+56. lang_dialect_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for lang dialect; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+57. age_type_cd
+   Role: Lookup
+   Sample: 111
+   Meaning: Code value for age type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 111: Types of court/m_court_type -> PRINCIPAL CJ & CJM COURT; Types of work place/m_work_place -> BURIAL GROUND/GRAVE YARD; Crime Head types/m_crime_head -> PEOPLE REPRESENTATION; Types of cultural property/m_cultural_property_name -> GANESH; Types of special features/m_special_feature -> POSING AS UNIFORMED POLICEMAN
+
+58. age_yrs
+   Role: Data
+   Sample: 82
+   Meaning: Field for age years.
+
+59. age_months
+   Role: Data
+   Sample: 11
+   Meaning: Field for age months.
+
+60. yob
+   Role: Data
+   Sample: 2007
+   Meaning: Year of birth.
+
+61. dob
+   Role: Data
+   Sample: 2007-06-10T00:00:00
+   Meaning: Date of birth.
+
+62. age_from_yrs
+   Role: Data
+   Sample: 56
+   Meaning: Field for age from years.
+
+63. age_to_yrs
+   Role: Data
+   Sample: 50
+   Meaning: Field for age to years.
+
+64. is_age_proof_req
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether age proof requested.
+
+65. mobile_num
+   Role: Data
+   Sample: 9988776655
+   Meaning: Mobile phone number.
+
+66. telephone
+   Role: Data
+   Sample: 9876543212
+   Meaning: Telephone number.
+
+67. email
+   Role: Data
+   Sample: test@test.com
+   Meaning: Email address.
+
+68. nationality_cd
+   Role: Lookup
+   Sample: 1234
+   Meaning: Code value for nationality; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 1234: Minor Type of Property/m_property_type -> TETRAZEPAM; Model of Motor Vehicle based on Make/m_mv_model -> AURA
+
+69. language_dialect_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for language dialect; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+70. oth_identification_marks
+   Role: Data
+   Sample: unknown dont know his blood group
+   Meaning: Field for other identification marks.
+
+71. blood_group_cd
+   Role: Lookup
+   Sample: 7
+   Meaning: Code value for blood group; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 7: Reason for leaving School/New -> Bullying in school; Stages of Investigation/m_investigation_stages -> PENDING STATEMENT u/s 183 BNSS; CIS Witness Types/New -> Private Sector Representative; UIDB Status/New -> Enquiry Officer Assigned; Types of Notices/New -> Request letter
+
+72. income_group_cd
+   Role: Lookup
+   Sample: 6
+   Meaning: Code value for income group; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 6: Reason for leaving School/New -> Sudden demise of parents; Classification of Vehicle/m_mv_classification -> SUV; CIS Witness Types/New -> Public Institutional Officer; Cyber Property category/m_cyber_property -> HDD Type; Types of GD entry/m_gd_entry_type -> Criminal case
+
+73. height_from_cm
+   Role: Data
+   Sample: 97
+   Meaning: Field for height from cm.
+
+74. height_to_cm
+   Role: Data
+   Sample: 99.06
+   Meaning: Field for height to cm.
+
+75. weight_kg
+   Role: Data
+   Sample: 0
+   Meaning: Field for weight kg.
+
+76. eprison_pid
+   Role: Data
+   Sample: 
+   Meaning: Field for e-prison pid.
+
+77. arrested_by_others
+   Role: Data
+   Sample: SI Tashi Gyaltson No EXK109518
+   Meaning: Field for arrested by others.
+
+78. arrested_by_pis_cd
+   Role: Lookup
+   Sample: 50001
+   Meaning: Code value for arrested by PIS; decode through lookup/master when mapped.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 50001
+
+79. arr_from_district_cd
+   Role: Lookup
+   Sample: 38102
+   Meaning: Code value for arrest from district; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 38102 not resolved from workbook master sample, or value is blank.
+
+80. arrest_beat_cd
+   Role: Lookup
+   Sample: 409503001
+   Meaning: Code value for arrest beat; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 409503001 not resolved from workbook master sample, or value is blank.
+
+81. major_place_type_cd
+   Role: Lookup
+   Sample: 31
+   Meaning: Code value for major place type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 31: Major Place of Occurance/m_parent_code_2 -> Forest; Types of court/m_court_type -> ASSISTANT COMMISIONER COURT; Types of work place/m_work_place -> SUPER MARKET; Types of major task/m_major_task_performed -> FIR Registered; Crime Head types/m_crime_head -> SEXUAL HARASHMENT
+
+82. minor_place_type_cd
+   Role: Lookup
+   Sample: 401
+   Meaning: Code value for minor place type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 401: Types of drugs/m_drug_type -> GANJA; Types of caste/m_caste_tribe -> KALLADI; Types of Physical Deformities/m_physical_features -> BOTH DEAF AND DUMB; Modus Operandi Types/m_modus_method -> THREAT OF CAUSING INJURY BY FIRE ARM - DOCK WORKER; Make of Motor Vehicle based on Type/m_mv_make -> YAMAHA
+
+83. is_arrested_infirm
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether arrested infirm.
+
+84. sent_to_dysp_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for sent to DySP.
+
+85. dysp_sending_remrk
+   Role: Data
+   Sample: 
+   Meaning: Field for DySP sending remarks.
+
+86. dysp_login_id
+   Role: Lookup
+   Sample: 
+   Meaning: Identifier for DySP login; often links to a master/reference table.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+87. has_dysp_apprv
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether DySP apprv exists/was done.
+
+88. dysp_app_rej_remrk
+   Role: Data
+   Sample: 
+   Meaning: Field for DySP approval rejection remarks.
+
+89. has_dysp_apprv_taken
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether DySP apprv taken exists/was done.
+
+90. dysp_apprv_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for DySP apprv.
+
+91. is_arrested_police
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether arrested police.
+
+92. arrested_police_cd
+   Role: Lookup
+   Sample: 38102015
+   Meaning: Code value for arrested police; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 38102015 not resolved from workbook master sample, or value is blank.
+
+93. surrend_in_court_cd
+   Role: Lookup
+   Sample: N
+   Meaning: Code value for surrend in court; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: N
+
+94. surrend_magistrate
+   Role: Data
+   Sample: Women Police Station Leh 
+   Meaning: Field for surrend magistrate.
+
+95. arrest_action_taken_cd
+   Role: Lookup
+   Sample: 11
+   Meaning: Code value for arrest action taken; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 11: Types of Citizen persons/m_cs_person_types -> Domestic Help Verification; Reason for leaving School/New -> Abuse in school; Types of religions/m_religion -> ATHEIST; State Agencies/m_state_agency -> Others; Types of GD entry/m_gd_entry_type -> Close of GD
+
+96. custody_action_other
+   Role: Data
+   Sample: Produced before magistrate
+   Meaning: Field for custody action other.
+
+97. arrest_status_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for arrest status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+98. court_order_details
+   Role: Data
+   Sample: 
+   Meaning: Field for court order details.
+
+99. is_arrest_photo_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether arrest photo taken.
+
+100. belong_to_crime_gang
+   Role: Data
+   Sample: False
+   Meaning: Field for belong to crime gang.
+
+101. criminal_gang_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for criminal gang; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value 0 not resolved from workbook master sample, or value is blank.
+
+102. injury_details
+   Role: Data
+   Sample: Simple Injuy
+   Meaning: Field for injury details.
+
+103. is_med_exam_req
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether medical exam requested.
+
+104. arrest_reason
+   Role: Data
+   Sample: 
+   Meaning: Field for arrest reason.
+
+105. io_cd
+   Role: Lookup
+   Sample: 4370
+   Meaning: Code value for investigating officer; decode through lookup/master when mapped.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+106. pers_search_gd_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for person search general diary.
+
+107. person_search_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for person search.
+
+108. pers_search_location
+   Role: Data
+   Sample: 
+   Meaning: Field for person search location.
+
+109. person_search_reason
+   Role: Data
+   Sample: 
+   Meaning: Field for person search reason.
+
+110. prop_found_detail
+   Role: Data
+   Sample: 
+   Meaning: Field for prop found detail.
+
+111. pers_search_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for person search.
+
+112. is_relat_intimated
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether relat intimated.
+
+113. intimate_rel_type_cd
+   Role: Lookup
+   Sample: 52
+   Meaning: Code value for intimate relative type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 52: Types of GD entry/m_gd_entry_type -> Bandobast; Types of court/m_court_type -> DIST & SESSION JUDGE (DIST); Types of work place/m_work_place -> BLOCK OFFICE; Crime Head types/m_crime_head -> CRIMINAL MISAPPROPRIATION; Types of motive of crime/m_crime_motive -> POLITICAL
+
+114. intimate_rel_name
+   Role: Data
+   Sample: Zulqarnan
+   Meaning: Name of intimate relative.
+
+115. intimate_dt
+   Role: Data
+   Sample: 2026-05-26T11:37:00
+   Meaning: Date/time for intimate.
+
+116. intimation_given_to
+   Role: Data
+   Sample: Zulqarnan
+   Meaning: Field for intimation given to.
+
+117. intimate_mode_cd
+   Role: Lookup
+   Sample: 8
+   Meaning: Code value for intimate mode; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 8
+
+118. is_int_mob_verif
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether int mobile verif.
+
+119. intimate_mob_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for intimate mobile.
+
+120. intimate_mode_detail
+   Role: Data
+   Sample: test@test.com
+   Meaning: Field for intimate mode detail.
+
+121. intimation_remarks
+   Role: Data
+   Sample: VarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarun
+   Meaning: Remarks/notes for intimation.
+
+122. is_arr_grnd_comm
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether arrest grnd comm.
+
+123. pres_int_rel_addr_migr
+   Role: Data
+   Sample: 3810201123040000011
+   Meaning: Migrated/legacy value for pres int rel addr.
+
+124. perm_int_rel_addr_migr
+   Role: Data
+   Sample: 3810201123040000012
+   Meaning: Migrated/legacy value for perm int rel addr.
+
+125. is_fp_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether fp taken.
+
+126. is_fp_chance
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether fp chance.
+
+127. is_dangerous
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether dangerous.
+
+128. is_accused_disable
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether accused disable.
+
+129. physical_cond_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for physical cond; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+130. has_prev_jump_bail
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether prev jump bail exists/was done.
+
+131. prev_jump_bail_details
+   Role: Data
+   Sample: Jumped bail in 2023 robbery case
+   Meaning: Field for prev jump bail details.
+
+132. is_generally_armed
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether generally armed.
+
+133. operates_with_accomplish
+   Role: Data
+   Sample: True
+   Meaning: Field for operates with accomplish.
+
+134. is_known_criminal
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether known criminal.
+
+135. known_criminal_details
+   Role: Data
+   Sample: Listed as known offender in district record
+   Meaning: Field for known criminal details.
+
+136. is_recidivist
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether recidivist.
+
+137. likely_jumps_bail
+   Role: Data
+   Sample: True
+   Meaning: Field for likely jumps bail.
+
+138. after_bail_commits_crime
+   Role: Data
+   Sample: True
+   Meaning: Field for after bail commits crime.
+
+139. wanted_other_case
+   Role: Data
+   Sample: True
+   Meaning: Field for wanted other case.
+
+140. wanted_case_details
+   Role: Data
+   Sample: Wanted in a burglary case in Mumbai
+   Meaning: Field for wanted case details.
+
+141. prev_conviction_detail
+   Role: Data
+   Sample: 
+   Meaning: Field for prev conviction detail.
+
+142. present_address_1_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for present address 1 cd.
+
+143. present_address_2_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for present address 2 cd.
+
+144. present_address_3_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for present address 3 cd.
+
+145. permanent_address_cd_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for permanent address cd.
+
+146. surr_ps_intimate_dt
+   Role: Data
+   Sample: 2026-05-26T11:41:00
+   Meaning: Date/time for surrender police station intimate.
+
+147. is_photo_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether photo taken.
+
+148. is_arr_perm_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether arrest perm taken.
+
+149. is_info_verified
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether info verified.
+
+150. court_estbl_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for court establishment; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: 
+
+151. court_name
+   Role: Data
+   Sample: District Court, Mumbai
+   Meaning: Name of court.
+
+152. evidence_type_cd
+   Role: Lookup
+   Sample: 0
+   Meaning: Code value for evidence type; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 0
+
+153. id_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for id type; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 
+
+154. is_proclaimed_offender
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether proclaimed offender.
+
+155. other_living_status
+   Role: Data
+   Sample: With his family
+   Meaning: Status value for other living.
+
+156. arrest_place
+   Role: Data
+   Sample: zemsthang bridge titi chumik 
+   Meaning: Field for arrest place.
+
+157. other_occupation
+   Role: Data
+   Sample: Tourist at Leh
+   Meaning: Field for other occupation.
+
+158. any_other_details
+   Role: Data
+   Sample: VarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarun
+   Meaning: Field for any other details.
+
+159. fir_copy_given_to
+   Role: Data
+   Sample: firCopyGivenTo
+   Meaning: Field for FIR copy given to.
+
+160. offender_details
+   Role: Data
+   Sample: yes verifade 
+   Meaning: Field for offender details.
+
+161. arrest_circumstances
+   Role: Data
+   Sample: US 3314,305 BNS
+   Meaning: Field for arrest circumstances.
+
+162. arrest_strength_warrant
+   Role: Data
+   Sample: 
+   Meaning: Field for arrest strength warrant.
+
+163. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+164. record_created_on
+   Role: Data
+   Sample: 2026-05-26T11:44:10.197112
+   Meaning: Timestamp when the record was created.
+
+165. record_created_by
+   Role: Lookup
+   Sample: 12345
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 12345
+
+166. record_updated_on
+   Role: Data
+   Sample: 2026-04-10T15:51:09.415755
+   Meaning: Timestamp when the record was last updated.
+
+167. record_updated_by
+   Role: Lookup
+   Sample: 4881
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4881
+
+168. record_sync_from
+   Role: Data
+   Sample: MIGR_BATCH_1_2026-05-18_10_58
+   Meaning: Source system/batch from which record was synchronized.
+
+169. record_sync_on
+   Role: Data
+   Sample: 2026-03-16T00:00:00
+   Meaning: Timestamp/date of synchronization.
+
+170. alias
+   Role: Data
+   Sample: [{"id": "f9fb5dac-b5fb-4252-9861-a09ca2aacfae", "alias": "lllkkmmnnjj", "aliasEng": "hgfoa"}]
+   Meaning: Field for alias.
+
+171. social_media
+   Role: Data
+   Sample: [{"id": "ffff1d51-7f93-490f-9785-da91c45084c9", "socialMediaUrl": "test1234567890", "socialMediaTypeCd": 5}]
+   Meaning: Field for social media.
+
+172. build_type_cd
+   Role: Lookup
+   Sample: 5
+   Meaning: Code value for build type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 5: Reason for leaving School/New -> To earn and support the family; CIS Witness Types/New -> Government Officer; Variants of Vehicles by Make/m_variant -> WCI; Types of GD entry/m_gd_entry_type -> Opening of GD; Types of Notices/New -> Summon/Order u/s 94 BNSS
+
+173. complexion_type_cd
+   Role: Lookup
+   Sample: 15
+   Meaning: Code value for complexion type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 15: Reason for leaving School/New -> Others; Type of Cyber Property Category wise/m_cyber_property -> Desktop; Types of GD entry/m_gd_entry_type -> Unclaimed/Abandoned Property; Major Place of Occurance/m_parent_code_2 -> ROADWAYS; Type of Final reports/m_final_report_type -> SUPPLEMENTARY CHARGESHEET
+
+174. arr_from_state_id
+   Role: Lookup
+   Sample: 77
+   Meaning: Identifier for arrest from state; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_state.state_id | Display: state, state_cd | Sample value: 77
+
+175. arr_from_district_id
+   Role: Lookup
+   Sample: 2071
+   Meaning: Identifier for arrest from district; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_district.district_id | Display: district, district_cd | Sample value: 2071
+
+176. arr_from_ps_id
+   Role: Lookup
+   Sample: 42659
+   Meaning: Identifier for arrest from police station; often links to a master/reference table.
+   Lookup: Lookup source: mdm.m_police_station.ps_id | Display: ps, ps_cd | Sample value: 42659
+
+
+t_accused_remand
+----------------
+Purpose: Remand/custody request details linked to an arrest memo.
+Primary key: remand_srno
+Connects to: t_arrest_memo
+FK/link used: arr_surr_srno
+Parent key: arr_surr_srno
+Linking note: Child of arrest memo. Remand belongs to an arrest/surrender event, not directly to root.
+Example key values: remand_srno=3810100126001; accused_vid=; fir_reg_num=204110052600005; accused_srno=2041100526000018; arr_surr_srno=2041100526000018
+
+Columns
+~~~~~~~
+1. remand_srno
+   Role: PK
+   Sample: 3810100126001
+   Meaning: Unique remand/custody request record id.
+   Linking significance: Primary key for t_accused_remand.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. remand_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for remand serial number.
+
+4. accused_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused serial number.
+
+5. accused_srno
+   Role: Key/context
+   Sample: 2041100526000018
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+6. arr_surr_srno
+   Role: FK/link
+   Sample: 2041100526000018
+   Meaning: Unique arrest/surrender record id.
+   Linking significance: Links this table to t_arrest_memo using arr_surr_srno.
+
+7. fir_reg_num
+   Role: Key/context
+   Sample: 204110052600005
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+8. remand_type
+   Role: Lookup
+   Sample: 1
+   Meaning: Type/category of remand.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 1: Types of advertise medium/m_advertise_medium -> Radio; Crime Head types/m_crime_head -> MURDER; Trial Stages/m_trial_stages -> PENDING ARGUMENT; Types of weakness/m_weakness -> Drugs; Address Verification Status/New -> Pending
+
+9. remand_days_req
+   Role: Data
+   Sample: 5
+   Meaning: Field for remand days requested.
+
+10. remand_days_sanc
+   Role: Data
+   Sample: 
+   Meaning: Field for remand days sanction.
+
+11. remand_reason
+   Role: Data
+   Sample: For further investigation and evidence collection
+   Meaning: Field for remand reason.
+
+12. remand_req_frm_dt
+   Role: Data
+   Sample: 2025-08-18T10:00:00
+   Meaning: Date/time for remand requested from.
+
+13. remand_req_to_dt
+   Role: Data
+   Sample: 2025-08-23T10:00:00
+   Meaning: Date/time for remand requested to.
+
+14. is_transit_othr_state
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether transit other state.
+
+15. remand_sanc_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for remand sanction.
+
+16. remand_io_cd
+   Role: Lookup
+   Sample: 4370
+   Meaning: Code value for remand investigating officer; decode through lookup/master when mapped.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+17. remand_court_cd
+   Role: Lookup
+   Sample: MLSO01
+   Meaning: Code value for remand court; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: MLSO01
+
+18. remand_jail_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for remand jail; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_jail.jail_cd | Display: jail_name | Sample value: 
+
+19. court_order_no
+   Role: Data
+   Sample: 
+   Meaning: Field for court order no.
+
+20. court_order_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for court order.
+
+21. remand_court_name
+   Role: Data
+   Sample: District Court Indore
+   Meaning: Name of remand court.
+
+22. remand_extn_justf
+   Role: Data
+   Sample: 
+   Meaning: Field for remand extn justf.
+
+23. remand_extn_days
+   Role: Data
+   Sample: 
+   Meaning: Field for remand extn days.
+
+24. remand_extn_till_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for remand extn till.
+
+25. remand_sanc_type
+   Role: Lookup
+   Sample: 
+   Meaning: Type/category of remand sanction.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+26. remand_status
+   Role: Data
+   Sample: REQUESTED
+   Meaning: Status value for remand.
+
+27. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+28. record_created_on
+   Role: Data
+   Sample: 2026-04-21T11:57:43.635207
+   Meaning: Timestamp when the record was created.
+
+29. record_created_by
+   Role: Lookup
+   Sample: 4370
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+30. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+31. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+32. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+33. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+34. accused_vid
+   Role: Key/context
+   Sample: 
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+
+t_accused_bail_details
+----------------------
+Purpose: Bail request/grant details for the accused.
+Primary key: bailer_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused bail branch; sample may use fir_reg_num/arr_surr_srno when accused_vid is null.
+Example key values: bailer_srno=77; accused_vid=; fir_reg_num=204110052600002; accused_srno=; arr_surr_srno=3810100126000012
+
+Columns
+~~~~~~~
+1. bailer_srno
+   Role: PK
+   Sample: 77
+   Meaning: Unique bail record id.
+   Linking significance: Primary key for t_accused_bail_details.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. accused_srno
+   Role: Key/context
+   Sample: 
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+4. request_from
+   Role: Data
+   Sample: 
+   Meaning: Field for request from.
+
+5. bailer_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for bailer serial number.
+
+6. accused_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused serial number.
+
+7. fir_reg_num
+   Role: Key/context
+   Sample: 204110052600002
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+8. arr_surr_srno
+   Role: Key/context
+   Sample: 3810100126000012
+   Meaning: Unique arrest/surrender record id.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+9. bail_grant_dt
+   Role: Data
+   Sample: 2026-05-15T14:04:31.041329
+   Meaning: Date/time for bail grant.
+
+10. bail_gd_num
+   Role: Data
+   Sample: 381010012205202610270374
+   Meaning: Number/reference for bail general diary.
+
+11. case_diary_srno
+   Role: Data
+   Sample: 1212
+   Meaning: Field for case diary serial number.
+
+12. case_diary_num
+   Role: Data
+   Sample: 3333323233
+   Meaning: Number/reference for case diary.
+
+13. bail_by_pol_court
+   Role: Data
+   Sample: P
+   Meaning: Field for bail by police court.
+
+14. bail_release_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for bail release.
+
+15. bail_type_cd
+   Role: Lookup
+   Sample: 4
+   Meaning: Code value for bail type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 4: Reason for leaving School/New -> Peer group influence; CIS Witness Types/New -> Prison Officer; Complaint NCR Status/New -> Enquiry Report Approved; Types of weakness/m_weakness -> Wealth (Money); Address Verification Status/New -> Address Verified - Criminal Record Found
+
+16. bail_given_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff responsible for bail given.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+17. bail_court_cd
+   Role: Lookup
+   Sample: ANPB01
+   Meaning: Code value for bail court; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: ANPB01
+
+18. bail_court_name
+   Role: Data
+   Sample: District and Sessions Judge, Port Blair, Andaman
+   Meaning: Name of bail court.
+
+19. advocate_name
+   Role: Data
+   Sample: Advocate Name
+   Meaning: Name of advocate.
+
+20. bail_hearing_dt
+   Role: Data
+   Sample: 
+   Meaning: Date/time for bail hearing.
+
+21. is_surety_avlble
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether surety available.
+
+22. bail_start_dt
+   Role: Data
+   Sample: 2026-05-18T15:47:48.058398
+   Meaning: Date/time for bail start.
+
+23. bail_end_dt
+   Role: Data
+   Sample: 2026-12-10T18:18:52.089106
+   Meaning: Date/time for bail end.
+
+24. bail_conditions
+   Role: Data
+   Sample: Temporary
+   Meaning: Field for bail conditions.
+
+25. bail_io_recomended
+   Role: Data
+   Sample: 
+   Meaning: Field for bail investigating officer recomended.
+
+26. bail_io_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for bail investigating officer.
+
+27. bail_sho_recomended
+   Role: Data
+   Sample: 
+   Meaning: Field for bail station house officer recomended.
+
+28. bail_sho_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for bail station house officer.
+
+29. bail_oppose_comments
+   Role: Data
+   Sample: Bail Ni deni
+   Meaning: Field for bail oppose comments.
+
+30. bail_oppose_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for bail oppose.
+
+31. bail_status
+   Role: Data
+   Sample: 2
+   Meaning: Status value for bail.
+
+32. petty_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for petty case.
+
+33. kalandra_acc_srno
+   Role: Data
+   Sample: 
+   Meaning: Field for kalandra acc serial number.
+
+34. is_message_sent
+   Role: Data
+   Sample: False
+   Meaning: Yes/no flag indicating whether message sent.
+
+35. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+36. record_created_on
+   Role: Data
+   Sample: 2026-05-26T14:36:17.025372
+   Meaning: Timestamp when the record was created.
+
+37. record_created_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+38. record_updated_on
+   Role: Data
+   Sample: 2026-05-14T12:31:18.572781
+   Meaning: Timestamp when the record was last updated.
+
+39. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+40. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+41. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+42. accused_vid
+   Role: FK/link
+   Sample: 
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+43. is_bail_cancelled
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether bail cancelled.
+
+44. bail_cancel_reason
+   Role: Data
+   Sample: 
+   Meaning: Field for bail cancel reason.
+
+45. bail_cancelled_on
+   Role: Data
+   Sample: 
+   Meaning: Date/time when bail cancelled happened.
+
+46. bail_cancel_estbl_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for bail cancel establishment; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: 
+
+
+t_accused_chargesheet
+---------------------
+Purpose: Chargesheet/final-report accused instance.
+Primary key: chargesheet_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused chargesheet/final-report branch.
+Example key values: chargesheet_srno=4761; accused_vid=119729; fir_reg_num=381010012600017; accused_srno=92681020110000208
+
+Columns
+~~~~~~~
+1. chargesheet_srno
+   Role: PK
+   Sample: 4761
+   Meaning: Unique accused chargesheet record id.
+   Linking significance: Primary key for t_accused_chargesheet.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. chargesheet_srno_migr
+   Role: Data
+   Sample: 3810201125000601001
+   Meaning: Migrated/legacy value for chargesheet serial number.
+
+4. accused_srno
+   Role: Key/context
+   Sample: 92681020110000208
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+5. accused_srno_migr
+   Role: Data
+   Sample: 92681020110000208
+   Meaning: Migrated/legacy value for accused serial number.
+
+6. fir_reg_num
+   Role: Key/context
+   Sample: 381010012600017
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. accused_rcn
+   Role: Data
+   Sample: no 
+   Meaning: Field for accused RCN.
+
+8. final_rep_srno
+   Role: Data
+   Sample: 38101001260001701
+   Meaning: Field for final rep serial number.
+
+9. is_chrgsheeted
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether chargesheeted.
+
+10. is_chargesheet_original
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether chargesheet original.
+
+11. chargesheet_num
+   Role: Data
+   Sample: 38101001260001701
+   Meaning: Number/reference for chargesheet.
+
+12. chargesheet_dt
+   Role: Data
+   Sample: 2025-09-26T00:00:00
+   Meaning: Date/time for chargesheet.
+
+13. court_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for court case.
+
+14. committal_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for committal case.
+
+15. fr_dispatch_dt
+   Role: Data
+   Sample: 1900-01-01T00:00:00
+   Meaning: Date/time for final report dispatch.
+
+16. fr_court_frwd_dt
+   Role: Data
+   Sample: 2026-03-23T00:00:00
+   Meaning: Date/time for final report court forwarded.
+
+17. fr_court_code
+   Role: Data
+   Sample: 
+   Meaning: Field for final report court code.
+
+18. accused_status_cd
+   Role: Lookup
+   Sample: 18
+   Meaning: Code value for accused status; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 18: Time zones/m_time_zones -> (GMT-04:00) Santiago; Types of GD entry/m_gd_entry_type -> Property Deposited in Malkhana; Assigned Tasks/New -> SHO Linking Review; Status of Accused/m_accused_status -> DISCHARGED; Types of court/m_court_type -> ADDL JUDGE
+
+19. accused_priority
+   Role: Data
+   Sample: 
+   Meaning: Field for accused priority.
+
+20. chargesheet_verified_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for chargesheet verified; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+21. is_suspicion_approved
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether suspicion approved.
+
+22. not_chargesheet_remark
+   Role: Data
+   Sample: مذکورہ  ابراہم خان  اسی ماروتی کار کو لیکر اپنی گھر شکر چکتن چلا گیا ہے۔ جہاں پر مذکورہ مورخہ 09.01.2026 کے روز اپنی  ممی کو تعزیت پر ائے ہوئے لوگوں کی خا طر دا
+   Meaning: Remarks/notes for not chargesheet.
+
+23. other_remarks
+   Role: Data
+   Sample: عد م اتسلم الو قو ع آیکسڈ ٹیل یکسو 
+   Meaning: Remarks/notes for other.
+
+24. accused_uniq_num
+   Role: Data
+   Sample: 92681020110000203
+   Meaning: Number/reference for accused unique.
+
+25. record_status
+   Role: Data
+   Sample: U
+   Meaning: Current record status flag such as created/updated/deleted.
+
+26. record_created_on
+   Role: Data
+   Sample: 2026-05-15T17:41:27.164493
+   Meaning: Timestamp when the record was created.
+
+27. record_created_by
+   Role: Lookup
+   Sample: 4881
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4881
+
+28. record_updated_on
+   Role: Data
+   Sample: 2026-03-26T17:11:00.911584
+   Meaning: Timestamp when the record was last updated.
+
+29. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+30. record_sync_from
+   Role: Data
+   Sample: MIGR_BATCH_1_2026-05-15_15_37
+   Meaning: Source system/batch from which record was synchronized.
+
+31. record_sync_on
+   Role: Data
+   Sample: 2026-03-16T00:00:00
+   Meaning: Timestamp/date of synchronization.
+
+32. accused_vid
+   Role: FK/link
+   Sample: 119729
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+
+t_accused_disposal
+------------------
+Purpose: Disposal/judgment/punishment outcome for the accused.
+Primary key: accused_disposal_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused disposal/punishment branch.
+Example key values: accused_disposal_srno=102; accused_vid=14; fir_reg_num=381010012600055; accused_srno=2041100525000434
+
+Columns
+~~~~~~~
+1. accused_disposal_srno
+   Role: PK
+   Sample: 102
+   Meaning: Unique accused disposal/punishment record id.
+   Linking significance: Primary key for t_accused_disposal.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. accused_disposal_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused disposal serial number.
+
+4. disposal_srno
+   Role: Data
+   Sample: 381010012600055001
+   Meaning: Field for disposal serial number.
+
+5. fir_reg_num
+   Role: Key/context
+   Sample: 381010012600055
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+6. accused_srno
+   Role: Key/context
+   Sample: 2041100525000434
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. accused_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused serial number.
+
+8. courtcase_num
+   Role: Data
+   Sample: CCN-2025-987
+   Meaning: Number/reference for courtcase.
+
+9. disposal_type_cd
+   Role: Lookup
+   Sample: 4
+   Meaning: Code value for disposal type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 4: Reason for leaving School/New -> Peer group influence; CIS Witness Types/New -> Prison Officer; Complaint NCR Status/New -> Enquiry Report Approved; Types of weakness/m_weakness -> Wealth (Money); Address Verification Status/New -> Address Verified - Criminal Record Found
+
+10. aquittal_reas_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for acquittal reason; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+11. punishment_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for punishment type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+12. petty_case_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for petty case.
+
+13. kalandra_acc_pers_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for kalandra acc person; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 
+
+14. accused_rcn_num
+   Role: Data
+   Sample: 76547899
+   Meaning: Number/reference for accused RCN.
+
+15. accused_ncn_num
+   Role: Data
+   Sample: 5436677
+   Meaning: Number/reference for accused NCN.
+
+16. punish_yrs
+   Role: Data
+   Sample: 
+   Meaning: Field for punish years.
+
+17. punish_mnth
+   Role: Data
+   Sample: 
+   Meaning: Field for punish month.
+
+18. punish_days
+   Role: Data
+   Sample: 
+   Meaning: Field for punish days.
+
+19. bond_yrs
+   Role: Data
+   Sample: 
+   Meaning: Field for bond years.
+
+20. bond_mnth
+   Role: Data
+   Sample: 
+   Meaning: Field for bond month.
+
+21. bond_days
+   Role: Data
+   Sample: 
+   Meaning: Field for bond days.
+
+22. bond_amount
+   Role: Data
+   Sample: 
+   Meaning: Field for bond amount.
+
+23. fine_amount
+   Role: Data
+   Sample: 
+   Meaning: Field for fine amount.
+
+24. juvenile_disposal_type_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for juvenile disposal type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+25. juv_hm_addr
+   Role: Data
+   Sample: 
+   Meaning: Field for juvenile hm address.
+
+26. juv_hm_name
+   Role: Data
+   Sample: 
+   Meaning: Name of juvenile hm.
+
+27. juv_fit_per_name
+   Role: Data
+   Sample: 
+   Meaning: Name of juvenile fit per.
+
+28. juv_fit_per_addr
+   Role: Data
+   Sample: 
+   Meaning: Field for juvenile fit per address.
+
+29. juv_fit_inst_addr
+   Role: Data
+   Sample: 
+   Meaning: Field for juvenile fit inst address.
+
+30. juv_fit_inst_name
+   Role: Data
+   Sample: 
+   Meaning: Name of juvenile fit inst.
+
+31. dirctn_frm_jjb
+   Role: Data
+   Sample: 
+   Meaning: Field for dirctn from jjb.
+
+32. juv_fine_amt
+   Role: Data
+   Sample: 
+   Meaning: Field for juvenile fine amt.
+
+33. is_compensation_req
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether compensation requested.
+
+34. cmpnsation_to_victim
+   Role: Data
+   Sample: 
+   Meaning: Field for cmpnsation to victim.
+
+35. cmpnsation_order_num
+   Role: Data
+   Sample: 
+   Meaning: Number/reference for cmpnsation order.
+
+36. compensation_amt
+   Role: Data
+   Sample: 
+   Meaning: Field for compensation amt.
+
+37. compensation_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff responsible for compensation.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+38. is_appeal_preferred
+   Role: Data
+   Sample: 
+   Meaning: Yes/no flag indicating whether appeal preferred.
+
+39. appeal_party_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for appeal party; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Sample value  not resolved from workbook master sample, or value is blank.
+
+40. appeal_period
+   Role: Data
+   Sample: 
+   Meaning: Field for appeal period.
+
+41. appeal_remarks
+   Role: Data
+   Sample: 
+   Meaning: Remarks/notes for appeal.
+
+42. is_fp_taken
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether fp taken.
+
+43. compensation_details
+   Role: Data
+   Sample: 
+   Meaning: Field for compensation details.
+
+44. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+45. record_created_on
+   Role: Data
+   Sample: 2026-05-14T13:02:26.609259
+   Meaning: Timestamp when the record was created.
+
+46. record_created_by
+   Role: Lookup
+   Sample: 654367
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 654367
+
+47. record_updated_on
+   Role: Data
+   Sample: 2026-05-14T09:29:43.867435
+   Meaning: Timestamp when the record was last updated.
+
+48. record_updated_by
+   Role: Lookup
+   Sample: 4370
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 4370
+
+49. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+50. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.
+
+51. accused_vid
+   Role: FK/link
+   Sample: 14
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+
+t_accused_appeal
+----------------
+Purpose: Appeal record for the accused after disposal/judgment.
+Primary key: accused_appeal_srno
+Connects to: t_fir_accused_info
+FK/link used: accused_vid
+Parent key: accused_vid
+Linking note: Direct accused appeal branch.
+Example key values: accused_appeal_srno=18; accused_vid=; fir_reg_num=204110052500718; accused_srno=20001
+
+Columns
+~~~~~~~
+1. accused_appeal_srno
+   Role: PK
+   Sample: 18
+   Meaning: Unique accused appeal record id.
+   Linking significance: Primary key for t_accused_appeal.
+
+2. lang_cd
+   Role: Lookup
+   Sample: 99
+   Meaning: Language code for the row.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code : OFFCL_LANG | Display: look_up_value | Workbook master examples for sample value 99: GD Sub-Types/New -> FIRING PRACTICE; Types of GD entry/m_gd_entry_type -> Inspection note; Types of court/m_court_type -> PRINCIPAL ASSISTANT SESSIONS JUDGE; Types of work place/m_work_place -> PARKING EDUCATIONAL INSTITUTION; Crime Head types/m_crime_head -> ENVIRONMENT
+
+3. accused_appeal_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused appeal serial number.
+
+4. fir_reg_num
+   Role: Key/context
+   Sample: 204110052500718
+   Meaning: FIR registration number/case identifier.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+5. accused_vid
+   Role: FK/link
+   Sample: 
+   Meaning: Unique version/row id of the accused profile.
+   Linking significance: Links this table to t_fir_accused_info using accused_vid.
+
+6. accused_srno
+   Role: Key/context
+   Sample: 20001
+   Meaning: Accused serial number within the FIR.
+   Linking significance: Helps preserve accused/FIR context or fallback joining.
+
+7. petty_case_num
+   Role: Data
+   Sample: 5678
+   Meaning: Number/reference for petty case.
+
+8. kalandra_acc_pers_cd
+   Role: Lookup
+   Sample: 100
+   Meaning: Code value for kalandra acc person; decode through lookup/master when mapped.
+   Lookup: Lookup source: ? | Display: ? | Sample value: 100
+
+9. accused_srno_migr
+   Role: Data
+   Sample: 
+   Meaning: Migrated/legacy value for accused serial number.
+
+10. appeal_result_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for appeal result; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+11. appeal_srno
+   Role: Data
+   Sample: 20411005250071810
+   Meaning: Field for appeal serial number.
+
+12. courtcase_num
+   Role: Data
+   Sample: CCN-2025-078
+   Meaning: Number/reference for courtcase.
+
+13. court_estbl_cd
+   Role: Lookup
+   Sample: 
+   Meaning: Code value for court establishment; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: 
+
+14. court_name_cd
+   Role: Lookup
+   Sample: string
+   Meaning: Code value for court name; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_court.court_cd | Display: court_name, court_type | Sample value: string
+
+15. is_punishment_retained
+   Role: Data
+   Sample: True
+   Meaning: Yes/no flag indicating whether punishment retained.
+
+16. punishment_nature
+   Role: Data
+   Sample: string
+   Meaning: Field for punishment nature.
+
+17. punishment_type_cd
+   Role: Lookup
+   Sample: 2
+   Meaning: Code value for punishment type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 2: Reason for leaving School/New -> Lack of interest in the school activities; Types of Occupations/m_occupation -> ACCOUNTANT; Brand of Mobiles/m_mb_device_brand -> MI; Types of weakness/m_weakness -> Wine; Address Verification Status/New -> Address Not Verified
+
+18. pub_prosecutor_name
+   Role: Data
+   Sample: string
+   Meaning: Name of pub prosecutor.
+
+19. detention_period
+   Role: Data
+   Sample: string
+   Meaning: Field for detention period.
+
+20. appeal_party_cd
+   Role: Lookup
+   Sample: 1
+   Meaning: Code value for appeal party; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 1: Types of advertise medium/m_advertise_medium -> Radio; Crime Head types/m_crime_head -> MURDER; Trial Stages/m_trial_stages -> PENDING ARGUMENT; Types of weakness/m_weakness -> Drugs; Address Verification Status/New -> Pending
+
+21. appeal_remarks
+   Role: Data
+   Sample: string
+   Meaning: Remarks/notes for appeal.
+
+22. bond_yrs
+   Role: Data
+   Sample: 2
+   Meaning: Field for bond years.
+
+23. bond_mnth
+   Role: Data
+   Sample: 6
+   Meaning: Field for bond month.
+
+24. bond_days
+   Role: Data
+   Sample: 15
+   Meaning: Field for bond days.
+
+25. bond_amount
+   Role: Data
+   Sample: 5000
+   Meaning: Field for bond amount.
+
+26. fine_amount
+   Role: Data
+   Sample: 1000
+   Meaning: Field for fine amount.
+
+27. disposal_type_cd
+   Role: Lookup
+   Sample: 3
+   Meaning: Code value for disposal type; decode through lookup/master when mapped.
+   Lookup: Lookup source: mdm.m_lookup_masters.look_up_code | Display: look_up_value | Workbook master examples for sample value 3: Types of other features/m_other_features -> REPETITIVE REMARKS; Reason for leaving School/New -> Indifferent attitude of the teachers; Security category/m_security_category -> Y Category; NCR action types/m_ncr_action -> No Action; Types of weakness/m_weakness -> Women
+
+28. compensation_details
+   Role: Data
+   Sample: string
+   Meaning: Field for compensation details.
+
+29. record_status
+   Role: Data
+   Sample: C
+   Meaning: Current record status flag such as created/updated/deleted.
+
+30. record_created_on
+   Role: Data
+   Sample: 2026-05-14T16:33:45.379257
+   Meaning: Timestamp when the record was created.
+
+31. record_created_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that created the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+32. record_updated_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp when the record was last updated.
+
+33. record_updated_by
+   Role: Lookup
+   Sample: 
+   Meaning: User/staff id that last updated the record.
+   Lookup: Lookup source: users.t_police_staff_info.staff_id | Display: first_name, middle_name, last_name, login_id | Sample value: 
+
+34. record_sync_from
+   Role: Data
+   Sample: 
+   Meaning: Source system/batch from which record was synchronized.
+
+35. record_sync_on
+   Role: Data
+   Sample: 
+   Meaning: Timestamp/date of synchronization.

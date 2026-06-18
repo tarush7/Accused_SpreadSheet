@@ -1,0 +1,675 @@
+Table_Name,Column_Name,Sample_Data,Database_Name.Table_Name.Column_Name,Look-up value
+t_fir_accused_info,accused_vid,119802,,
+,accused_srno,92681020110000210,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_srno_migr,92681020110000210,,
+,fir_accused_srno_migr,92681020110000210,,
+,fir_reg_num,381010012650004,,
+,crm_detail_srno,181828,,
+,crm_seq_num,15,,
+,reg_type_cd,25,mdm.m_lookup_masters.look_up_code : LINK_REG_TYPE,look_up_value
+,accused_rcn,RCN12345,,
+,accused_ncn,NCN54321,,
+,accused_known,true,,
+,first_name,Zulfiqar Hussan,,
+,middle_name,Zunoon,,
+,last_name,Zeya,,
+,first_name_eng,TEst TEst TEst,,
+,middle_name_eng,test data,,
+,last_name_eng,yadav,,
+,relation_type_cd,52,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value
+,relative_name,Zulfikar Ali,,
+,relative_name_eng,Suresh Sharma,,
+,othr_rel_type_cd,9,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value
+,othr_rel_name,ssssss,,
+,othr_rel_name_eng,sssssss,,
+,othr_rel_mobile_num,9999999999,,
+,age_type_cd,3,,
+,age_yrs,145,,
+,age_mnths,9,,
+,yob,2013,,
+,dob,2011-11-20,,
+,age_from_yrs,99,,
+,age_to_yrs,70,,
+,mobile_num,9988776655,,
+,telephone,91--51079690,,
+,email,yousaflankarckey@email.com,,
+,nationality_cd,209,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value
+,category_cd,5,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value
+,occupation_cd,216,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value
+,age_proof_type_cd,3,mdm.m_lookup_masters.look_up_code :JUV_AGE_PROOF,look_up_value
+,income_group_cd,7,mdm.m_lookup_masters.look_up_code : INCOME_GROUP,look_up_value
+,gender_cd,4,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value
+,religion_cd,12,mdm.m_lookup_masters.look_up_code : RELIGION,look_up_value
+,marital_status_cd,7,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value
+,edu_qual_cd,"[""8"",""17""]",mdm.m_lookup_masters.look_up_code : EDU_QUAL,look_up_value
+,is_accused_police,true,,
+,is_acc_pol_witnin_ps,false,,
+,police_gpf_num,0,,
+,police_office_name,N/A,,
+,acc_police_cd,14271510911575,,
+,is_proclaimed_offender,true,,
+,is_accused_infirm,true,,
+,has_dysp_apprv_taken,true,,
+,has_dysp_apprv,false,,
+,dysp_apprv_dt,2026-03-01T10:15:30,,
+,sent_to_dysp_dt,2026-05-19T12:51:07.443815,,
+,dysp_sending_remrk,Sent for approval,,
+,dysp_login_id,2001,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,dysp_app_rej_remrk,Approved,,
+,accused_priority,362,,
+,is_juvenile,true,,
+,is_accused_disable,true,,
+,physical_cond_cd,5,mdm.m_lookup_masters.look_up_code,look_up_value
+,is_age_proof_req,true,,
+,is_med_exam_req,true,,
+,rel_mobile_num,9999999999,,
+,rel_telephone,1212121233213213123,,
+,height_from_cm,99.06,,
+,height_to_cm,99.06,,
+,is_photo_taken,true,,
+,criminal_gang_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,injury_details,No visible injury,,
+,arrest_type_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,arr_surr_srno,3810100426000007,,
+,surrenderd_estbl_cd,EST123,mdm.m_court.court_cd,"court_name, court_type"
+,arrest_surr_stat_id,10,mdm.m_state.state_id,"state, state_cd"
+,arrest_surr_dist_id,101,mdm.m_district.district_id,"district, district_cd"
+,acc_surr_magistrate,Name Name Name Name,,
+,arrest_surr_dt,2026-05-26T11:41:00,,
+,arrest_action_taken_cd,7,mdm.m_lookup_masters.look_up_code,look_up_value
+,is_re_arrested,true,,
+,re_arr_surr_srno,0,,
+,custody_action_other,Produced before magistrate,,
+,arr_intimate_rel_cd,28,mdm.m_lookup_masters.look_up_code,look_up_value
+,arr_intimate_rel_name,Suresh Patil,,
+,arr_intimate_dt,2026-05-25T00:09:00,,
+,arr_intimate_mode_cd,7,mdm.m_lookup_masters.look_up_code,look_up_value
+,is_acc_fp_taken,true,,
+,is_acc_fp_chance,true,,
+,is_acc_dangerous,true,,
+,has_acc_prev_jump_bail,true,,
+,is_acc_gen_armed,true,,
+,is_acc_operates_accompl,true,,
+,is_acc_known_criminal,true,,
+,is_acc_recidivist,true,,
+,does_acc_likely_jump_bail,true,,
+,after_bail_commits_crime,true,,
+,is_wanted_other_case,true,,
+,accused_status_cd,26,mdm.m_lookup_masters.look_up_code,look_up_value
+,crpi_id,CRPI123456,,
+,eprison_id,EPR123456,,
+,other_occupation,Tourist at Leh,,
+,other_living_status,Tenant,,
+,interro_srno,5001,,
+,blood_group_cd,9,mdm.m_lookup_masters.look_up_code : BLOOD_GROUP,look_up_value
+,intimation_given_to,Family,,
+,oth_identification_marks,Yet to find,,
+,bg_report_srno,3001,,
+,record_status,D,,
+,record_created_on,2026-05-26T16:17:13.520216,,
+,record_created_by,4891,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-05-26T16:17:13.520224,,
+,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_on,2026-03-16T00:00:00,,
+,record_sync_from,MIGR_BATCH_1_2026-05-15_14_21,,
+,social_media,"[{""id"":""ffff1d51-7f93-490f-9785-da91c45084c9"",""socialMediaUrl"":""test1234567890"",""socialMediaTypeCd"":5}]",,
+,language_used,"[""Hindi"",""Eng""]",,
+,alias,"[{""id"":null,""alias"":""test data"",""aliasEng"":""test data""}]",,
+,other_reg_type_cd,0,mdm.m_lookup_masters.look_up_code : LINK_REG_TYPE,look_up_value
+,other_reg_num,0,,
+,arrest_surr_ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd"
+,is_med_assis_req,null,,
+,med_mode_of_transport,null,,
+,nfn_num,null,,
+,build_type_cd,6,mdm.m_lookup_masters.look_up_code,look_up_value
+,complexion_type_cd,570,mdm.m_lookup_masters.look_up_code,look_up_value
+,living_status_cd,9,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value
+t_arrest_memo,arr_surr_srno,3810100426000007,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_vid,119793,,
+,accused_srno,92681020110000205,,
+,fir_accused_srno,92681020110000205,,
+,accused_srno_migr,92681020110000205,,
+,state_id,27,mdm.m_state.state_id,"state, state_cd"
+,district_id,20411,mdm.m_district.district_id,"district, district_cd"
+,ps_id,20411020,mdm.m_police_station.ps_id,"ps, ps_cd"
+,arrest_srno,null,,
+,arrest_year,2026,,
+,fir_reg_num,381010012600041,,
+,is_from_gd,true,,
+,gd_num,GD2025/02,,
+,gt_dt,2026-05-26T11:41:21.18,,
+,petty_case_num,38101001260065,,
+,petty_case_dt,2026-05-26T11:04:00.805289,,
+,kalandra_acc_srno,3454353535,,
+,is_arr_by_warrnt,true,,
+,warrant_type,NBW,,
+,warrant_num,WR-2026-001,,
+,warrant_issue_dt,2026-05-25T00:03:00,,
+,court_order_dt,2026-04-09T11:00:00,,
+,court_order_no,CO987654321,,
+,warrant_details,Non-bailable warrant details,,
+,arrest_type_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,arrest_surrender_dt,2026-05-26T11:41:00,,
+,arrest_alphanum,Zemasthang,,
+,first_name,Zulfikar Ali,,
+,middle_name,Zunoon,,
+,last_name,Yountan,,
+,first_name_eng,TEst TEst TEst,,
+,middle_name_eng,Kumar,,
+,last_name_eng,Verma,,
+,is_re_arrested,true,,
+,re_arr_surr_srno,2041100526000574,,
+,relation_type_cd,52,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value
+,relative_name,Zulfikar Ali,,
+,relative_name_eng,Suresh Patil,,
+,relative_alias,,,
+,rel_mobile_num,9876543212,,
+,rel_telephone,1212121233213213123,,
+,othr_rel_type_cd,9,mdm.m_lookup_masters.look_up_code,look_up_value
+,othr_rel_name,NA,,
+,othr_rel_name_eng,othrRelNameEng,,
+,othr_rel_mobile_num,9876543211,,
+,religion_cd,12,mdm.m_lookup_masters.look_up_code : RELIGION,look_up_value
+,national_id_type_cd,null,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value
+,gender_cd,4,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value
+,category_cd,5,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value
+,edu_qual_cd,[null],mdm.m_lookup_masters.look_up_code : EDU_QUAL,look_up_value
+,living_status_cd,25,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value
+,marital_status_cd,7,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value
+,occupation_cd,216,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value
+,age_proof_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,lang_dialect_cd,0,mdm.m_lookup_masters.look_up_code : LANG_DIALECTS,look_up_value
+,age_type_cd,111,mdm.m_lookup_masters.look_up_code,look_up_value
+,age_yrs,82,,
+,age_months,11,,
+,yob,2007,,
+,dob,2007-06-10T00:00:00,,
+,age_from_yrs,56,,
+,age_to_yrs,50,,
+,is_age_proof_req,true,,
+,mobile_num,9988776655,,
+,telephone,9876543212,,
+,email,test@test.com,,
+,nationality_cd,1234,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value
+,language_dialect_cd,0,mdm.m_lookup_masters.look_up_code : LANG_DIALECTS,look_up_value
+,oth_identification_marks,unknown dont know his blood group,,
+,blood_group_cd,7,mdm.m_lookup_masters.look_up_code : BLOOD_GROUP,look_up_value
+,income_group_cd,6,mdm.m_lookup_masters.look_up_code : INCOME_GROUP,look_up_value
+,height_from_cm,97,,
+,height_to_cm,99.06,,
+,weight_kg,0,,
+,eprison_pid,null,,
+,arrested_by_others,SI Tashi Gyaltson No EXK109518,,
+,arrested_by_pis_cd,50001,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,arr_from_district_cd,38102,mdm.m_lookup_masters.look_up_code,look_up_value
+,arrest_beat_cd,409503001,mdm.m_lookup_masters.look_up_code,look_up_value
+,major_place_type_cd,31,mdm.m_lookup_masters.look_up_code,look_up_value
+,minor_place_type_cd,401,mdm.m_lookup_masters.look_up_code,look_up_value
+,is_arrested_infirm,true,,
+,sent_to_dysp_dt,null,,
+,dysp_sending_remrk,null,,
+,dysp_login_id,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,has_dysp_apprv,false,,
+,dysp_app_rej_remrk,null,,
+,has_dysp_apprv_taken,false,,
+,dysp_apprv_dt,null,,
+,is_arrested_police,false,,
+,arrested_police_cd,38102015,mdm.m_lookup_masters.look_up_code,look_up_value
+,surrend_in_court_cd,N,mdm.m_court.court_cd,"court_name, court_type"
+,surrend_magistrate,Women Police Station Leh,,
+,arrest_action_taken_cd,11,mdm.m_lookup_masters.look_up_code,look_up_value
+,custody_action_other,Produced before magistrate,,
+,arrest_status_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,court_order_details,null,,
+,is_arrest_photo_taken,true,,
+,belong_to_crime_gang,false,,
+,criminal_gang_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,injury_details,Simple Injuy,,
+,is_med_exam_req,true,,
+,arrest_reason,null,,
+,io_cd,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,pers_search_gd_num,null,,
+,person_search_dt,null,,
+,pers_search_location,null,,
+,person_search_reason,null,,
+,prop_found_detail,null,,
+,pers_search_remarks,null,,
+,is_relat_intimated,true,,
+,intimate_rel_type_cd,52,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value
+,intimate_rel_name,Zulqarnan,,
+,intimate_dt,2026-05-26T11:37:00,,
+,intimation_given_to,Zulqarnan,,
+,intimate_mode_cd,8,,
+,is_int_mob_verif,false,,
+,intimate_mob_num,null,,
+,intimate_mode_detail,test@test.com,,
+,intimation_remarks,VarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarun,,
+,is_arr_grnd_comm,true,,
+,pres_int_rel_addr_migr,3810201123040000011,,
+,perm_int_rel_addr_migr,3810201123040000012,,
+,is_fp_taken,true,,
+,is_fp_chance,false,,
+,is_dangerous,true,,
+,is_accused_disable,true,,
+,physical_cond_cd,5,mdm.m_lookup_masters.look_up_code,look_up_value
+,has_prev_jump_bail,true,,
+,prev_jump_bail_details,Jumped bail in 2023 robbery case,,
+,is_generally_armed,true,,
+,operates_with_accomplish,true,,
+,is_known_criminal,true,,
+,known_criminal_details,Listed as known offender in district record,,
+,is_recidivist,true,,
+,likely_jumps_bail,true,,
+,after_bail_commits_crime,true,,
+,wanted_other_case,true,,
+,wanted_case_details,Wanted in a burglary case in Mumbai,,
+,prev_conviction_detail,null,,
+,present_address_1_cd_migr,null,,
+,present_address_2_cd_migr,null,,
+,present_address_3_cd_migr,null,,
+,permanent_address_cd_migr,null,,
+,surr_ps_intimate_dt,2026-05-26T11:41:00,,
+,is_photo_taken,true,,
+,is_arr_perm_taken,true,,
+,is_info_verified,true,,
+,court_estbl_cd,null,mdm.m_court.court_cd,"court_name, court_type"
+,court_name,"District Court, Mumbai",,
+,evidence_type_cd,0,,
+,id_type_cd,null,,
+,is_proclaimed_offender,true,,
+,other_living_status,With his family,,
+,arrest_place,zemsthang bridge titi chumik,,
+,other_occupation,Tourist at Leh,,
+,any_other_details,VarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVarunVa...,,
+,fir_copy_given_to,firCopyGivenTo,,
+,offender_details,yes verifade,,
+,arrest_circumstances,"US 3314,305 BNS",,
+,arrest_strength_warrant,null,,
+,record_status,C,,
+,record_created_on,2026-05-26T11:44:10.197112,,
+,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-04-10T15:51:09.415755,,
+,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,MIGR_BATCH_1_2026-05-18_10_58,,
+,record_sync_on,2026-03-16T00:00:00,,
+,alias,"[{""id"":""f9fb5dac-b5fb-4252-9861-a09ca2aacfae"",""alias"":""lllkkmmnnjj"",""aliasEng"":""hgfoa""}]",,
+,social_media,"[{""id"":""ffff1d51-7f93-490f-9785-da91c45084c9"",""socialMediaUrl"":""test1234567890"",""socialMediaTypeCd"":5}]",,
+,build_type_cd,5,mdm.m_lookup_masters.look_up_code,look_up_value
+,complexion_type_cd,15,mdm.m_lookup_masters.look_up_code,look_up_value
+,arr_from_state_id,77,mdm.m_state.state_id,"state, state_cd"
+,arr_from_district_id,2071,mdm.m_district.district_id,"district, district_cd"
+,arr_from_ps_id,42659,mdm.m_police_station.ps_id,"ps, ps_cd"
+t_accused_bail_details,bailer_srno,77,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_srno,null,,
+,request_from,null,,
+,bailer_srno_migr,null,,
+,accused_srno_migr,null,,
+,fir_reg_num,204110052600002,,
+,arr_surr_srno,3810100126000012,,
+,bail_grant_dt,2026-05-15T14:04:31.041329,,
+,bail_gd_num,381010012205202610270374,,
+,case_diary_srno,1212,,
+,case_diary_num,3333323233,,
+,bail_by_pol_court,P,,
+,bail_release_dt,null,,
+,bail_type_cd,4,mdm.m_lookup_masters.look_up_code,look_up_value
+,bail_given_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,bail_court_cd,ANPB01,mdm.m_court.court_cd,"court_name, court_type"
+,bail_court_name,"District and Sessions Judge, Port Blair, Andaman",,
+,advocate_name,Advocate Name,,
+,bail_hearing_dt,null,,
+,is_surety_avlble,true,,
+,bail_start_dt,2026-05-18T15:47:48.058398,,
+,bail_end_dt,2026-12-10T18:18:52.089106,,
+,bail_conditions,Temporary,,
+,bail_io_recomended,null,,
+,bail_io_remarks,null,,
+,bail_sho_recomended,null,,
+,bail_sho_remarks,null,,
+,bail_oppose_comments,Bail Ni deni,,
+,bail_oppose_remarks,null,,
+,bail_status,2,,
+,petty_case_num,null,,
+,kalandra_acc_srno,null,,
+,is_message_sent,false,,
+,record_status,C,,
+,record_created_on,2026-05-26T14:36:17.025372,,
+,record_created_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-05-14T12:31:18.572781,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,accused_vid,null,,
+,is_bail_cancelled,null,,
+,bail_cancel_reason,null,,
+,bail_cancelled_on,null,,
+,bail_cancel_estbl_cd,null,mdm.m_court.court_cd,"court_name, court_type"
+t_accused_chargesheet,chargesheet_srno,4761,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,chargesheet_srno_migr,3810201125000601001,,
+,accused_srno,92681020110000208,,
+,accused_srno_migr,92681020110000208,,
+,fir_reg_num,381010012600017,,
+,accused_rcn,no,,
+,final_rep_srno,38101001260001701,,
+,is_chrgsheeted,true,,
+,is_chargesheet_original,true,,
+,chargesheet_num,38101001260001701,,
+,chargesheet_dt,2025-09-26T00:00:00,,
+,court_case_num,null,,
+,committal_case_num,null,,
+,fr_dispatch_dt,1900-01-01T00:00:00,,
+,fr_court_frwd_dt,2026-03-23T00:00:00,,
+,fr_court_code,null,,
+,accused_status_cd,18,mdm.m_lookup_masters.look_up_code,look_up_value
+,accused_priority,null,,
+,chargesheet_verified_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,is_suspicion_approved,true,,
+,not_chargesheet_remark,مذکورہ ابراہم خان اسی ماروتی کار کو لیکر اپنی گھر شکر چکتن چلا گیا ہے۔ جہاں پر مذکورہ مورخہ 09.01.2026 کے روز اپنی ممی کو تعزیت پر ائے ہوئے لوگوں کی خا طر دا ری کرتا رہا ہے۔ دوس...,,
+,other_remarks,عد م اتسلم الو قو ع آیکسڈ ٹیل یکسو,,
+,accused_uniq_num,92681020110000203,,
+,record_status,U,,
+,record_created_on,2026-05-15T17:41:27.164493,,
+,record_created_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-03-26T17:11:00.911584,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,MIGR_BATCH_1_2026-05-15_15_37,,
+,record_sync_on,2026-03-16T00:00:00,,
+,accused_vid,119729,,
+t_accused_disposal,accused_disposal_srno,102,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_disposal_srno_migr,null,,
+,disposal_srno,381010012600055001,,
+,fir_reg_num,381010012600055,,
+,accused_srno,2041100525000434,,
+,accused_srno_migr,null,,
+,courtcase_num,CCN-2025-987,,
+,disposal_type_cd,4,mdm.m_lookup_masters.look_up_code,look_up_value
+,aquittal_reas_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,punishment_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,petty_case_num,null,,
+,kalandra_acc_pers_cd,null,,
+,accused_rcn_num,76547899,,
+,accused_ncn_num,5436677,,
+,punish_yrs,null,,
+,punish_mnth,null,,
+,punish_days,null,,
+,bond_yrs,null,,
+,bond_mnth,null,,
+,bond_days,null,,
+,bond_amount,null,,
+,fine_amount,null,,
+,juvenile_disposal_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,juv_hm_addr,null,,
+,juv_hm_name,null,,
+,juv_fit_per_name,null,,
+,juv_fit_per_addr,null,,
+,juv_fit_inst_addr,null,,
+,juv_fit_inst_name,null,,
+,dirctn_frm_jjb,null,,
+,juv_fine_amt,null,,
+,is_compensation_req,true,,
+,cmpnsation_to_victim,null,,
+,cmpnsation_order_num,null,,
+,compensation_amt,null,,
+,compensation_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,is_appeal_preferred,null,,
+,appeal_party_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,appeal_period,null,,
+,appeal_remarks,null,,
+,is_fp_taken,true,,
+,compensation_details,null,,
+,record_status,C,,
+,record_created_on,2026-05-14T13:02:26.609259,,
+,record_created_by,654367,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-05-14T09:29:43.867435,,
+,record_updated_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,accused_vid,14,,
+t_accused_appeal,accused_appeal_srno,18,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_appeal_srno_migr,null,,
+,fir_reg_num,204110052500718,,
+,accused_vid,null,,
+,accused_srno,20001,,
+,petty_case_num,5678,,
+,kalandra_acc_pers_cd,100,,
+,accused_srno_migr,null,,
+,appeal_result_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,appeal_srno,20411005250071810,,
+,courtcase_num,CCN-2025-078,,
+,court_estbl_cd,null,mdm.m_court.court_cd,"court_name, court_type"
+,court_name_cd,string,mdm.m_court.court_cd,"court_name, court_type"
+,is_punishment_retained,true,,
+,punishment_nature,string,,
+,punishment_type_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,pub_prosecutor_name,string,,
+,detention_period,string,,
+,appeal_party_cd,1,mdm.m_lookup_masters.look_up_code,look_up_value
+,appeal_remarks,string,,
+,bond_yrs,2,,
+,bond_mnth,6,,
+,bond_days,15,,
+,bond_amount,5000,,
+,fine_amount,1000,,
+,disposal_type_cd,3,mdm.m_lookup_masters.look_up_code,look_up_value
+,compensation_details,string,,
+,record_status,C,,
+,record_created_on,2026-05-14T16:33:45.379257,,
+,record_created_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+t_accused_remand,remand_srno,3810100126001,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,remand_srno_migr,null,,
+,accused_srno_migr,null,,
+,accused_srno,2041100526000018,,
+,arr_surr_srno,2041100526000018,,
+,fir_reg_num,204110052600005,,
+,remand_type,1,mdm.m_lookup_masters.look_up_code,look_up_value
+,remand_days_req,5,,
+,remand_days_sanc,null,,
+,remand_reason,For further investigation and evidence collection,,
+,remand_req_frm_dt,2025-08-18T10:00:00,,
+,remand_req_to_dt,2025-08-23T10:00:00,,
+,is_transit_othr_state,false,,
+,remand_sanc_dt,null,,
+,remand_io_cd,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,remand_court_cd,MLSO01,mdm.m_court.court_cd,"court_name, court_type"
+,remand_jail_cd,null,mdm.m_jail.jail_cd,jail_name
+,court_order_no,null,,
+,court_order_dt,null,,
+,remand_court_name,District Court Indore,,
+,remand_extn_justf,null,,
+,remand_extn_days,null,,
+,remand_extn_till_dt,null,,
+,remand_sanc_type,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,remand_status,REQUESTED,,
+,record_status,C,,
+,record_created_on,2026-04-21T11:57:43.635207,,
+,record_created_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,accused_vid,null,,
+t_accused_procl_offender,procl_offend_srno,12412,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,accused_srno_migr,null,,
+,fir_reg_num,381010012600017,,
+,accused_srno,38101001260000015,,
+,procl_offend_cd_srno,null,,
+,procl_offend_cd_dt,null,,
+,procl_court_estbl_cd,LDLH01,mdm.m_court.court_cd,"court_name, court_type"
+,procl_offend_court_name,dscsdcsddccdc,,
+,procl_offend_court_loc,null,,
+,procl_offend_remarks,gbgfdbgfdbgfbfgb,,
+,procl_offend_order_num,52311,,
+,procl_offend_order_dt,2026-05-13T00:00:00,,
+,is_procl_read_out,true,,
+,reason_procl_read_out,dcdsdscds,,
+,is_video_recorded,true,,
+,reason_video_recorded,null,,
+,is_video_attach,true,,
+,reason_video_attach,dcadscdsacsd,,
+,is_house_identified,true,,
+,reason_house_identified,null,,
+,is_house_photo_capture,true,,
+,reason_house_photo_capture,null,,
+,is_house_photo_attach,true,,
+,reason_house_photo_attach,dcsacdss,,
+,is_procl_affixed,true,,
+,reason_procl_affixed,null,,
+,is_affixed_photo_capture,true,,
+,reason_affixed_photo_capture,dcsacasdc,,
+,is_homestead_photo_attach,true,,
+,reason_homestead_photo_attach,null,,
+,record_status,D,,
+,record_created_on,2026-05-26T09:52:21.832142,,
+,record_created_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,2026-05-26T09:51:05.9271,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,accused_vid,107342,,
+,case_diary_srno,null,,
+t_fir_multi_accused,fir_multi_acc_srno,16,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,crm_multi_acc_srno_migr,null,,
+,fir_reg_num,381010012600043,,
+,accused_vid,119755,,
+,accused_srno,3810100126000042,,
+,exist_fir_reg_num,null,,
+,exist_accused_srno,null,,
+,exist_accused_uniq_num,null,,
+,full_name,Ramu singh bhagat,,
+,record_status,C,,
+,record_created_on,2026-05-19T10:18:06.034742,,
+,record_created_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+t_fir_notice_requests_accused,accused_person_cd,22,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,notice_req_num,38101001260025,,
+,accused_person_cd_migr,null,,
+,fir_accused_srno,0,,
+,accused_srno,0,,
+,crm_detail_srno,0,,
+,crm_seq_num,0,,
+,acc_first_name,Kushagra,,
+,acc_middle_name,null,,
+,acc_last_name,Srivastava,,
+,acc_full_name,null,,
+,acc_alias,string,,
+,acc_relation_type_cd,1,mdm.m_lookup_masters.look_up_code,look_up_value
+,acc_relative_name,Relative,,
+,acc_age_yrs,25,,
+,acc_age_months,0,,
+,acc_yob,0,,
+,acc_dob,2000-05-04T00:00:00,,
+,acc_age_from_yrs,0,,
+,acc_age_to_yrs,0,,
+,acc_gender_cd,2,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value
+,acc_mob_std_cd,91,mdm.m_lookup_masters.look_up_code,look_up_value
+,acc_mobile_num,9648844469,,
+,acc_telephone,string,,
+,acc_email,email@gmail.com,,
+,acc_nationality_cd,null,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value
+,is_complainant_avl,null,,
+,compl_name,string,,
+,compl_relation_type_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,compl_relative_name,string,,
+,is_accused_suspect,null,,
+,record_status,C,,
+,record_created_on,2026-05-21T15:34:24.779324,,
+,record_created_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+t_freezing_order_accused,accused_person_cd,14,,
+,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,notice_req_num,38101001260013,,
+,accused_person_cd_migr,null,,
+,fir_accused_srno,0,,
+,accused_srno,0,,
+,crm_detail_srno,0,,
+,crm_seq_num,0,,
+,acc_first_name,Unknown1,,
+,acc_middle_name,string,,
+,acc_last_name,string,,
+,acc_full_name,Unknown1 dfadsfasd Sharma,,
+,acc_relation_type_cd,5,mdm.m_lookup_masters.look_up_code,look_up_value
+,acc_relative_name,Unknown,,
+,acc_age_yrs,21,,
+,acc_age_months,3,,
+,acc_yob,0,,
+,acc_dob,2026-05-04T00:00:00,,
+,acc_age_from_yrs,0,,
+,acc_age_to_yrs,0,,
+,acc_gender_cd,3,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value
+,acc_mobile_num,9615757999,,
+,acc_telephone,string,,
+,acc_email,string,,
+,acc_nationality_cd,null,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value
+,is_complainant_avl,null,,
+,compl_name,string,,
+,compl_relation_type_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,compl_relative_name,string,,
+,is_accused_suspect,null,,
+,action_remarks,null,,
+,record_status,C,,
+,record_created_on,2026-05-21T15:34:55.540707,,
+,record_created_by,0,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,accused_vid,null,,
+,acc_alias,string,,
+t_summon_warrant,summ_warr_num,null,,
+,lang_cd,null,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
+,trial_srno,null,,
+,fir_reg_num,null,,
+,ncr_reg_num,null,,
+,petty_case_num,null,,
+,court_case_num,null,,
+,summ_warr_nature,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,warr_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,notice_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,iss_to_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,notice_oth_src,null,,
+,issue_dt,null,,
+,iss_to_pers_cd,null,,
+,iss_to_io_cd,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,to_be_fwd_not,null,,
+,receiv_ps_dt,null,,
+,delv_status,null,,
+,exec_pol_cd,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,exec_last_dt,null,,
+,exec_dt,null,,
+,exec_type_cd,null,mdm.m_lookup_masters.look_up_code,look_up_value
+,exec_cnt,null,,
+,exec_remarks,null,,
+,next_hearing_dt,null,,
+,final_rep_srno,null,,
+,sent_to_address_cd,null,,
+,accused_type_cd,null,mdm.m_lookup_masters.look_up_code : ACCUSED_FROM_TYPE,look_up_value
+,is_message_sent,null,,
+,record_status,null,,
+,record_created_on,null,,
+,record_created_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_on,null,,
+,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_sync_from,null,,
+,record_sync_on,null,,
+,exec_district_id,null,mdm.m_district.district_id,"district, district_cd"
+,exec_ps_id,null,mdm.m_police_station.ps_id,"ps, ps_cd"
+,exec_state_id,null,mdm.m_state.state_id,"state, state_cd"
+,receiv_ps_id,null,mdm.m_police_station.ps_id,"ps, ps_cd"
