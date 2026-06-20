@@ -8,8 +8,8 @@ t_fir_accused_info,accused_vid,119802,,
 ,crm_detail_srno,181828,,
 ,crm_seq_num,15,,
 ,reg_type_cd,25,mdm.m_lookup_masters.look_up_code : LINK_REG_TYPE,look_up_value
-,accused_rcn,RCN12345,,
-,accused_ncn,NCN54321,,
+,accused_rcn,RCN12345,,,doubt
+,accused_ncn,NCN54321,,,doubt
 ,accused_known,true,,
 ,first_name,Zulfiqar Hussan,,
 ,middle_name,Zunoon,,
@@ -55,12 +55,12 @@ t_fir_accused_info,accused_vid,119802,,
 ,dysp_apprv_dt,2026-03-01T10:15:30,,
 ,sent_to_dysp_dt,2026-05-19T12:51:07.443815,,
 ,dysp_sending_remrk,Sent for approval,,
-,dysp_login_id,2001,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,dysp_login_id,2001,??,??
 ,dysp_app_rej_remrk,Approved,,
 ,accused_priority,362,,
 ,is_juvenile,true,,
 ,is_accused_disable,true,,
-,physical_cond_cd,5,mdm.m_lookup_masters.look_up_code,look_up_value
+,physical_cond_cd,5,??,??
 ,is_age_proof_req,true,,
 ,is_med_exam_req,true,,
 ,rel_mobile_num,9999999999,,
@@ -68,23 +68,23 @@ t_fir_accused_info,accused_vid,119802,,
 ,height_from_cm,99.06,,
 ,height_to_cm,99.06,,
 ,is_photo_taken,true,,
-,criminal_gang_cd,0,mdm.m_lookup_masters.look_up_code,look_up_value
+,criminal_gang_cd,0,??,??
 ,injury_details,No visible injury,,
-,arrest_type_cd,2,mdm.m_lookup_masters.look_up_code,look_up_value
+,arrest_type_cd,2,mdm.m_lookup_masters.look_up_code :ARR_SURR_TYPE,look_up_value
 ,arr_surr_srno,3810100426000007,,
-,surrenderd_estbl_cd,EST123,mdm.m_court.court_cd,"court_name, court_type"
+,surrenderd_estbl_cd,EST123,??,??
 ,arrest_surr_stat_id,10,mdm.m_state.state_id,"state, state_cd"
 ,arrest_surr_dist_id,101,mdm.m_district.district_id,"district, district_cd"
 ,acc_surr_magistrate,Name Name Name Name,,
 ,arrest_surr_dt,2026-05-26T11:41:00,,
-,arrest_action_taken_cd,7,mdm.m_lookup_masters.look_up_code,look_up_value
+,arrest_action_taken_cd,7,mdm.m_lookup_masters.look_up_code :ARRST_ACTN,look_up_value
 ,is_re_arrested,true,,
 ,re_arr_surr_srno,0,,
 ,custody_action_other,Produced before magistrate,,
-,arr_intimate_rel_cd,28,mdm.m_lookup_masters.look_up_code,look_up_value
+,arr_intimate_rel_cd,28,??,??
 ,arr_intimate_rel_name,Suresh Patil,,
 ,arr_intimate_dt,2026-05-25T00:09:00,,
-,arr_intimate_mode_cd,7,mdm.m_lookup_masters.look_up_code,look_up_value
+,arr_intimate_mode_cd,7,??,??
 ,is_acc_fp_taken,true,,
 ,is_acc_fp_chance,true,,
 ,is_acc_dangerous,true,,
@@ -96,7 +96,7 @@ t_fir_accused_info,accused_vid,119802,,
 ,does_acc_likely_jump_bail,true,,
 ,after_bail_commits_crime,true,,
 ,is_wanted_other_case,true,,
-,accused_status_cd,26,mdm.m_lookup_masters.look_up_code,look_up_value
+,accused_status_cd,26,mdm.m_lookup_masters.look_up_code :ACC_STATUS,look_up_value
 ,crpi_id,CRPI123456,,
 ,eprison_id,EPR123456,,
 ,other_occupation,Tourist at Leh,,
@@ -108,9 +108,9 @@ t_fir_accused_info,accused_vid,119802,,
 ,bg_report_srno,3001,,
 ,record_status,D,,
 ,record_created_on,2026-05-26T16:17:13.520216,,
-,record_created_by,4891,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_created_by,4891,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc"
 ,record_updated_on,2026-05-26T16:17:13.520224,,
-,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id"
+,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc"
 ,record_sync_on,2026-03-16T00:00:00,,
 ,record_sync_from,MIGR_BATCH_1_2026-05-15_14_21,,
 ,social_media,"[{""id"":""ffff1d51-7f93-490f-9785-da91c45084c9"",""socialMediaUrl"":""test1234567890"",""socialMediaTypeCd"":5}]",,
@@ -122,8 +122,8 @@ t_fir_accused_info,accused_vid,119802,,
 ,is_med_assis_req,null,,
 ,med_mode_of_transport,null,,
 ,nfn_num,null,,
-,build_type_cd,6,mdm.m_lookup_masters.look_up_code,look_up_value
-,complexion_type_cd,570,mdm.m_lookup_masters.look_up_code,look_up_value
+,build_type_cd,6,mdm.m_lookup_masters.look_up_code :PHY_FEAT_PCODE_BUILD,look_up_value
+,complexion_type_cd,570,mdm.m_lookup_masters.look_up_code :PHY_FEAT_PCODE_COMPL,look_up_value
 ,living_status_cd,9,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value
 t_arrest_memo,arr_surr_srno,3810100426000007,,
 ,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value
