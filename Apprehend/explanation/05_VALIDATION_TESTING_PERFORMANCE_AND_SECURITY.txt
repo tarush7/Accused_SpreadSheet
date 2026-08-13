@@ -1,0 +1,441 @@
+VALIDATION, TESTING, PERFORMANCE AND SECURITY
+=============================================
+
+1. WHY COMPILATION IS NOT ENOUGH
+--------------------------------
+
+A SQL function can compile and still be wrong because it may:
+
+    - Use incorrect JSON names.
+    - Place fields at the wrong nesting level.
+    - Return a number where Java returns a string.
+    - Include deleted records.
+    - Resolve the wrong lookup category/language.
+    - Duplicate child records.
+    - Return null instead of [].
+    - Miss Java calculations or external enrichment.
+
+Validation must prove contract equivalence, not just syntax.
+
+
+2. TEST DATA MATRIX
+-------------------
+
+Choose multiple records, not one convenient sample.
+
+Case A - complete record
+    Has values in most root fields and every child section.
+
+Case B - sparse record
+    Many nullable fields and no optional children.
+
+Case C - multiple children
+    Several files, witnesses, addresses and background children.
+
+Case D - missing master data
+    Raw code exists but lookup label does not.
+
+Case E - multilingual
+    Same/similar record queried under different language behavior.
+
+Case F - migrated record
+    Populated *_migr and record_sync_* fields.
+
+Case G - status variations
+    Active/current/deleted/history children if those exist.
+
+Case H - unknown identifier
+    No root row.
+
+Case I - large record
+    Many children for performance and response-size testing.
+
+
+3. BASIC DATABASE TESTS
+-----------------------
+
+Valid call:
+
+    SELECT jsonb_pretty(
+        apprehend.get_apprehend_json(<known_id>)
+    );
+
+Root ID check:
+
+    SELECT apprehend.get_apprehend_json(<known_id>)
+           ->> 'apprehendSrno';
+
+Missing record:
+
+    SELECT apprehend.get_apprehend_json(-1);
+
+Validate JSON type:
+
+    SELECT jsonb_typeof(
+        apprehend.get_apprehend_json(<known_id>)
+    );
+
+Expected top-level type is usually object.
+
+
+4. CHILD COUNT RECONCILIATION
+-----------------------------
+
+For each child array compare function count with direct table count.
+
+Function:
+
+    SELECT jsonb_array_length(
+        apprehend.get_apprehend_json(<id>)->'<javaChildKey>'
+    );
+
+Table:
+
+    SELECT count(*)
+    FROM <schema>.t_apprehend_files
+    WHERE apprehend_srno = <id>
+      AND <same confirmed status filter>;
+
+Counts must match unless Java deliberately groups/filters records differently.
+
+
+5. DUPLICATE-ID CHECK
+---------------------
+
+Example conceptual check:
+
+    WITH result AS (
+        SELECT apprehend.get_apprehend_json(<id>) AS doc
+    )
+    SELECT
+        file->>'id' AS id,
+        count(*)
+    FROM result,
+         jsonb_array_elements(doc->'<fileKey>') file
+    GROUP BY file->>'id'
+    HAVING count(*) > 1;
+
+Expected result: no rows, unless Java intentionally repeats something.
+
+
+6. NESTED RELATIONSHIP TEST
+---------------------------
+
+For each witness:
+
+    - Read witness primary key from JSON.
+    - Count JSON addressGrid.
+    - Count t_apprehend_witness_addr rows with same appr_witns_srno.
+
+For each background report:
+
+    - Read bg_report_srno.
+    - Compare every nested child array with direct table counts.
+
+This proves children were correlated to the right parent, not merely the root.
+
+
+7. LOOKUP VALIDATION
+--------------------
+
+For a response code/label pair:
+
+    1. Record raw code and language.
+    2. Query the intended master directly.
+    3. Compare returned label.
+
+Generic example:
+
+    SELECT look_up_value
+    FROM mdm.m_lookup_masters
+    WHERE api_master_code = 'GENDER'
+      AND look_up_code::text = '<code>'
+      AND lang_cd = <language>;
+
+Test:
+
+    - Valid active code.
+    - Missing code.
+    - Duplicate master rows.
+    - Inactive code.
+    - Alternative language.
+
+The raw code should remain present if the label is missing.
+
+
+8. JAVA VERSUS SQL CONTRACT COMPARISON
+--------------------------------------
+
+For one identifier, save:
+
+    java_data.json
+    sql_data.json
+
+Compare recursively, not visually only.
+
+Check:
+
+    - Key sets at every object path.
+    - JSON type at every path.
+    - Scalar values.
+    - Null/missing behavior.
+    - Array lengths.
+    - Array ordering.
+    - Nested membership by primary key.
+
+Ignore only documented differences, such as Java-added previewUrl. Do not ignore
+differences merely to make a test pass.
+
+
+9. DIFFERENCE LOG FORMAT
+------------------------
+
+Record each mismatch:
+
+    Path:
+        data.personalDetails.id
+
+    Java:
+        "3810100126000078" (string)
+
+    SQL:
+        3810100126000078 (number)
+
+    Category:
+        WRONG_TYPE
+
+    Cause:
+        Java ToStringSerializer not reproduced in SQL.
+
+    Resolution:
+        Cast ID to text in explicit JSON construction.
+
+    Evidence:
+        DTO annotation/file/line.
+
+
+10. SQL SYNTAX AND STRUCTURAL CHECKS
+------------------------------------
+
+Before database deployment check:
+
+    - Balanced parentheses.
+    - Matched dollar quotes.
+    - Even key/value arguments in jsonb_build_object.
+    - Every referenced table exists.
+    - Every referenced column exists.
+    - Helper signatures exist.
+    - No guessed schema.
+    - No accidental duplicate JSON keys.
+
+Only a real PostgreSQL parser/database can fully validate PostgreSQL syntax and
+types. Text/static checks are useful but not sufficient.
+
+
+11. EXPLAIN ANALYZE
+-------------------
+
+Use:
+
+    EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
+    SELECT apprehend.get_apprehend_json(<large_record_id>);
+
+Observe:
+
+    - Total execution time.
+    - Sequential scans of large child tables.
+    - Rows removed by filters.
+    - Repeated expensive lookup scans.
+    - Buffer reads/hits.
+    - Incorrect row estimates.
+
+Run in an appropriate test environment. EXPLAIN ANALYZE executes the query.
+
+
+12. IMPORTANT INDEXES
+---------------------
+
+Likely relationship indexes:
+
+    t_apprehend_memo(apprehend_srno)                PK/index
+    t_apprehend_act_section(apprehend_srno)
+    t_apprehend_addresses(apprehend_srno)
+    t_apprehend_bank_dtls(apprehend_srno)
+    t_apprehend_files(apprehend_srno)
+    t_apprehend_intimate_addr(apprehend_srno)
+    t_apprehend_national_id(apprehend_srno)
+    t_apprehend_socialmedia(apprehend_srno)
+    t_apprehend_witness(apprehend_srno)
+    t_apprehend_witness_addr(appr_witns_srno)
+    t_juv_background_report(apprehend_srno)
+    t_jcl_background_files(bg_report_srno)
+    t_juv_dress(bg_report_srno)
+    t_juv_family_dtls(bg_report_srno)
+    t_juv_identity_marks(bg_report_srno)
+    t_juv_phy_abuse(bg_report_srno)
+    t_juv_phy_feature(bg_report_srno)
+
+Do not create indexes blindly. Check existing constraints/indexes, data volume,
+write cost and actual query plans.
+
+
+13. LOOKUP PERFORMANCE
+----------------------
+
+A helper call for every field in every row is clear but may execute many lookup
+queries. Alternatives after measurement:
+
+    - Explicit joins for frequently used lookups.
+    - LATERAL lookup groups.
+    - Proper composite indexes.
+    - Pre-resolved views/materialized structures where justified.
+
+Possible generic lookup index shape depends on database types, but commonly
+involves:
+
+    (api_master_code, look_up_code, lang_cd)
+
+Casting look_up_code to text in predicates may prevent normal index use. Confirm
+column types and execution plans.
+
+
+14. RESPONSE SIZE
+-----------------
+
+A complete record may contain large statements, many files and background data.
+Measure:
+
+    SELECT pg_column_size(
+        apprehend.get_apprehend_json(<id>)
+    );
+
+Consider:
+
+    - Does the endpoint need all database audit/migration fields?
+    - Are file bytes/base64 being embedded?
+    - Should search/list endpoints use a smaller projection?
+    - Is one giant response acceptable to clients?
+
+Do not use the detailed function for paginated search results unless the API
+actually requires it.
+
+
+15. CONCURRENCY AND CONSISTENCY
+-------------------------------
+
+A single SQL statement normally sees one consistent snapshot under PostgreSQL's
+MVCC rules. This is an advantage over many separate repository calls that might
+observe changes between calls, depending on transaction setup.
+
+Still verify Java transaction boundaries and isolation expectations.
+
+
+16. ERROR HANDLING
+------------------
+
+Decide behavior for:
+
+    - Invalid/missing root ID.
+    - More than one supposedly unique root row.
+    - Bad stored JSON/array data.
+    - Missing helper function.
+    - Lookup duplicates.
+    - Data type conversion errors.
+
+Database exceptions should be translated by Java into the established API error
+envelope. Avoid leaking raw database internals to clients.
+
+
+17. PERSONAL AND SENSITIVE DATA
+-------------------------------
+
+The module may contain:
+
+    - Juvenile identity information.
+    - Contact information.
+    - Addresses.
+    - National identifiers.
+    - Health/abuse/history information.
+    - Witness statements.
+    - File paths.
+
+Review:
+
+    - Whether every field is authorized for this endpoint.
+    - Role/office/jurisdiction filters.
+    - Logging and tracing (do not log full sensitive JSON casually).
+    - Data masking requirements.
+    - Least-privilege grants.
+    - Whether raw file paths should be exposed.
+
+
+18. SECURITY DEFINER CHECKLIST
+------------------------------
+
+If SECURITY DEFINER is proposed:
+
+    - Is it genuinely required?
+    - Is the owner a controlled non-login role?
+    - Is search_path explicitly restricted?
+    - Are all objects schema-qualified?
+    - Is EXECUTE granted only to intended roles?
+    - Can parameters manipulate dynamic SQL? (Avoid dynamic SQL if possible.)
+    - Does the function bypass row-level security?
+    - Has sensitive-field exposure been reviewed?
+
+
+19. DEPLOYMENT PLAN
+-------------------
+
+Recommended controlled sequence:
+
+    1. Confirm schema/object dependencies.
+    2. Run syntax/type validation in a development database.
+    3. Run contract tests against Java.
+    4. Capture performance baselines.
+    5. Review grants/security.
+    6. Version the SQL migration.
+    7. Deploy to non-production.
+    8. Run smoke and regression tests.
+    9. Deploy production through approved process.
+   10. Monitor errors, time and response sizes.
+
+
+20. ROLLBACK PLAN
+-----------------
+
+Before deployment know:
+
+    - Previous function definition/version.
+    - Whether CREATE OR REPLACE changes signature/return type safely.
+    - How Java falls back to old repository assembly.
+    - How grants are restored.
+    - Which migration reverses changes.
+
+
+21. FINAL REVIEW CHECKLIST
+--------------------------
+
+[ ] Exact Java endpoint identified.
+[ ] Request id/flag meaning confirmed.
+[ ] Main and nested DTOs fully read.
+[ ] Serialization annotations captured.
+[ ] Service/mapper business logic captured.
+[ ] Repository filters/order/archive logic captured.
+[ ] Physical database schema confirmed.
+[ ] Every response field mapped with evidence.
+[ ] All table relationships verified.
+[ ] All lookup categories verified.
+[ ] Unknown mappings resolved or explicitly left raw.
+[ ] JSON names and nesting match Java.
+[ ] IDs and dates match Java JSON types/formats.
+[ ] Null/empty behavior matches Java.
+[ ] Child counts and nested counts reconcile.
+[ ] No duplicate child IDs.
+[ ] Ordering is deterministic and correct.
+[ ] Valid, sparse, multilingual, migrated and missing cases tested.
+[ ] EXPLAIN ANALYZE reviewed.
+[ ] Required indexes verified.
+[ ] Sensitive fields and permissions reviewed.
+[ ] Deployment and rollback plans approved.
+

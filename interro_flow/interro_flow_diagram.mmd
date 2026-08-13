@@ -1,0 +1,126 @@
+erDiagram
+    t_interrogation_info {
+        bigint interro_srno PK
+        bigint fir_reg_num FK
+        bigint accused_srno FK
+        date interro_dt
+    }
+    t_interro_person_info {
+        bigint person_code PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_info : interro_srno
+    t_interro_person_addr {
+        bigint interro_addr_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_addr : interro_srno
+    t_interro_person_nationality {
+        bigint national_id_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_nationality : interro_srno
+    t_interro_person_socialmedia {
+        bigint interro_soc_med_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_socialmedia : interro_srno
+    t_interro_person_phy_feature {
+        bigint interro_phy_feat_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_phy_feature : interro_srno
+    t_interro_person_spl_feature {
+        bigint acc_feat_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_spl_feature : interro_srno
+    t_interro_person_id_marks {
+        bigint identiy_marks_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_id_marks : interro_srno
+    t_interro_person_dress {
+        bigint interro_dress_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_dress : interro_srno
+    t_interro_person_language {
+        bigint acc_lang_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_language : interro_srno
+    t_interro_person_method {
+        bigint acc_method_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_method : interro_srno
+    t_interro_person_character {
+        bigint acc_charac_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_character : interro_srno
+    t_interro_person_habits {
+        bigint habits_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_habits : interro_srno
+    t_interro_person_motive {
+        bigint acc_motive_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_motive : interro_srno
+    t_interro_person_cases_confessed {
+        bigint confess_case_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_cases_confessed : interro_srno
+    t_interro_person_convictions {
+        bigint convict_case_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_convictions : interro_srno
+    t_interro_person_jail_details {
+        bigint acc_jail_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_jail_details : interro_srno
+    t_interro_person_employer {
+        bigint employer_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_employer : interro_srno
+    t_interro_person_relatives {
+        bigint relative_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_relatives : interro_srno
+    t_interro_person_property {
+        bigint acc_prop_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_property : interro_srno
+    t_interro_person_bank_dtls {
+        bigint interro_bank_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_bank_dtls : interro_srno
+    t_interro_person_conveyance {
+        bigint interro_conv_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interro_person_conveyance : interro_srno
+    t_interrogation_files {
+        bigint interro_file_srno PK
+        bigint interro_srno FK
+    }
+    t_interrogation_info ||--o{ t_interrogation_files : interro_srno
+    t_interro_emp_rel_prop_addr {
+        bigint address_cd PK
+        bigint employer_srno FK
+        bigint relative_srno FK
+        bigint acc_prop_srno FK
+    }
+    t_interro_person_employer ||--o{ t_interro_emp_rel_prop_addr : employer_srno
+    t_interro_person_relatives ||--o{ t_interro_emp_rel_prop_addr : relative_srno
+    t_interro_person_property ||--o{ t_interro_emp_rel_prop_addr : acc_prop_srno

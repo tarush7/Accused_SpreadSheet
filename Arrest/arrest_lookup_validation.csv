@@ -1,0 +1,136 @@
+﻿table_name,column_name,sample_value,lookup_code,lookup_value,api_master_code,resolved_sample_value,status,evidence_note
+t_arrest_dress,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_dress,dress_for_cd,8,mdm.m_lookup_masters.look_up_code : PHY_DESC_TYP,look_up_value,PHY_DESC_TYP,Female,m_lookup_masters_value_verified,Sample code exists under the mapped master category. JSON dress_for='Male' conflicts with the resolved value.
+t_arrest_dress,dress_type_cd,101,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,PHYSCL_FEATURES,POWER LENS,m_lookup_masters_value_verified,Sample code exists under the mapped master category. JSON dress_type='Police Uniform' conflicts with the resolved value.
+t_arrest_dress,dress_subtype_cd,1001,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,PHYSCL_FEATURES,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 1001 are absent."
+t_arrest_dress,record_created_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_dress,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_act_section,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_act_section,act_cd,4377,mdm.m_act.act_cd,act_long,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_act_section,section_cd,"""68-4""",mdm.m_section.section_code,"section, section_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_act_section,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_act_section,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_addresses,address_type_cd,2,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,ADD_TYP,Residential Permanent Address,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_addresses,sub_district_cd,356036498,mdm.m_sub_district.sub_district_cd,sub_district,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,village_cd,35603064980645200,mdm.m_subdist_villages.village_cd,village_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,country_cd,145,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,NATIONALITY,RUSSIAN FEDERATION,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_addresses,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,lg_district_cd,98956,mdm.m_district.lg_district_cd,lg_district_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,ps_id,52718,mdm.m_police_station.ps_id,"ps, ps_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_addresses,state_id,77,mdm.m_state.state_id,"state, state_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_bank_dtls,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_bank_dtls,bank_cd,101,mdm.m_lookup_masters.look_up_code : BANKS,look_up_value,BANKS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 101 are absent."
+t_arrest_bank_dtls,account_type_cd,4,mdm.m_lookup_masters.look_up_code : ACCNT_TYP,look_up_value,ACCNT_TYP,Credit Card,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_bank_dtls,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_bank_dtls,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_files,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_files,file_type_cd,6,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,UPLOAD_FILE_TYP,Others,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_files,file_subtype_cd,143,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,UPLOAD_FILE_SUB_TYP,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 143 are absent."
+t_arrest_files,record_created_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_files,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_identity_marks,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_identity_marks,id_marks_type_cd,35,mdm.m_lookup_masters.look_up_code : IDENTITY_MARKS,look_up_value,IDENTITY_MARKS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 35 are absent."
+t_arrest_identity_marks,body_part_loc_cd,321,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,PHYSCL_FEATURES,EAR LEFT,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_identity_marks,tattoo_type_cd,2,mdm.m_lookup_masters.look_up_code : IDENTITY_MARKS,look_up_value,IDENTITY_MARKS,Leucoderma (White Patches),m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_identity_marks,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_identity_marks,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_intimate_addr,address_type_cd,2,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,ADD_TYP,Residential Permanent Address,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_intimate_addr,sub_district_cd,70790452,mdm.m_sub_district.sub_district_cd,sub_district,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,village_cd,70790452064055,mdm.m_subdist_villages.village_cd,village_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,country_cd,125,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,NATIONALITY,NEPAL,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_intimate_addr,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,lg_district_cd,32819,mdm.m_district.lg_district_cd,lg_district_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,ps_id,42659,mdm.m_police_station.ps_id,"ps, ps_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_intimate_addr,state_id,77,mdm.m_state.state_id,"state, state_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_med_exam,lang_cd,null,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_med_exam,record_created_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_med_exam,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,state_id,27,mdm.m_state.state_id,"state, state_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,district_id,20411,mdm.m_district.district_id,"district, district_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,ps_id,20411020,mdm.m_police_station.ps_id,"ps, ps_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,arrest_type_cd,2,mdm.m_lookup_masters.look_up_code : ARR_SURR_TYPE,look_up_value,ARR_SURR_TYPE,Surrender,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,relation_type_cd,52,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,RELATION_TYP,Step Father,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,othr_rel_type_cd,9,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,RELATION_TYP,Wife,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,religion_cd,12,mdm.m_lookup_masters.look_up_code : RELIGION,look_up_value,RELIGION,OTHERS,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,national_id_type_cd,null,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,NTNL_ID_DOC_TYP,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_memo,gender_cd,4,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,GENDER,Unknown,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,category_cd,5,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,CATEGORY,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 5 are absent."
+t_arrest_memo,edu_qual_cd,[null],mdm.m_lookup_masters.look_up_code : EDU_QUAL,look_up_value,EDU_QUAL,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_memo,living_status_cd,25,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value,LIVING_STATUS,LIVING WITH GUARDIAN,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,marital_status_cd,7,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value,MARTL_STATUS,Live In relation,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,occupation_cd,216,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value,OCCUPATION,Agricultural Labourers,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,age_proof_type_cd,null,mdm.m_lookup_masters.look_up_code : AGE_DETERM,look_up_value,AGE_DETERM,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_memo,lang_dialect_cd,0,mdm.m_lookup_masters.look_up_code : LANG_DIALECTS,look_up_value,LANG_DIALECTS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 0 are absent."
+t_arrest_memo,age_type_cd,111,mdm.m_lookup_masters.look_up_code : AGE_PANEL_TYPE,look_up_value,AGE_PANEL_TYPE,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 111 are absent."
+t_arrest_memo,nationality_cd,1234,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,NATIONALITY,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 1234 are absent."
+t_arrest_memo,language_dialect_cd,0,mdm.m_lookup_masters.look_up_code : LANG_DIALECTS,look_up_value,LANG_DIALECTS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 0 are absent."
+t_arrest_memo,blood_group_cd,7,mdm.m_lookup_masters.look_up_code : BLOOD_GROUP,look_up_value,BLOOD_GROUP,AB-,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,income_group_cd,6,mdm.m_lookup_masters.look_up_code : INCOME_GROUP,look_up_value,INCOME_GROUP,"UPPER INCOME GROUP (Annual Income Above Rs.3,00,000/-)",m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,arrested_by_pis_cd,50001,??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,arr_from_district_cd,38102,mdm.m_district.district_cd,"district, district_id",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,arrest_beat_cd,409503001,mdm.m_ps_beat.beat_cd,beat_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,major_place_type_cd,31,mdm.m_lookup_masters.look_up_code : MAJOR_PLACE_OCCURANCE,look_up_value,MAJOR_PLACE_OCCURANCE,Forest,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,minor_place_type_cd,401,mdm.m_lookup_masters.look_up_code : PLACE_TYP,look_up_value,PLACE_TYP,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 401 are absent."
+t_arrest_memo,dysp_login_id,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,arrested_police_cd,38102015,??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,surrend_in_court_cd,"""N""",??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,arrest_action_taken_cd,11,mdm.m_lookup_masters.look_up_code : ARRST_ACTN,look_up_value,ARRST_ACTN,Apprehended and sent to Observation Home,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,arrest_status_cd,0,mdm.m_lookup_masters.look_up_code : ARRST_STATUS,look_up_value,ARRST_STATUS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 0 are absent."
+t_arrest_memo,criminal_gang_cd,0,??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,io_cd,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,intimate_rel_type_cd,52,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,RELATION_TYP,Step Father,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,intimate_mode_cd,8,mdm.m_lookup_masters.look_up_code : INFO_MODE,look_up_value,INFO_MODE,Other,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_memo,physical_cond_cd,5,??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,court_estbl_cd,null,??,??,,,unknown_lookup,No supported mapping in the compared lookup sheets.
+t_arrest_memo,evidence_type_cd,0,mdm.m_lookup_masters.look_up_code : EVIDENCE_TYP,look_up_value,EVIDENCE_TYP,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 0 are absent."
+t_arrest_memo,id_type_cd,null,mdm.m_lookup_masters.look_up_code : IDENTITY_TYP,look_up_value,IDENTITY_TYP,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_memo,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,build_type_cd,5,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_BUILD,look_up_value,PHY_FEAT_PCODE_BUILD,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 5 are absent."
+t_arrest_memo,complexion_type_cd,15,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_COMPL,look_up_value,PHY_FEAT_PCODE_COMPL,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 15 are absent."
+t_arrest_memo,arr_from_state_id,77,mdm.m_state.state_id,"state, state_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,arr_from_district_id,2071,mdm.m_district.district_id,"district, district_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_memo,arr_from_ps_id,42659,mdm.m_police_station.ps_id,"ps, ps_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_national_id,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_national_id,nationality_id_type_cd,8,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,NTNL_ID_DOC_TYP,AADHAR CARD(UIDAI),m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_national_id,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_national_id,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_phy_feature,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_phy_feature,phy_feat_category_cd,1111,mdm.m_lookup_masters.look_up_code : PHY_DESC_TYP,look_up_value,PHY_DESC_TYP,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 1111 are absent."
+t_arrest_phy_feature,phy_feature_maj_cd,102,mdm.m_lookup_masters.look_up_parentcode : PHYSCL_FEATURES,look_up_parentvalue,PHYSCL_FEATURES,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 102 are absent."
+t_arrest_phy_feature,phy_feature_min_cd,687,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,PHYSCL_FEATURES,No peculiarity,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_phy_feature,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_phy_feature,record_updated_by,4881,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,relation_type_cd,13,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,RELATION_TYP,Brother,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,age_type_cd,222,mdm.m_lookup_masters.look_up_code : AGE_PANEL_TYPE,look_up_value,AGE_PANEL_TYPE,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 222 are absent."
+t_arrest_witness,nationality_cd,175,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,NATIONALITY,TIBET,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,occupation_cd,216,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value,OCCUPATION,Agricultural Labourers,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,gender_cd,4,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,GENDER,Unknown,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,marital_status_cd,7,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value,MARTL_STATUS,Live In relation,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,witn_evid_tender_cd,28,mdm.m_lookup_masters.look_up_code : EVIDENCE_TENDERED,look_up_value,EVIDENCE_TENDERED,Photography,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness,witn_category_cd,null,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,CATEGORY,,master_category_verified_null_sample,Master category exists; the JSON sample is null or empty.
+t_arrest_witness_addr,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness_addr,address_type_cd,2,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,ADD_TYP,Residential Permanent Address,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness_addr,sub_district_cd,384653949,mdm.m_sub_district.sub_district_cd,sub_district,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,village_cd,18282025150299614,mdm.m_subdist_villages.village_cd,village_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,country_cd,125,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,NATIONALITY,NEPAL,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_arrest_witness_addr,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,lg_district_cd,914265,mdm.m_district.lg_district_cd,lg_district_name,,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,ps_id,42659,mdm.m_police_station.ps_id,"ps, ps_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_arrest_witness_addr,state_id,77,mdm.m_state.state_id,"state, state_cd",,,external_lookup,Resolved through a dedicated master/reference table.
+t_person_search_items,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_person_search_items,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_person_search_items,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_person_search_items,quantity_unit_cd,39,mdm.m_lookup_masters.look_up_code : MESURING_UNITS,look_up_value,MESURING_UNITS,,master_category_verified_sample_missing,"Master category exists, but sample code(s) 39 are absent."
+t_person_search_property,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,OFFCL_LANG,English,m_lookup_masters_value_verified,Sample code exists under the mapped master category.
+t_person_search_property,record_created_by,12345,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.
+t_person_search_property,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",,,external_lookup,Resolved through a dedicated master/reference table.

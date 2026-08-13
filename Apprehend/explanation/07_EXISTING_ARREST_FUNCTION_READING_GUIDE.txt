@@ -1,0 +1,495 @@
+HOW TO READ THE EXISTING ARREST FUNCTION AS A WORKED EXAMPLE
+============================================================
+
+Reference file:
+    Arrest/arrest_proc.sql
+
+This guide teaches the architecture of the existing Arrest function. It does not
+mean Apprehend should copy its output names blindly. Reuse the engineering
+pattern; derive the Apprehend response shape from Java.
+
+
+1. FIRST READ: IGNORE DETAILS AND FIND THE SKELETON
+--------------------------------------------------
+
+The Arrest file has four database functions:
+
+    1. arrest.jsonb_camel_keys
+    2. arrest.lookup_value
+    3. arrest.lookup_parent_value
+    4. arrest.get_arrest_json
+
+The first three are helpers. The fourth is the main function.
+
+The main structure is:
+
+    CREATE FUNCTION
+       |
+       +-- DECLARE v_result
+       |
+       +-- SELECT root JSON
+       |      || root lookups
+       |      || audit fields
+       |      || child arrays
+       |
+       +-- INTO v_result
+       |
+       +-- FROM t_arrest_memo
+       |      LEFT JOIN root masters/staff
+       |
+       +-- WHERE root primary key = input
+       |
+       +-- RETURN result or {}
+
+Read this skeleton before reading individual fields. Otherwise the large query
+appears more complicated than it is.
+
+
+2. HELPER 1: JSONB_CAMEL_KEYS
+-----------------------------
+
+Location in current file:
+    Starts near line 13.
+
+Input:
+
+    {"arr_surr_srno": 123, "record_created_by": 4754}
+
+Output:
+
+    {"arrSurrSrno": 123, "recordCreatedBy": 4754}
+
+Internal steps:
+
+    1. jsonb_each turns the input object into key/value rows.
+    2. string_to_array(key, '_') splits each key.
+    3. row_number identifies the first word.
+    4. First word stays lowercase.
+    5. Later words use initcap.
+    6. string_agg joins the words.
+    7. jsonb_object_agg rebuilds the object.
+
+This helper works on one flat object. It does not recursively rename keys in
+nested JSON. The main query calls it separately for every table row.
+
+Architectural lesson:
+
+    A small helper removes hundreds of repeated manual aliases, but explicit
+    Java aliases are still needed where mechanical camelCase is insufficient.
+
+
+3. HELPER 2: LOOKUP_VALUE
+-------------------------
+
+Location:
+    Starts near line 37.
+
+Inputs:
+
+    p_api_master_code
+    p_lookup_code
+    p_lang_cd
+
+Example conceptual call:
+
+    arrest.lookup_value('GENDER', '1', 99)
+
+The helper searches mdm.m_lookup_masters using category, code and language. It
+prefers active rows and then a later lookup_master_srno when duplicates exist.
+
+Architectural lesson:
+
+    Code alone has no safe meaning. Category and language are part of the key.
+
+Question to confirm:
+
+    Does the project's official master-data rule really prefer the highest
+    lookup_master_srno after active status? If Java uses another rule, align it.
+
+
+4. HELPER 3: LOOKUP_PARENT_VALUE
+--------------------------------
+
+Location:
+    Starts near line 58.
+
+This is similar to lookup_value but reads look_up_parentcode and
+look_up_parentvalue. It supports hierarchical physical-feature mappings.
+
+Architectural lesson:
+
+    Not all master relationships use the same columns. The lookup workbook must
+    be read carefully rather than forcing every field through one helper.
+
+
+5. MAIN FUNCTION SIGNATURE
+--------------------------
+
+Location:
+    Starts near line 82.
+
+    arrest.get_arrest_json(p_arr_surr_srno BIGINT)
+    RETURNS JSONB
+
+Meaning:
+
+    Input one unique Arrest/Surrender event identifier.
+    Return one complete JSONB document.
+
+It is marked STABLE because it reads tables but does not modify them.
+
+
+6. V_RESULT VARIABLE
+--------------------
+
+The function declares:
+
+    v_result JSONB;
+
+The large SELECT stores its constructed JSON into this variable using:
+
+    INTO v_result
+
+near the bottom of the query.
+
+This permits a clear final return:
+
+    RETURN COALESCE(v_result, '{}'::JSONB);
+
+
+7. ROOT RAW JSON
+----------------
+
+The first main expression is conceptually:
+
+    arrest.jsonb_camel_keys(to_jsonb(memo.*))
+
+Steps:
+
+    memo.*             take every root column
+    to_jsonb            convert row to object
+    jsonb_camel_keys    rename flat keys
+
+This creates the base object before extra labels and children are merged.
+
+Important limitation:
+
+    This database-oriented output may be broader/flatter than the Java response.
+    For Apprehend, decide whether the final API function must explicitly build
+    only DTO-approved fields.
+
+
+8. ROOT DISPLAY VALUES
+----------------------
+
+The next jsonb_build_object adds:
+
+    - Language label.
+    - Full name.
+    - State/district/police station names.
+    - Arrest type and demographic lookup labels.
+    - Arrest location master names.
+    - Officer names/ranks/login IDs.
+
+The raw codes remain in the base object. Added fields make them readable.
+
+Conceptual result:
+
+    {
+      "genderCd": 1,
+      "genderCdValue": "Male"
+    }
+
+This is useful for a database-centric JSON contract. Java may use "gender"
+instead of "genderCdValue", so exact names need DTO evidence.
+
+
+9. ROOT AUDIT FIELDS
+--------------------
+
+The Arrest function joins record_created_by and record_updated_by to
+users.t_police_staff_info and adds scalar values:
+
+    recordCreatedByFullName
+    recordCreatedByRankDesc
+    recordCreatedByLoginId
+    recordUpdatedByFullName
+    recordUpdatedByRankDesc
+    recordUpdatedByLoginId
+
+Architectural lesson:
+
+    Keep the raw staff ID and add human-readable staff details rather than
+    replacing the ID.
+
+
+10. ACCUSEDINFOS BRANCH
+-----------------------
+
+Location:
+    Begins near line 268.
+
+This is a large related branch using fir.t_fir_accused_info rather than only
+Arrest-schema tables. It demonstrates an important point:
+
+    A module response may depend on tables owned by another module.
+
+It adds accused lookups and nested accused tables such as addresses, bank data,
+physical features, IDs, dress and files.
+
+For Apprehend, do not assume t_apprehend_memo alone contains the complete Java
+personal-information response. Trace the Java repositories to see whether it
+also loads FIR/Juvenile profile tables.
+
+
+11. DIRECT CHILD BRANCHES
+-------------------------
+
+Current Arrest branches include:
+
+    actSection            near line 741
+    addresses             near line 797
+    bankDetails           near line 865
+    dressDetails          near line 899
+    fileUploads           near line 936
+    identityMarks         near line 970
+    intimationAddresses   near line 1010
+    medicalExams          near line 1054
+    nationalIds           near line 1084
+    physicalFeatures      near line 1118
+    witnesses             near line 1160
+    personSearches        near line 1263
+
+Each follows roughly the same formula:
+
+    child raw row
+      || lookup labels
+      || audit staff labels
+      || nested children, if any
+      -> jsonb_agg ordered by child key
+      -> COALESCE to []
+
+
+12. ACT/SECTION SPECIAL CASE
+----------------------------
+
+act_cd does not use the generic lookup table. It joins mdm.m_act.
+section_cd joins mdm.m_section.
+
+The function returns both code and readable act/section details.
+
+Architectural lesson:
+
+    Follow the source mapping. Generic lookup helpers are not universal.
+
+
+13. ADDRESS SPECIAL CASE
+------------------------
+
+Address branches use a LATERAL call to
+mdm.common_get_address_master_values(...).
+
+Why?
+
+    An address contains several codes. The shared helper resolves them in one
+    consistent operation using the current address row.
+
+Architectural lesson:
+
+    Reuse verified shared address logic so modules do not disagree about address
+    labels.
+
+
+14. WITNESS NESTING
+-------------------
+
+The witness array contains addressGrid. The nested address query filters by the
+current witness primary key.
+
+    root arr_surr_srno
+      -> witness arr_witns_srno
+         -> witness-address arr_witns_srno
+
+This is the direct model for Apprehend's:
+
+    apprehend_srno
+      -> appr_witns_srno
+         -> witness-address appr_witns_srno
+
+Reuse the relationship pattern, not the Arrest column/output names.
+
+
+15. PERSON SEARCH NESTING
+-------------------------
+
+The Arrest personSearches branch nests items through prop_srno:
+
+    person search property
+      -> person search items
+
+This is another example of building grandchildren inside each child object.
+
+
+16. ROOT FROM AND JOINS AT THE BOTTOM
+-------------------------------------
+
+The large JSON SELECT eventually reaches:
+
+    FROM arrest.t_arrest_memo memo
+
+and root-level staff joins. The input filter is:
+
+    WHERE memo.arr_surr_srno = p_arr_surr_srno
+
+Why are the FROM/JOIN clauses far below the SELECT list?
+
+    SQL syntax places SELECT expressions before FROM. The entire large JSON
+    object is one SELECT expression even though it visually spans many lines.
+
+
+17. MISSING RECORD RETURN
+-------------------------
+
+At the end:
+
+    RETURN COALESCE(v_result, '{}'::JSONB);
+
+If the root SELECT found nothing, v_result is null and the function returns {}.
+
+For Apprehend, confirm whether Java treats not-found the same way.
+
+
+18. HOW TO READ ONE CHILD BLOCK
+-------------------------------
+
+When studying any child block, answer these questions in order:
+
+    1. What JSON key is being built?
+    2. What is the child table?
+    3. What WHERE clause connects child to parent?
+    4. What is the child primary key/order?
+    5. Which raw columns are included?
+    6. Which generic lookups are added?
+    7. Which dedicated masters are joined?
+    8. Which audit fields are added?
+    9. Are there nested grandchildren?
+   10. Does no data return [] or null?
+
+Do not try to understand the whole 1,300-line file simultaneously.
+
+
+19. WHAT TO COPY CONCEPTUALLY FOR APPREHEND
+-------------------------------------------
+
+Reusable concepts:
+
+    - One unique root ID as input.
+    - JSONB return value.
+    - Flat key conversion helper where appropriate.
+    - Category/code/language lookup helper.
+    - Parent lookup helper for hierarchy.
+    - Preserve raw codes and add labels.
+    - Independent child aggregations.
+    - Nested grandchildren inside current child.
+    - Stable [] for empty collections when Java expects it.
+    - Deterministic ORDER BY.
+    - {} or confirmed not-found behavior.
+
+
+20. WHAT NOT TO COPY WITHOUT VERIFICATION
+-----------------------------------------
+
+Do not automatically copy:
+
+    - Arrest JSON property names.
+    - Arrest table schema.
+    - arr_surr_srno input semantics.
+    - accusedInfos branch.
+    - Arrest-specific child tables.
+    - Lookup categories for similarly named Apprehend columns.
+    - Row-language behavior.
+    - Unknown-field assumptions.
+    - Missing-record behavior.
+    - Audit fields if the Java DTO omits them.
+    - All raw columns if the Apprehend API is stricter.
+
+
+21. APPREHEND-SPECIFIC STRUCTURAL DIFFERENCE
+--------------------------------------------
+
+The supplied Apprehend graph includes a JCL background branch not present in the
+same form in the Arrest root:
+
+    t_apprehend_memo
+      -> t_juv_background_report
+         -> six background child tables
+
+This requires two levels of aggregation:
+
+    juvenileBackgroundReports = aggregate background rows
+        each background row contains:
+            file list
+            dress list
+            family list
+            identity marks
+            abuse list
+            physical feature list
+
+Whether Java expects one background object or a list must be confirmed. The
+database relationship graph alone does not answer that API question.
+
+
+22. CORE LOGIC IN PSEUDOCODE
+----------------------------
+
+    function get_complete_record(root_id):
+
+        memo = find root memo by root_id
+
+        if memo does not exist:
+            return confirmed not-found representation
+
+        result = map memo into exact Java root/nested fields
+
+        result.add(resolve root lookup labels)
+        result.add(resolve root staff/master labels)
+
+        result.actSection = aggregate related acts
+        result.addresses = aggregate related addresses
+        result.bankDetails = aggregate related bank rows
+        result.files = aggregate related files
+        result.intimationAddresses = aggregate related addresses
+        result.nationalIds = aggregate related IDs
+        result.socialMedia = aggregate related accounts
+
+        result.witnesses = for each related witness:
+            map witness
+            resolve witness labels
+            witness.addressGrid = aggregate that witness's addresses
+
+        result.background = for each related background report:
+            map background
+            resolve background labels
+            background.files = related background files
+            background.dress = related dress rows
+            background.family = related family rows
+            background.identityMarks = related mark rows
+            background.abuse = related abuse rows
+            background.features = related feature rows
+
+        return result
+
+
+23. FINAL BEGINNER TAKEAWAY
+---------------------------
+
+The existing Arrest function is not one mysterious operation. It is a repeated
+three-part recipe:
+
+    1. Select the correct raw row(s).
+    2. enrich them with verified labels/calculations.
+    3. aggregate them at the relationship level where they belong.
+
+The difficult part is not jsonb syntax. The difficult part is proving the Java
+contract, relationships, filters and transformations before encoding them.
+

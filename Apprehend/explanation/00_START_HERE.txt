@@ -1,0 +1,268 @@
+APPREHEND SQL JSON FUNCTION - BEGINNER STUDY PACK
+=================================================
+
+PURPOSE OF THIS DOCUMENT SET
+----------------------------
+
+This folder explains how a PostgreSQL JSON function for the Apprehend module is
+designed. A review-ready implementation now exists at:
+
+    Apprehend/apprehend_proc.sql
+
+It targets the Java endpoint:
+
+    POST /apprehend/view/view-apprehend-memo
+
+The function has been syntax-compiled against PostgreSQL 14 with an isolated
+stub catalog, but it is not yet production-certified against the real database
+helpers or a captured live Apprehend API response.
+
+The most important fact is this:
+
+    Java defines the required response.
+    The database defines where the data is stored.
+    The SQL function connects those two worlds.
+
+The lookup CSV and Excel workbook are not enough to produce the final function.
+They describe tables, columns, relationships and master lookups, but they do not
+fully define the API's JSON names, nesting, data conversions or business rules.
+The actual Java DTO, service, mapper and repository code are required.
+
+
+FILES IN THIS STUDY PACK
+------------------------
+
+1. 00_START_HERE.txt
+   This overview, vocabulary and recommended reading order.
+
+2. 01_JAVA_RESPONSE_AND_END_TO_END_ARCHITECTURE.txt
+   Explains Controller -> Service -> Repository -> Database -> DTO -> JSON and
+   why the Java response is the authoritative output contract.
+
+3. 02_DATABASE_AND_APPREHEND_TABLE_ARCHITECTURE.txt
+   Explains root tables, child tables, foreign keys, one-to-many relationships,
+   nested relationships, lookup masters and the known 17-table Apprehend graph.
+
+4. 03_STEP_BY_STEP_FUNCTION_CONSTRUCTION.txt
+   Describes the complete process for creating the SQL function, beginning with
+   Java discovery and ending with a tested database object.
+
+5. 04_POSTGRESQL_JSON_TECHNIQUES.txt
+   Explains the important SQL expressions used in the existing project:
+   to_jsonb, jsonb_build_object, jsonb_agg, COALESCE, LATERAL joins, lookup
+   helpers, camelCase conversion and nested correlated subqueries.
+
+6. 05_VALIDATION_TESTING_PERFORMANCE_AND_SECURITY.txt
+   Explains how to compare the SQL result with Java, test missing/empty data,
+   detect duplicates, inspect performance, verify indexes and consider access
+   control.
+
+7. 06_FIELD_MAPPING_WORKSHEET.txt
+   A fill-in template for mapping each Java response field to its database
+   source, conversion rule, lookup and validation status before writing SQL.
+
+8. 07_EXISTING_ARREST_FUNCTION_READING_GUIDE.txt
+   A guided tour of Arrest/arrest_proc.sql showing how its helpers, root object,
+   child arrays and nested branches fit together, plus what can and cannot be
+   reused for Apprehend.
+
+9. 08_REVERSE_ENGINEER_APPREHEND_FUNCTION_CHUNK_BY_CHUNK.txt
+   The main beginner walkthrough for the implemented function. It follows the
+   exact CHUNK markers in Apprehend/apprehend_proc.sql, translates the Java
+   conditions into frontend language, explains every SQL term and identifies
+   all remaining contract checks.
+
+
+RECOMMENDED READING ORDER
+-------------------------
+
+For the new build-first/reverse-engineer approach, begin with file 08 beside
+Apprehend/apprehend_proc.sql. Use files 01-07 as deeper reference material.
+
+The original concept-first reading order is still useful. Before approving the
+function, understand:
+
+    1. What JSON Java promises to return.
+    2. Which database record represents one Apprehend event.
+    3. How other tables connect to that event.
+    4. Which values are stored directly and which are calculated or translated.
+    5. How SQL collects the data without duplicating it.
+    6. How the completed SQL is compared with the Java response.
+
+
+VERY SMALL MENTAL MODEL
+-----------------------
+
+Think of an Apprehend record as a paper case folder.
+
+The cover sheet is t_apprehend_memo. It contains the main identifier and main
+facts. Inside the folder are separate pages for addresses, files and witnesses.
+Bank, social-media and juvenile-background records may share broader Apprehend
+business relationships, but they are not returned by this particular memo-view
+DTO. Social background has its own endpoint and should have its own SQL function.
+
+The Java API wants the complete folder as one structured JSON document. The SQL
+function acts like a clerk:
+
+    Input: one apprehend_srno
+       |
+       v
+    Open the correct t_apprehend_memo record
+       |
+       v
+    Collect every related child record
+       |
+       v
+    Translate stored codes into readable labels
+       |
+       v
+    Arrange the pieces in the exact Java response shape
+       |
+       v
+    Return one JSONB value
+
+
+IMPORTANT TERMINOLOGY
+---------------------
+
+Database table
+    A structured collection of rows. For example, t_apprehend_files contains
+    file records.
+
+Row
+    One record in a table. One row in t_apprehend_memo normally represents one
+    Apprehend event.
+
+Column
+    One stored attribute, such as apprehend_srno, first_name or gender_cd.
+
+Primary key (PK)
+    A value that uniquely identifies a row. The proposed root key is
+    t_apprehend_memo.apprehend_srno.
+
+Foreign key (FK)
+    A value in one table that points to a row in another table. For example,
+    t_apprehend_files.apprehend_srno connects a file to its memo.
+
+Root table
+    The table from which one complete response begins. For Apprehend, the table
+    map indicates t_apprehend_memo.
+
+Child table
+    A table containing zero, one or many records related to a root record.
+
+Lookup/master table
+    A table that translates stored codes into readable names. A code such as 2
+    may become "Father", "Female", "Surrender" or something else depending on
+    the lookup category.
+
+DTO
+    Data Transfer Object. A Java class that defines fields sent into or returned
+    from an API. The response DTO is the blueprint for the output JSON.
+
+Entity
+    A Java class representing database data, often one table or view. An entity
+    and a response DTO are not necessarily the same shape.
+
+Repository
+    Java code that reads and writes database data.
+
+Service
+    Java code that applies business rules, calls repositories and builds the
+    response DTO.
+
+Mapper
+    Code that converts one representation into another, such as entity -> DTO.
+
+JSON
+    The text/object format returned by the API.
+
+JSONB
+    PostgreSQL's binary JSON type. It supports efficient construction,
+    operators, indexing and manipulation.
+
+Serialization
+    Conversion of a Java object into JSON. An annotation can change a Java field
+    name or serialize a Long as a JSON string.
+
+Cardinality
+    The number of related rows: one-to-one, one-to-many or many-to-many.
+
+Correlation
+    A child subquery referring to the current parent row. Example: fetch files
+    WHERE file.apprehend_srno = memo.apprehend_srno.
+
+
+FUNCTION OR PROCEDURE?
+----------------------
+
+People often casually call every stored database program a "procedure". In
+PostgreSQL, function and procedure have different meanings.
+
+Function:
+
+    - Returns a value.
+    - Can be called with SELECT.
+    - Fits a requirement such as "return the complete Apprehend JSON".
+
+    SELECT apprehend.get_apprehend_memo_json(12345);
+
+Procedure:
+
+    - Is called with CALL.
+    - Is mainly used to perform an operation or workflow.
+    - May be appropriate for approve, submit, close or migrate actions.
+
+    CALL apprehend.approve_apprehend(12345, 4754);
+
+Therefore, even if the file is named apprehend_proc.sql, the main object for
+reading and returning JSON will probably be a function. The final decision must
+still follow the project's existing conventions and application integration.
+
+
+WHAT IS ALREADY KNOWN FROM THE PROVIDED MATERIAL
+-------------------------------------------------
+
+The current sources indicate:
+
+    - t_apprehend_memo is the likely root.
+    - apprehend_srno is its primary identifier.
+    - Several tables connect directly through apprehend_srno.
+    - Witness addresses connect through appr_witns_srno.
+    - Juvenile background children connect through bg_report_srno.
+    - The lookup sheet identifies many master categories.
+    - The prepare API notes say the Apprehend prepare endpoint uses the same
+      request and response DTO structure as the Arrest prepare endpoint.
+
+The last point does not automatically reveal the final SQL response. We must
+inspect the actual DTO classes and mapping behavior because documentation can be
+incomplete, outdated or simplified.
+
+
+WHAT STILL NEEDS LIVE CONFIRMATION
+----------------------------------
+
+Java inspection has now established the DTO keys, child nesting, Long-string
+rule, important date annotations, Apprehend schema and FIR/GD business branch.
+Do not production-finalize these remaining details without a real database and
+captured API comparison:
+
+    - Exact signatures/output columns of existing database helper functions.
+    - CacheService fallback behavior for missing language/master rows.
+    - IDENTITY_TYP versus the workbook's NTNL_ID_DOC_TYP mapping.
+    - Whether DTO accusedVid is intended to come from memo.juvenile_vid.
+    - Real alias JSON shape for current and migrated rows.
+    - Whether a global mechanism excludes record_status = 'D' children.
+    - Required child ordering where Java has no @OrderBy.
+    - Whether null isFromGd should be tolerated or rejected.
+    - Whether file-service-only metadata must be fetched by another component.
+    - Whether API authorization/office filtering occurs before this view call.
+
+
+ONE-SENTENCE SUMMARY
+--------------------
+
+The SQL JSON function is built by taking the Java response as the exact output
+blueprint, mapping every response field to verified database data or business
+logic, independently aggregating child relationships, resolving readable master
+values, and proving that its JSON matches the Java API for real test records.

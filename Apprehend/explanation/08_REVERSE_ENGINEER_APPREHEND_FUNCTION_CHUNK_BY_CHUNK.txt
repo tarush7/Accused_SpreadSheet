@@ -1,0 +1,1988 @@
+================================================================================
+REVERSE-ENGINEERING THE APPREHEND SQL FUNCTION — BEGINNER / FRONTEND EDITION
+================================================================================
+
+Companion SQL file:
+    Apprehend/apprehend_proc.sql
+
+Java endpoint being reproduced:
+    POST /apprehend/view/view-apprehend-memo
+
+Database function being studied:
+    apprehend.get_apprehend_memo_json(p_apprehend_srno BIGINT)
+
+Primary goal:
+    Give one apprehend serial number to PostgreSQL and receive the `data` JSON
+    object that the Apprehend view endpoint needs.
+
+This document teaches the function by reversing it, one marked SQL chunk at a
+time. It assumes you understand normal frontend ideas such as TypeScript types,
+objects, arrays, map(), filter(), ternaries, API responses and component trees.
+It does not assume that you know Java, JPA, Hibernate or advanced SQL.
+
+
+================================================================================
+0. FIRST: WHAT WAS ACTUALLY BUILT?
+================================================================================
+
+The function is a read-only JSON builder.
+
+Conceptually, it does this:
+
+    async function getApprehendMemoJson(apprehendSrno) {
+        const memo = await findMemo(apprehendSrno);
+
+        if (!memo) return null;
+
+        return {
+            ...selectedRootFields(memo),
+            state: await getStateLabel(memo.stateId, memo.langCd),
+            district: await getDistrictLabel(memo.districtId, memo.langCd),
+            ps: await getPoliceStationLabel(memo.psId, memo.langCd),
+            apprehendAddress: await getAddresses(memo.apprehendSrno),
+            idList: await getNationalIds(memo.apprehendSrno),
+            apprehendWitness: await getWitnessesWithTheirChildren(
+                memo.apprehendSrno
+            ),
+            intimateAddress: await getIntimationAddresses(memo.apprehendSrno),
+            fileList: await getFiles(memo.apprehendSrno),
+            actSectionList: await chooseActSections(memo)
+        };
+    }
+
+PostgreSQL performs all of that inside one function call.
+
+The SQL function returns only the inner `data` object. It does not create this
+controller wrapper:
+
+    {
+      "message": "Apprehend details fetched successfully",
+      "status": "OK",
+      "statusCode": 200,
+      "data": { ...function result... },
+      "errors": null
+    }
+
+Why?
+
+The data object is a database concern. HTTP status codes and messages are an API
+controller concern. Keeping those responsibilities separate makes the database
+function reusable and preserves the Java 404 behavior for a missing memo.
+
+
+================================================================================
+1. THE END-TO-END ARCHITECTURE BEFORE AND AFTER THIS FUNCTION
+================================================================================
+
+CURRENT JAVA FLOW
+-----------------
+
+    Frontend
+       |
+       | POST /apprehend/view/view-apprehend-memo
+       | body includes apprehendSrno and common request fields
+       v
+    ApprehendViewController
+       |
+       | maps request DTO -> domain
+       v
+    ApprehendViewUseCaseImpl
+       |
+       | asks repository for the memo
+       | enriches addresses
+       | enriches lookup/master labels
+       | chooses FIR or GD act sections
+       v
+    ApprehendViewRepositoryImpl
+       |
+       | JPA findById(apprehendSrno)
+       v
+    Hibernate / JPA entity graph
+       |
+       | root table + child tables
+       v
+    PostgreSQL
+
+Then the result travels back upward:
+
+    PostgreSQL rows
+       -> Entity
+       -> Domain
+       -> DTO
+       -> Jackson JSON serialization
+       -> ApiResponse envelope
+       -> Frontend
+
+
+FLOW WHEN JAVA CALLS THE NEW FUNCTION
+-------------------------------------
+
+    Frontend
+       v
+    Controller / Use Case
+       v
+    Repository executes:
+       SELECT apprehend.get_apprehend_memo_json(:apprehendSrno)
+       v
+    PostgreSQL reads root, children and masters and returns one JSONB value
+       v
+    Java puts that value in the API envelope
+       v
+    Frontend
+
+The database function collapses most of the row-loading, nested mapping and
+master enrichment into one database operation. It does not have to remove Java
+validation, authorization, exception handling or the API envelope.
+
+
+================================================================================
+2. SOURCE-OF-TRUTH ORDER USED TO DESIGN THE FUNCTION
+================================================================================
+
+Several files disagree. Therefore, the function cannot blindly copy only one
+file. The following priority was used:
+
+1. Response DTOs define the JSON property names and visible response shape.
+
+   Examples:
+       ApprehendMemoDTO
+       ApprehendAddressDTO
+       ApprehendWitnessDTO
+       ApprehendWitnessAddrDTO
+       ApprehendWitnessNationalityDto
+       ApprehendNationalIdDTO
+       ApprehendFilesDTO
+       ActSectionDTO
+
+2. ApprehendViewUseCaseImpl defines runtime conditions and enrichment behavior.
+
+   Examples:
+       resolve address labels
+       resolve file labels
+       resolve evidence-tendered labels
+       resolve national-ID labels
+       load FIR act sections
+       overwrite FIR sections with GD sections when isFromGd is true
+
+3. JPA entity classes define actual table names, column names and relationships.
+
+   Examples:
+       @Table(name = "t_apprehend_memo", schema = "apprehend")
+       @Column(name = "apprehend_srno")
+       @OneToMany(...)
+
+4. Repository classes reveal existing database helper functions.
+
+   Examples:
+       apprehend.get_fir_display
+       apprehend.get_gd_display
+       apprehend.get_fir_date
+       disposal.get_act_section_data
+       apprehend.get_gd_act_section_list
+       mdm.common_get_address_master_values
+
+5. apprehend_lookup.csv and the workbook explain master-table relationships and
+   provide realistic table/column samples.
+
+6. Arrest/arrest_proc.sql provides a local example of JSON aggregation,
+   LATERAL address enrichment and lookup resolution.
+
+This order matters. The CSV contains tables that the main view DTO never returns,
+while Java contains a witness-nationality child table missing from the CSV.
+
+
+================================================================================
+3. WHY THIS IS CALLED A FUNCTION, NOT A PROCEDURE
+================================================================================
+
+People often casually use "stored procedure" for all database-side programs.
+PostgreSQL makes a real distinction.
+
+FUNCTION
+--------
+
+    - Returns a value.
+    - Can be used inside SELECT.
+    - Is suitable for read/query transformations.
+
+Example:
+
+    SELECT apprehend.get_apprehend_memo_json(3810100126000078);
+
+PROCEDURE
+---------
+
+    - Is called with CALL.
+    - Is mainly useful for commands, workflows and transaction-oriented side
+      effects.
+    - Does not naturally behave like an expression returning one JSON object.
+
+Example syntax:
+
+    CALL some_write_workflow(...);
+
+Our goal is "ID in, JSON out". Therefore, a function is the correct tool.
+
+
+================================================================================
+4. SMALL GLOSSARY — SQL AND JAVA WORDS IN FRONTEND LANGUAGE
+================================================================================
+
+SCHEMA
+------
+
+A namespace/folder for database objects.
+
+    apprehend.t_apprehend_memo
+    |         |
+    schema    table
+
+This is similar to importing from a named package, though it is not exactly the
+same thing.
+
+
+TABLE
+-----
+
+A persistent collection of similarly shaped records. Think of an array of
+objects, except it is stored, indexed and queried by the database.
+
+
+ROW
+---
+
+One record/object in a table.
+
+
+COLUMN
+------
+
+One field/property defined for every row in a table.
+
+
+PRIMARY KEY (PK)
+----------------
+
+A unique identifier for a row.
+
+    t_apprehend_memo.apprehend_srno
+
+This is like a stable unique `id` in frontend state.
+
+
+FOREIGN KEY (FK)
+----------------
+
+A field pointing to a row in another table.
+
+    t_apprehend_addresses.apprehend_srno
+        -> t_apprehend_memo.apprehend_srno
+
+This is how one memo owns many address rows.
+
+
+ONE-TO-MANY
+-----------
+
+One root record can own many child records.
+
+    one memo -> many addresses
+    one memo -> many witnesses
+    one witness -> many witness addresses
+
+In frontend data, this becomes an array property.
+
+
+DTO (DATA TRANSFER OBJECT)
+--------------------------
+
+A Java class describing what crosses the API boundary.
+
+Closest frontend analogy:
+
+    interface ApprehendMemoResponse { ... }
+
+The DTO is why SQL must emit `apprehendSrno`, not the database name
+`apprehend_srno`.
+
+
+ENTITY
+------
+
+A Java class mapped to a database table. JPA/Hibernate uses annotations such as
+@Table and @Column to know where a field is stored.
+
+The entity represents persistence structure, not necessarily final API shape.
+
+
+DOMAIN OBJECT
+-------------
+
+The internal Java business object between repository and controller mapping.
+It can contain persisted values, calculated values and temporary values.
+
+
+REPOSITORY
+----------
+
+The Java layer that reads/writes database data. It is similar to a frontend API
+client module, except its remote dependency is usually the database.
+
+
+USE CASE / SERVICE
+------------------
+
+The Java layer that performs business decisions and enrichment after data is
+loaded. It is similar to a state/action layer that calls APIs and combines their
+results before a component consumes them.
+
+
+LOOKUP / MASTER DATA
+--------------------
+
+Business rows often store compact codes, not labels.
+
+    intimate_rel_type_cd = 44
+
+The UI needs a label:
+
+    intimateRelType = "Guardian"
+
+A master table maps the code to a human-readable value, usually per language.
+
+
+JSONB
+-----
+
+PostgreSQL's binary JSON type. It is JSON stored in a format optimized for
+database operations. The API will still send ordinary JSON text over HTTP.
+
+
+jsonb_build_object(...)
+-----------------------
+
+SQL equivalent of a JavaScript object literal.
+
+SQL:
+
+    jsonb_build_object(
+        'firstName', memo.first_name,
+        'ageYrs', memo.age_yrs
+    )
+
+JavaScript analogy:
+
+    {
+      firstName: memo.first_name,
+      ageYrs: memo.age_yrs
+    }
+
+
+jsonb_agg(...)
+--------------
+
+Collects several row objects into a JSON array.
+
+Frontend analogy:
+
+    rows.map(row => buildObject(row))
+
+
+COALESCE(a, b)
+--------------
+
+Returns the first non-null value.
+
+Frontend analogy:
+
+    a ?? b
+
+The function uses:
+
+    COALESCE(jsonb_agg(...), '[]'::JSONB)
+
+because SQL aggregation over zero rows returns null, while Java/JPA usually
+serializes an empty child collection as `[]`.
+
+
+CASE
+----
+
+SQL's conditional expression.
+
+Frontend analogy:
+
+    condition ? valueA : valueB
+
+or an if/else-if/else chain.
+
+
+CAST / ::TEXT
+-------------
+
+Changes a value's type.
+
+    memo.apprehend_srno::TEXT
+
+Frontend analogy:
+
+    String(memo.apprehendSrno)
+
+This is essential because Java's global Jackson configuration serializes all
+Long values as strings to avoid JavaScript integer precision problems.
+
+
+SUBQUERY
+--------
+
+A query nested inside another query. It is like calling a small selector while
+building one property.
+
+
+CORRELATED SUBQUERY
+-------------------
+
+A nested query that refers to the current outer row.
+
+    WHERE address.apprehend_srno = memo.apprehend_srno
+
+For each current memo, collect only that memo's addresses.
+
+
+LATERAL JOIN
+------------
+
+A join where the right-hand function/query can receive values from the current
+left-hand row.
+
+In the address code, each address row sends its eight code fields to:
+
+    mdm.common_get_address_master_values(...)
+
+and receives display labels for that same address.
+
+
+STABLE
+------
+
+A PostgreSQL function classification. It says the function only reads data and
+will not change database rows during the statement. This can help PostgreSQL
+plan the query correctly.
+
+
+SQL NULL VERSUS JSON null
+-------------------------
+
+SQL NULL can mean "no scalar value" or even "the query returned no row".
+Inside jsonb_build_object, an SQL NULL value becomes JSON `null`.
+
+But if the outer memo query returns zero rows, the SQL function itself returns
+SQL NULL. Java can detect that and issue its existing 404 response.
+
+
+================================================================================
+5. DATA TREE USED BY THE FUNCTION
+================================================================================
+
+Only the tables reachable through the Java view entity/DTO are included.
+
+    t_apprehend_memo                           one root
+    |
+    +-- t_apprehend_addresses                  many -> apprehendAddress
+    |
+    +-- t_apprehend_national_id                many -> idList
+    |
+    +-- t_apprehend_witness                    many -> apprehendWitness
+    |      |
+    |      +-- t_apprehend_witness_addr        many -> addressGrid
+    |      |
+    |      +-- t_apprehend_witn_nationality    many -> witness idList
+    |
+    +-- t_apprehend_intimate_addr              many -> intimateAddress
+    |
+    +-- t_apprehend_files                      many -> fileList
+    |
+    +-- t_apprehend_act_section                fallback only
+
+Act sections normally come from an existing FIR or GD function instead of
+directly from the saved Apprehend act-section rows.
+
+Why bank, social-media, education and social-background tables are not here:
+
+    - The root ApprehendMemoDTO does not expose those collections.
+    - JPA's TApprehendMemoEntity does not attach them to this view graph.
+    - Social background has a separate controller and response DTO.
+
+Adding all tables merely because they share `apprehend_srno` would change the
+API contract and couple unrelated screens together.
+
+
+================================================================================
+6. CHUNK 1 — THE LOOKUP ADAPTER
+================================================================================
+
+Find this marker in the SQL:
+
+    CHUNK 1: SMALL LOOKUP ADAPTER
+
+Signature:
+
+    apprehend.view_lookup_value(
+        p_api_master_code,
+        p_lookup_code,
+        p_lang_cd
+    )
+
+Example call:
+
+    apprehend.view_lookup_value(
+        'RELATION_TYP',
+        memo.intimate_rel_type_cd::TEXT,
+        memo.lang_cd
+    )
+
+Input meaning:
+
+    RELATION_TYP = which master/category to search
+    44           = selected code in the business row
+    99           = requested/stored language code
+
+Output:
+
+    the display label from mdm.m_lookup_masters.look_up_value
+
+Java equivalent:
+
+    cacheService.get(
+        Constants.RELATION_TYP_MASTER_CODE,
+        response.getLangCd(),
+        response.getIntimateRelTypeCd(),
+        null
+    )
+
+Why make a helper instead of repeating the query everywhere?
+
+    - Less repeated SQL.
+    - One consistent rule for language and active row selection.
+    - Calls read like business intent.
+    - Easier to test independently.
+
+Why STABLE?
+
+The helper reads master data but does not change it.
+
+Why ORDER BY active row first?
+
+If historical/duplicate lookup records exist, an active record should win.
+The newest serial number is the second tie-breaker.
+
+Important limitation:
+
+Java CacheService may have fallback or caching rules not visible in this repo.
+The SQL helper performs an exact database lookup. An API-versus-SQL parity test
+must confirm behavior for missing language rows and inactive rows.
+
+
+================================================================================
+7. CHUNK 2 — THE MAIN FUNCTION SHELL
+================================================================================
+
+Find:
+
+    CREATE OR REPLACE FUNCTION apprehend.get_apprehend_memo_json(...)
+
+Meaning of each phrase:
+
+    CREATE OR REPLACE
+        Create it if missing; update its body if the same signature exists.
+
+    p_apprehend_srno BIGINT
+        One input parameter. `p_` is a naming convention meaning parameter.
+
+    RETURNS JSONB
+        The function returns one PostgreSQL JSON value.
+
+    LANGUAGE sql
+        The body is a SQL query, not PL/pgSQL procedural code.
+
+    STABLE
+        Read-only for the duration of the calling statement.
+
+The root query ends with:
+
+    FROM apprehend.t_apprehend_memo memo
+    WHERE memo.apprehend_srno = p_apprehend_srno
+
+Frontend analogy:
+
+    const memo = memos.find(
+      x => x.apprehendSrno === pApprehendSrno
+    );
+
+Why this naturally handles "not found":
+
+If there is no matching root row, the SELECT produces no row. A scalar SQL
+function then returns SQL NULL. It does not fabricate `{}` or an object with all
+null properties.
+
+That matters because current Java throws ApprehendDetailsNotFoundException and
+the exception handler creates HTTP 404 with `data: null`.
+
+
+WHY THE ROOT USES SEVERAL jsonb_build_object CALLS JOINED BY ||
+----------------------------------------------------------------
+
+The response has 100 root properties. Every JSON property needs two function
+arguments:
+
+    key, value
+
+Therefore one giant call would need 200 arguments:
+
+    jsonb_build_object(key1, value1, key2, value2, ...)
+
+PostgreSQL allows at most 100 arguments in one ordinary function call. A giant
+root object would fail even if all SQL syntax looked correct.
+
+The solution is to build smaller objects and merge them:
+
+    jsonb_build_object(...common fields...)
+    || jsonb_build_object(...root fields...)
+    || jsonb_build_object(...display fields...)
+    || jsonb_build_object(...child arrays...)
+
+For JSONB objects, `||` combines the key/value pairs. Frontend analogy:
+
+    const result = {
+      ...commonFields,
+      ...rootFields,
+      ...displayFields,
+      ...childArrays
+    };
+
+If the same key appears in both operands, the right-hand value wins. This file
+uses unique root keys, so merging does not overwrite any intended value.
+
+The largest object chunk has 49 properties = 98 arguments, safely below the
+PostgreSQL limit.
+
+
+================================================================================
+8. CHUNK 3 — INHERITED COMMON REQUEST/RESPONSE FIELDS
+================================================================================
+
+ApprehendMemoDTO extends CommonParamsDTO. That inheritance means Jackson can
+serialize the parent's fields too.
+
+The database entity has:
+
+    langCd
+    stateId
+    districtId
+    psId
+
+so MapStruct can copy those automatically by matching names.
+
+The entity does not have request/header-only information such as:
+
+    staffId
+    loginId
+    officeCd
+    allowedRoleCd
+    authToken
+
+Therefore, those values are null after the current entity -> domain mapping.
+The SQL explicitly outputs null to mirror that path.
+
+Security reason:
+
+The database function must not echo an authentication token or invent request
+identity from unrelated tables.
+
+One future cleanup option is a dedicated response DTO that does not extend the
+request common-fields DTO. That is a Java/API design change, not something the
+SQL function should silently decide.
+
+
+================================================================================
+9. CHUNK 4 — ROOT MEMO FIELDS
+================================================================================
+
+This is the simplest mapping layer:
+
+    DTO key <- database column
+
+Examples:
+
+    'firstName', memo.first_name
+    'ageYrs', memo.age_yrs
+    'apprehendPlace', memo.apprehend_place
+
+Why explicitly list fields instead of converting the full row automatically?
+
+The DTO intentionally exposes only a subset of the large memo table. Automatic
+row conversion would:
+
+    - leak fields the frontend did not request;
+    - emit snake_case keys;
+    - serialize Long fields as numbers;
+    - format dates differently;
+    - omit calculated/display fields;
+    - make future database columns accidentally become public API fields.
+
+Explicit JSON keys are verbose, but the contract is visible and reviewable.
+
+
+LONG-AS-STRING RULE
+-------------------
+
+DefaultConfiguration.java globally registers ToStringSerializer for Long and
+primitive long. That means Java emits:
+
+    "apprehendSrno": "3810100126000078"
+
+not:
+
+    "apprehendSrno": 3810100126000078
+
+Why Java teams do this:
+
+JavaScript's safe integer limit is 9,007,199,254,740,991. Some system-generated
+IDs may exceed it. A JSON number could lose precision in the browser. A string
+does not.
+
+SQL equivalent:
+
+    memo.apprehend_srno::TEXT
+
+Integer fields such as `ageYrs`, `genderCd` and `fileSize` remain JSON numbers.
+
+
+DATE RULES
+----------
+
+The DTO explicitly formats these to minute precision:
+
+    apprehendDt -> yyyy-MM-dd HH:mm
+    intimateDt  -> yyyy-MM-dd HH:mm
+
+SQL:
+
+    to_char(memo.apprehend_dt, 'YYYY-MM-DD HH24:MI')
+
+LocalDate values such as root `dob` are emitted as ISO dates:
+
+    2007-12-04
+
+Unannotated LocalDateTime values such as `gdDt` and `ciclGdDt` are left as
+timestamps so PostgreSQL JSON conversion uses an ISO-style timestamp, similar
+to Java's normal LocalDateTime serialization.
+
+
+================================================================================
+10. THE accusedVid / juvenile_vid CONTRACT GAP
+================================================================================
+
+This deserves its own section because it is a real cross-layer mismatch.
+
+Database entity:
+
+    private Long juvenileVid;
+    @Column(name = "juvenile_vid")
+
+Domain:
+
+    private Long juvenileVid;
+    private Long accusedVid;
+
+Response DTO:
+
+    private Long accusedVid;
+
+EntityDomainMapper has no explicit mapping:
+
+    juvenileVid -> accusedVid
+
+MapStruct normally maps equal property names. Therefore:
+
+    entity.juvenileVid -> domain.juvenileVid
+
+but domain.accusedVid may stay null, and then DTO.accusedVid may stay null.
+
+Business code elsewhere comments that juvenileVid is the generated accusedVid.
+Therefore the SQL currently makes the intended mapping:
+
+    'accusedVid', memo.juvenile_vid::TEXT
+
+This is an intentional decision, not a fact proven by a captured live response.
+
+Before production, call the current Java endpoint for a known memo and compare:
+
+    Java data.accusedVid
+    SQL  result->>'accusedVid'
+
+Possible decisions:
+
+    A. Intended API is correct; Java mapper is missing a rename.
+       Keep SQL as written and fix Java mapping for parity.
+
+    B. Current Java null behavior is the required compatibility contract.
+       Change the SQL field to NULL.
+
+Do not decide this from naming alone.
+
+
+================================================================================
+11. CHUNK 5 — ROOT MASTER AND DISPLAY ENRICHMENT
+================================================================================
+
+The memo stores IDs:
+
+    state_id = 27
+    district_id = 379
+    ps_id = 41361
+
+The frontend needs labels:
+
+    state = "..."
+    district = "..."
+    ps = "..."
+
+The Java use case asks CacheService for STATE, DISTRICT and PS. SQL queries the
+corresponding master tables using both ID and language.
+
+Example:
+
+    SELECT state_master.state
+    FROM mdm.m_state state_master
+    WHERE state_master.state_id = memo.state_id
+      AND state_master.lang_cd = memo.lang_cd
+    LIMIT 1
+
+Frontend analogy:
+
+    const state = states.find(
+      x => x.stateId === memo.stateId && x.langCd === memo.langCd
+    )?.state ?? null;
+
+Why language is part of the condition:
+
+The same business code can have different labels in English, Hindi or another
+official language.
+
+Why LIMIT 1:
+
+The property needs one scalar string. LIMIT 1 also protects the root query from
+failing if bad/duplicate master data unexpectedly returns several rows.
+
+
+EXISTING DISPLAY FUNCTIONS
+--------------------------
+
+Java already calls database functions for formatted case/display values:
+
+    firRegNum present -> apprehend.get_fir_display(firRegNum)
+    gdNum present      -> apprehend.get_gd_display(gdNum)
+    ciclGdNum present  -> apprehend.get_gd_display(ciclGdNum)
+    firRegNum present  -> apprehend.get_fir_date(firRegNum)
+
+The new function reuses them rather than duplicating their unknown formatting
+rules.
+
+Why CASE is used:
+
+It mirrors Java's `if (value != null)` checks and avoids unnecessary calls with
+null arguments.
+
+
+================================================================================
+12. CHUNK 6 — ROOT FIELDS THAT ARE NOT ACTUALLY STORED
+================================================================================
+
+The response DTO has fields that are used during submit decisions but do not
+exist on t_apprehend_memo:
+
+    isNew
+    isExistingAccused
+    existingAccSrno
+    existingAccFirRegNum
+
+Submit uses these combinations:
+
+    isNew=true,  isFromGd=false -> create new accused
+    isNew=false, isFromGd=false -> update existing accused
+    isNew=true,  isFromGd=true  -> GD-origin path
+    otherwise                   -> invalid combination
+
+But the view repository later does only `findById(apprehendSrno)`. The view use
+case contains no reconstruction of those transient values.
+
+The SQL therefore returns null for them. It does not guess from downstream
+tables, because guesses can be wrong for migrated and multi-accused records.
+
+The same rule is used for:
+
+    nameRnkWlfOfcr
+
+No matching memo column or view enrichment was found.
+
+
+ALIAS WARNING
+-------------
+
+The entity and DTO expect a list of objects shaped like:
+
+    [
+      { "id": "1", "alias": "...", "aliasEng": "..." }
+    ]
+
+The lookup CSV sample shows an older object of a different shape:
+
+    { "name": "Raju", "work": "unemployed" }
+
+The function deliberately returns stored JSON unchanged:
+
+    'aliases', memo.alias
+
+It does not silently rewrite historical data. Real rows must be inspected and a
+backend owner must decide whether legacy alias JSON needs migration/normalizing.
+
+
+================================================================================
+13. CHUNK 7 — ROOT ADDRESS ARRAY
+================================================================================
+
+Goal:
+
+    one memo row -> `apprehendAddress: [ ... ]`
+
+The child filter is:
+
+    WHERE address.apprehend_srno = memo.apprehend_srno
+
+This is the foreign-key relationship expressed as SQL.
+
+Each matching address becomes one object through jsonb_build_object. Then
+jsonb_agg collects them into an array.
+
+Conceptually:
+
+    apprehendAddress = allAddresses
+      .filter(a => a.apprehendSrno === memo.apprehendSrno)
+      .sort((a, b) => a.id - b.id)
+      .map(a => ({ ...visible fields and labels... }));
+
+Why ORDER BY primary key inside jsonb_agg:
+
+SQL tables have no guaranteed natural order. JPA's current OneToMany mapping
+also declares no @OrderBy. A deterministic order makes snapshots and API parity
+tests repeatable.
+
+Why COALESCE(..., '[]'):
+
+No matching addresses should produce:
+
+    "apprehendAddress": []
+
+not:
+
+    "apprehendAddress": null
+
+
+ADDRESS ENRICHMENT
+------------------
+
+An address stores codes for:
+
+    address type
+    country
+    state
+    district
+    sub-district
+    village
+    police station
+
+Java passes all eight values to LookUpValueRepository, which calls:
+
+    mdm.common_get_address_master_values(...)
+
+The SQL uses the same function with a LEFT JOIN LATERAL.
+
+Why LEFT JOIN:
+
+The base address should not disappear merely because master data is missing.
+Its display labels become null, but the address row remains in the array.
+
+Why LATERAL:
+
+The master function needs the current address row's codes. LATERAL allows that
+per-row parameter passing.
+
+Why the master columns `addressType` and `subDistrict` are quoted:
+
+PostgreSQL folds unquoted identifiers to lowercase. The shared address function
+appears to expose camel-cased output names. Double quotes preserve exact case:
+
+    address_master."addressType"
+    address_master."subDistrict"
+
+
+================================================================================
+14. CHUNK 8 — ROOT NATIONAL-ID ARRAY
+================================================================================
+
+Physical table:
+
+    apprehend.t_apprehend_national_id
+
+JSON property:
+
+    idList
+
+Why names differ:
+
+The database describes the record category. The DTO uses the name expected by
+the form/grid component.
+
+The response deliberately includes only DTO fields, not audit and relationship
+fields from the entity.
+
+
+IDENTITY_TYP VERSUS NTNL_ID_DOC_TYP CONFLICT
+-------------------------------------------
+
+The lookup CSV says:
+
+    nationality_id_type_cd -> NTNL_ID_DOC_TYP
+
+The Java view use case says:
+
+    Constants.NATIONAL_ID_TYPE = "IDENTITY_TYP"
+
+and uses that constant for both root IDs and witness IDs.
+
+Because this function replaces current Java behavior, it uses IDENTITY_TYP.
+This must be tested with a real ID code and live API response. Possible outcomes:
+
+    - Java is correct; keep IDENTITY_TYP.
+    - Workbook is correct; Java and SQL both need correction.
+    - Master data intentionally supports both categories.
+
+The conflict is documented beside the exact SQL line so it cannot be missed in
+review.
+
+
+================================================================================
+15. CHUNK 9 — WITNESSES AND NESTED CHILDREN
+================================================================================
+
+This is the most important structural chunk.
+
+Root relation:
+
+    memo -> many witnesses
+
+Nested relations:
+
+    witness -> many addresses
+    witness -> many national IDs
+
+Frontend shape:
+
+    apprehendWitness: [
+      {
+        id: "890",
+        firstName: "...",
+        addressGrid: [ ... ],
+        idList: [ ... ]
+      }
+    ]
+
+The nested address/id subqueries refer to the current witness:
+
+    WHERE wit_address.appr_witns_srno = witness.appr_witns_srno
+
+    WHERE wit_id.appr_witns_srno = witness.appr_witns_srno
+
+That correlation is the SQL equivalent of:
+
+    witnesses.map(witness => ({
+      ...witness,
+      addressGrid: witnessAddresses.filter(
+        x => x.witnessId === witness.id
+      ),
+      idList: witnessIds.filter(
+        x => x.witnessId === witness.id
+      )
+    }));
+
+
+WITNESS FIELD RENAMES
+---------------------
+
+Java annotation:
+
+    @JsonProperty("id")
+    private String apprWitnsSrno;
+
+SQL:
+
+    'id', witness.appr_witns_srno::TEXT
+
+Java annotation:
+
+    @JsonProperty("isMobVerified")
+    private Boolean isWitnMobileVerf;
+
+SQL:
+
+    'isMobVerified', witness.is_witn_mobile_verf
+
+Java annotation:
+
+    @JsonProperty("addressGrid")
+    private List<ApprehendWitnessAddrDTO> witnessAddress;
+
+SQL:
+
+    'addressGrid', (nested address aggregation)
+
+These examples show why field names must be taken from the DTO, not generated
+only from database column names.
+
+
+WITNESS DOB
+-----------
+
+The entity stores witness DOB as LocalDateTime/timestamp, but the response DTO
+uses LocalDate. SQL applies:
+
+    witness.dob::DATE
+
+This discards the midnight/time portion and emits an ISO date.
+
+
+WITNESS EVIDENCE LABEL
+----------------------
+
+Java resolves:
+
+    witnEvidTenderCd -> witnEvidTender
+
+using master code EVIDENCE_TENDERED and the witness language. SQL mirrors that
+with view_lookup_value.
+
+
+WITNESS FOREIGN-KEY DTO GAP
+---------------------------
+
+ApprehendWitnessAddrDTO and ApprehendWitnessNationalityDto expose:
+
+    apprWitnsSrno
+
+The physical child tables contain this FK. However, the Java entity models it
+only through an `apprehendWitness` relationship, and EntityDomainMapper ignores
+that relationship to prevent cycles. There is no separately mapped scalar field.
+
+Therefore the current Java mapper likely leaves DTO.apprWitnsSrno null. The SQL
+returns null for strict parity.
+
+If the frontend actually needs the parent ID inside each child, the clean fix is
+to intentionally return:
+
+    wit_address.appr_witns_srno::TEXT
+
+and:
+
+    wit_id.appr_witns_srno::TEXT
+
+but that should be a deliberate contract change, not an accidental difference.
+
+
+MISSING CSV TABLE
+-----------------
+
+The Java entity graph contains:
+
+    apprehend.t_apprehend_witn_nationality
+
+The supplied Apprehend lookup CSV does not document it. The function includes it
+because the DTO's nested `idList` and Java entity relationship require it.
+
+Before deployment, confirm the table and FK columns in the live catalog:
+
+    SELECT column_name, data_type
+    FROM information_schema.columns
+    WHERE table_schema = 'apprehend'
+      AND table_name = 't_apprehend_witn_nationality'
+    ORDER BY ordinal_position;
+
+
+================================================================================
+16. CHUNK 10 — INTIMATION ADDRESS ARRAY
+================================================================================
+
+This repeats the same safe address pattern for the relative/person informed:
+
+    filter by apprehend_srno
+    enrich via shared address master function
+    map visible DTO fields
+    aggregate in deterministic ID order
+    fall back to []
+
+Repeating explicit construction is acceptable here because the three address
+DTOs do not have perfectly identical field types and property lists.
+
+Do not combine all address tables with UNION unless the response contract wants
+one mixed array. The DTO expects separate arrays with different meanings.
+
+
+================================================================================
+17. CHUNK 11 — FILE ARRAY
+================================================================================
+
+The file row stores codes:
+
+    file_type_cd
+    file_subtype_cd
+
+Java enriches:
+
+    fileType
+    fileSubtype
+
+The repository contains direct queries showing the physical master sources:
+
+    mdm.m_upload_file_types
+    mdm.m_upload_file_subtypes
+
+The SQL uses those tables instead of assuming ordinary lookup-master rows.
+
+Why `memo.lang_cd` is used:
+
+The Java code passes `response.getLangCd()` for file lookups, not each file
+row's language.
+
+
+FILE DTO VALUES WITH NO VIEW SOURCE
+-----------------------------------
+
+The DTO also exposes:
+
+    contentType
+    moduleName
+    fileUploadedOn
+
+Those fields exist in an upload-processing domain object, but not in
+TApprehendFilesEntity, and ApprehendViewUseCaseImpl does not enrich them during
+view. Therefore the SQL returns null.
+
+This is another example of the difference between:
+
+    data available during submit/upload
+
+and:
+
+    data reconstructable later from saved tables
+
+
+================================================================================
+18. CHUNK 12 — THE MOST IMPORTANT JAVA CONDITION: FIR VS GD
+================================================================================
+
+Java executes these steps in this order:
+
+STEP 1
+
+    if (firRegNum != null) {
+        actSectionList = getActSection(firRegNum);
+        firDisplayNum = getFirDisplayNum(firRegNum);
+        firRegDt = getFirDate(firRegNum);
+    }
+
+STEP 2, AFTER STEP 1
+
+    if (isFromGd) {
+        actSectionList = getCiclGdActSection(ciclGdNum);
+    }
+
+Therefore, when both are true/present:
+
+    FIR list is loaded first
+    GD list overwrites it
+    final response contains GD list
+
+SQL expresses the final result:
+
+    CASE
+      WHEN memo.is_from_gd IS TRUE THEN GD list
+      WHEN memo.fir_reg_num IS NOT NULL THEN FIR list
+      ELSE saved Apprehend list
+    END
+
+Why GD is checked first in SQL even though Java checks it second:
+
+Java mutates the same variable twice. SQL directly selects the final value. The
+last Java writer must be the first winning SQL branch.
+
+Frontend analogy:
+
+    let list = savedList;
+    if (firRegNum != null) list = firList;
+    if (isFromGd === true) list = gdList;
+
+Equivalent expression:
+
+    const list = isFromGd === true
+      ? gdList
+      : firRegNum != null
+        ? firList
+        : savedList;
+
+
+WHY `IS TRUE` INSTEAD OF `= true`
+---------------------------------
+
+SQL booleans can be true, false or null. `IS TRUE` is explicit and safe:
+
+    true  -> branch runs
+    false -> branch does not run
+    null  -> branch does not run
+
+Current Java directly unboxes response.getIsFromGd() in one place. A null value
+could throw NullPointerException. The SQL avoids crashing on old/bad rows. This
+is a defensive improvement that should be accepted explicitly during review.
+
+
+WHY CCL/GD USES cicl_gd_num, NOT gd_num
+----------------------------------------
+
+The Java method is:
+
+    getCiclGdActSection(response.getCiclGdNum())
+
+It does not use response.getGdNum(). The SQL follows that exact condition even
+though the repository parameter is confusingly named firRegNum.
+
+
+FALLBACK SAVED LIST
+-------------------
+
+When not from GD and firRegNum is null, Java never replaces the entity's
+actSectionList. The SQL therefore reads t_apprehend_act_section.
+
+Java has a `getActSectionData` enrichment method, but getApprehendMemo does not
+call it. Therefore fallback act/section labels may be null. The SQL mirrors that
+instead of pretending the method ran.
+
+
+================================================================================
+19. CHUNK 13 — ROOT AUDIT FIELDS
+================================================================================
+
+ApprehendMemoDTO exposes only these root audit values:
+
+    recordStatus
+    recordCreatedOn
+    recordCreatedBy
+
+It comments out updated/sync values. The SQL therefore does not return those
+commented fields.
+
+recordCreatedBy is a Java Long, so SQL casts it to text.
+
+The response does not request creator name/rank/login enrichment. The lookup CSV
+documents that relationship, but adding it would change the DTO shape.
+
+
+================================================================================
+20. CHUNK 14 — MANUAL TESTS
+================================================================================
+
+The end of the SQL file contains commented, safe SELECT tests.
+
+TEST A: existing memo
+---------------------
+
+    SELECT jsonb_pretty(
+        apprehend.get_apprehend_memo_json(3810100126000078)
+    );
+
+`jsonb_pretty` only formats output for humans.
+
+
+TEST B: missing memo
+--------------------
+
+    SELECT apprehend.get_apprehend_memo_json(-1) IS NULL;
+
+Expected:
+
+    true
+
+
+TEST C: array types
+-------------------
+
+For an existing memo, each child collection should report:
+
+    array
+
+not null.
+
+
+================================================================================
+21. HOW TO DEPLOY SAFELY — DO NOT START WITH THE WHOLE FILE IN PRODUCTION
+================================================================================
+
+Use a development database or transaction-controlled review environment.
+
+STEP 1: inspect dependencies
+----------------------------
+
+Ask PostgreSQL to show existing function signatures:
+
+    SELECT
+        namespace.nspname AS schema_name,
+        procedure.proname AS function_name,
+        pg_get_function_identity_arguments(procedure.oid) AS arguments,
+        pg_get_function_result(procedure.oid) AS result_type
+    FROM pg_proc procedure
+    JOIN pg_namespace namespace
+      ON namespace.oid = procedure.pronamespace
+    WHERE namespace.nspname IN ('apprehend', 'disposal', 'mdm')
+      AND procedure.proname IN (
+          'get_fir_display',
+          'get_gd_display',
+          'get_fir_date',
+          'get_act_section_data',
+          'get_gd_act_section_list',
+          'common_get_address_master_values'
+      )
+    ORDER BY schema_name, function_name, arguments;
+
+STEP 2: inspect helper output columns
+-------------------------------------
+
+Run known safe sample calls directly. Confirm act-section functions expose:
+
+    id
+    act_cd
+    act_long
+    act_short
+    section_cd
+    section
+    section_desc
+
+Confirm the address function exposes:
+
+    addressType
+    country
+    state
+    district
+    subDistrict
+    village
+    ps
+
+STEP 3: create only the small lookup helper
+-------------------------------------------
+
+Test:
+
+    SELECT apprehend.view_lookup_value('RELATION_TYP', '44', 99);
+
+Compare with the same label from Java/API or the master UI.
+
+STEP 4: create the main function
+--------------------------------
+
+Run it for one known FIR-origin memo and one known GD-origin memo.
+
+STEP 5: compare with live Java response
+---------------------------------------
+
+Use the exact same apprehendSrno.
+
+Compare:
+
+    - root key names;
+    - JSON types;
+    - null versus missing keys;
+    - [] versus null;
+    - date formats;
+    - Long strings;
+    - address display labels;
+    - ID/file/evidence labels;
+    - witness nested child counts;
+    - FIR/GD act-section choice;
+    - array order.
+
+
+================================================================================
+22. API PARITY TESTING AS A FRONTEND DEVELOPER
+================================================================================
+
+Suppose you save:
+
+    javaData = responseFromCurrentEndpoint.data
+    sqlData  = resultFromFunction
+
+A useful mental test is deep equality after normalizing known nondeterministic
+array order. But do not normalize types. These are real contract differences:
+
+    "123" versus 123
+    null versus []
+    "2026-03-13 14:30" versus "2026-03-13T14:30:00"
+
+Start with shape/type assertions:
+
+    expect(typeof sqlData.apprehendSrno).toBe('string');
+    expect(Array.isArray(sqlData.apprehendAddress)).toBe(true);
+    expect(Array.isArray(sqlData.apprehendWitness)).toBe(true);
+    expect(Array.isArray(sqlData.actSectionList)).toBe(true);
+
+Then compare counts:
+
+    javaData.apprehendAddress.length === sqlData.apprehendAddress.length
+    javaData.apprehendWitness.length === sqlData.apprehendWitness.length
+
+Then compare important business values.
+
+Why compare progressively?
+
+If the entire JSON differs, a giant diff is noisy. Shape -> counts -> values
+quickly tells you whether the problem is contract, relationship or enrichment.
+
+
+================================================================================
+23. DATABASE-LEVEL VALIDATION QUERIES
+================================================================================
+
+Replace :id with a real apprehend serial number.
+
+
+ROOT EXISTS
+-----------
+
+    SELECT count(*)
+    FROM apprehend.t_apprehend_memo
+    WHERE apprehend_srno = :id;
+
+Expected: 1.
+
+
+ADDRESS COUNT MATCHES JSON
+--------------------------
+
+    SELECT
+      (SELECT count(*)
+       FROM apprehend.t_apprehend_addresses
+       WHERE apprehend_srno = :id) AS table_count,
+      jsonb_array_length(
+        apprehend.get_apprehend_memo_json(:id) -> 'apprehendAddress'
+      ) AS json_count;
+
+
+WITNESS COUNT MATCHES JSON
+--------------------------
+
+    SELECT
+      (SELECT count(*)
+       FROM apprehend.t_apprehend_witness
+       WHERE apprehend_srno = :id) AS table_count,
+      jsonb_array_length(
+        apprehend.get_apprehend_memo_json(:id) -> 'apprehendWitness'
+      ) AS json_count;
+
+
+LONG TYPE CHECK
+---------------
+
+    SELECT jsonb_typeof(
+      apprehend.get_apprehend_memo_json(:id) -> 'apprehendSrno'
+    );
+
+Expected: string.
+
+
+GD BRANCH CHECK
+---------------
+
+    SELECT
+      result ->> 'isFromGd' AS is_from_gd,
+      result ->> 'ciclGdNum' AS cicl_gd_num,
+      jsonb_array_length(result -> 'actSectionList') AS act_count
+    FROM (
+      SELECT apprehend.get_apprehend_memo_json(:id) AS result
+    ) value;
+
+
+================================================================================
+24. PERFORMANCE: WHAT MAKES THIS FUNCTION FAST OR SLOW?
+================================================================================
+
+The root lookup should use the memo primary-key index automatically.
+
+Every child lookup should have an index on its relationship column:
+
+    t_apprehend_addresses(apprehend_srno)
+    t_apprehend_national_id(apprehend_srno)
+    t_apprehend_witness(apprehend_srno)
+    t_apprehend_intimate_addr(apprehend_srno)
+    t_apprehend_files(apprehend_srno)
+    t_apprehend_act_section(apprehend_srno)
+    t_apprehend_witness_addr(appr_witns_srno)
+    t_apprehend_witn_nationality(appr_witns_srno)
+
+Do not immediately create indexes merely because this document lists them.
+First inspect existing constraints/indexes:
+
+    SELECT
+        schemaname,
+        tablename,
+        indexname,
+        indexdef
+    FROM pg_indexes
+    WHERE schemaname = 'apprehend'
+      AND tablename IN (
+          't_apprehend_memo',
+          't_apprehend_addresses',
+          't_apprehend_national_id',
+          't_apprehend_witness',
+          't_apprehend_witness_addr',
+          't_apprehend_witn_nationality',
+          't_apprehend_intimate_addr',
+          't_apprehend_files',
+          't_apprehend_act_section'
+      )
+    ORDER BY tablename, indexname;
+
+Then use:
+
+    EXPLAIN (ANALYZE, BUFFERS)
+    SELECT apprehend.get_apprehend_memo_json(:id);
+
+Important beginner warning:
+
+EXPLAIN ANALYZE actually runs the query. This function is read-only, so that is
+safe in principle, but run it in a development/performance environment first.
+
+
+================================================================================
+25. WHY THE FUNCTION DOES NOT FILTER record_status
+================================================================================
+
+The JPA relationships have no @Where filter, and the Java view use case does not
+filter child lists by recordStatus. To reproduce Java, SQL currently includes all
+matching child rows.
+
+It may be tempting to add:
+
+    AND record_status <> 'D'
+
+But that would be an unconfirmed behavior change. Before adding it, answer:
+
+    - Does Hibernate have a global filter not visible here?
+    - Should deleted historical children appear in view?
+    - How does a live Java response behave for a memo with deleted children?
+
+Correctness comes before an attractive assumption.
+
+
+================================================================================
+26. WHY THE FUNCTION ORDERS ARRAYS EVEN THOUGH JAVA DOES NOT DECLARE ORDER
+================================================================================
+
+No @OrderBy annotation was found on the OneToMany collections. Database row
+order without ORDER BY is not guaranteed.
+
+The SQL orders each array by its child primary key. This is deterministic and
+usually matches insertion order, but it is a deliberate improvement rather than
+a guaranteed copy of current Java ordering.
+
+If the UI has a specific business order, replace primary-key order only after
+that rule is documented—for example `fileSrno`, address type, or witness order.
+
+
+================================================================================
+27. NULL, EMPTY ARRAY AND MISSING KEY — THREE DIFFERENT API MEANINGS
+================================================================================
+
+Missing key:
+
+    {}
+
+The property is not part of the object at all.
+
+JSON null:
+
+    { "aliases": null }
+
+The property exists but has no value.
+
+Empty array:
+
+    { "aliases": [] }
+
+The property is a collection and currently has zero items.
+
+The SQL includes all DTO keys. Child table collections use empty arrays. Alias
+JSON is preserved as stored because its legacy shape is unresolved. Transient
+scalar fields use null.
+
+Frontend code should not treat these three cases as automatically identical.
+
+
+================================================================================
+28. WHAT STILL REQUIRES A REAL DATABASE OR LIVE API RESPONSE
+================================================================================
+
+The SQL is review-ready but not honestly production-proven without these checks:
+
+1. Existing helper signatures and returned column names.
+
+2. CacheService parity, particularly missing-language fallback and inactive
+   master behavior.
+
+3. IDENTITY_TYP versus NTNL_ID_DOC_TYP.
+
+4. Intended value of accusedVid.
+
+5. Real alias JSON shape.
+
+6. Whether child record_status rows are globally filtered elsewhere.
+
+7. Desired child array ordering.
+
+8. Whether address master functions always return exactly one row.
+
+9. Whether null isFromGd should be treated as false or rejected.
+
+10. Whether file contentType/moduleName/fileUploadedOn must be reconstructed from
+    a file service rather than the Apprehend database.
+
+These are not reasons to discard the function. They are the exact acceptance
+tests needed to finish it responsibly.
+
+
+================================================================================
+29. HOW JAVA WOULD EVENTUALLY CALL THIS FUNCTION
+================================================================================
+
+This section explains architecture only. It is not an instruction to change Java
+yet.
+
+Repository SQL concept:
+
+    SELECT apprehend.get_apprehend_memo_json(:apprehendSrno)
+
+The repository receives one JSONB value. Depending on the PostgreSQL driver and
+chosen Spring mapping, Java can receive it as String, PGobject, JsonNode or a
+mapped JSON type.
+
+Then Java should:
+
+    1. Detect SQL NULL.
+    2. Throw the same ApprehendDetailsNotFoundException for missing data.
+    3. Put the JSON data in the same ApiResponse envelope.
+    4. Preserve HTTP status and error behavior.
+
+Before replacing the existing view path, run both implementations side by side
+in tests and compare outputs.
+
+
+================================================================================
+30. A PRACTICAL STUDY PLAN FOR YOU
+================================================================================
+
+SESSION 1 — OBJECT CONSTRUCTION
+-------------------------------
+
+Read only SQL Chunks 2, 3 and 4.
+
+Learn:
+
+    SELECT
+    FROM
+    WHERE
+    jsonb_build_object
+    ::TEXT
+    to_char
+
+Exercise:
+
+Write a tiny SELECT returning only apprehendSrno, firstName and ageYrs.
+
+
+SESSION 2 — ONE CHILD ARRAY
+---------------------------
+
+Read Chunk 8, national IDs.
+
+Learn:
+
+    correlated subquery
+    jsonb_agg
+    ORDER BY inside aggregation
+    COALESCE to []
+
+Exercise:
+
+Return only `idList` for a known memo.
+
+
+SESSION 3 — MASTER ENRICHMENT
+-----------------------------
+
+Read Chunks 1 and 5.
+
+Learn:
+
+    stored code versus display label
+    language condition
+    scalar subquery
+    helper function
+
+Exercise:
+
+Resolve one relation-type code independently.
+
+
+SESSION 4 — ADDRESS LATERAL JOIN
+--------------------------------
+
+Read Chunk 7.
+
+Learn:
+
+    LEFT JOIN
+    LATERAL
+    why eight address codes are passed together
+
+Exercise:
+
+Call mdm.common_get_address_master_values directly with one saved address.
+
+
+SESSION 5 — NESTED TREE
+-----------------------
+
+Read Chunk 9.
+
+Learn:
+
+    outer memo correlation
+    witness aggregation
+    child-of-child aggregation
+
+Exercise:
+
+Draw the memo -> witness -> address relationship and identify every PK/FK.
+
+
+SESSION 6 — BUSINESS CONDITIONS
+--------------------------------
+
+Read Chunk 12.
+
+Learn:
+
+    CASE
+    condition priority
+    converting sequential mutation into a final expression
+
+Exercise:
+
+Fill this truth table:
+
+    isFromGd | firRegNum present | final list source
+    ---------+-------------------+------------------
+    true     | yes               | GD
+    true     | no                | GD
+    false    | yes               | FIR
+    false    | no                | saved child table
+    null     | yes               | FIR in defensive SQL
+    null     | no                | saved child table in defensive SQL
+
+
+SESSION 7 — CONTRACT TESTING
+----------------------------
+
+Compare one Java response to one SQL result.
+
+Do not start by reading all 721 SQL lines again. Use this order:
+
+    1. root ID and types
+    2. root scalar fields
+    3. display labels
+    4. each array count
+    5. one item from each array
+    6. nested witness items
+    7. act-section branch
+    8. unresolved contract gaps
+
+
+================================================================================
+31. FIVE RULES TO REMEMBER WHEN YOU BUILD THE NEXT MODULE FUNCTION
+================================================================================
+
+RULE 1
+
+The DTO defines public JSON shape; the table does not.
+
+RULE 2
+
+The use case defines conditions and overwrite order; copying entities alone is
+not enough.
+
+RULE 3
+
+Codes and labels are separate data. Find the same master source Java uses.
+
+RULE 4
+
+For every array, explicitly decide:
+
+    parent-child key
+    filtering rule
+    ordering rule
+    empty-array behavior
+
+RULE 5
+
+Never hide a cross-source conflict. Put it next to the relevant SQL and turn it
+into an acceptance test.
+
+
+================================================================================
+32. FINAL MENTAL MODEL
+================================================================================
+
+Think of the function as a server-side selector:
+
+    database normalized rows
+              |
+              | filter by one root ID
+              v
+    root business record
+              |
+              | attach child arrays
+              | attach child-of-child arrays
+              | resolve code labels
+              | apply FIR/GD condition priority
+              | normalize Long/date JSON types
+              v
+    ApprehendMemoDTO-shaped JSONB
+
+The core logic is not "write a huge SQL file." The core logic is:
+
+    1. Define the exact output contract.
+    2. Locate the source of every property.
+    3. Recreate relationships as arrays.
+    4. Recreate Java enrichment.
+    5. Preserve Java condition order.
+    6. Preserve JSON types and missing-data behavior.
+    7. Test every assumption against live output.
+
+Once you can explain those seven steps, you understand the architecture even if
+you do not yet remember every PostgreSQL keyword.

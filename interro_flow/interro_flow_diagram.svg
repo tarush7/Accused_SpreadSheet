@@ -1,0 +1,329 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2624" height="1600" viewBox="0 0 2624 1600">
+<defs>
+<filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#0f172a" flood-opacity="0.09"/></filter>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker>
+<marker id="arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#d97706"/></marker>
+</defs>
+<rect width="2624" height="1600" fill="#f8fafc"/>
+<text x="40" y="42" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="750" fill="#0f172a" text-anchor="start">Interro Module — Table Relationship Flow</text>
+<text x="40" y="69" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="400" fill="#64748b" text-anchor="start">Source: module_wise_json_postgres · complaint_type = interro · 24 tables</text>
+<g filter="url(#shadow)"><rect x="914" y="92" width="796" height="172" rx="18" fill="#ffffff" stroke="#5b4bdb" stroke-width="3"/>
+<rect x="914" y="92" width="796" height="50" rx="18" fill="#5b4bdb"/>
+<rect x="914" y="124" width="796" height="18" fill="#5b4bdb"/>
+<text x="1312.0" y="125" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="750" fill="#ffffff" text-anchor="middle">t_interrogation_info  •  CORE / PARENT</text>
+<text x="939" y="170" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#7c3aed" text-anchor="start">interro_srno  PK</text>
+<text x="939" y="197" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#2563eb" text-anchor="start">fir_reg_num  FK</text>
+<text x="939" y="224" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#2563eb" text-anchor="start">accused_srno  FK</text>
+<text x="1199" y="170" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#475569" text-anchor="start">interro_dt</text>
+<text x="1199" y="197" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#475569" text-anchor="start">interro_statement</text>
+<text x="1199" y="224" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="500" fill="#475569" text-anchor="start">flags: accused · juvenile · medical · disclosures</text>
+</g>
+<path d="M 1312.0 264 V 308 H 2382.0 M 1312.0 308 H 242.0" fill="none" stroke="#5b4bdb" stroke-width="3"/>
+<rect x="1238.0" y="293" width="148" height="30" rx="15" fill="#ede9fe" stroke="#8b7cf6"/>
+<text x="1312.0" y="313" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#5b4bdb" text-anchor="middle">1 : N  interro_srno</text>
+<path d="M 242.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="36" y="342" width="412" height="721" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="36" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="36" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="242.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Identity &amp; Contact</text>
+<g id="t_interro_person_info">
+<rect x="52" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 64 405 H 420 Q 432 405 432 417 V 448 H 52 V 417 Q 52 405 64 405" fill="#ede9fe"/>
+<line x1="52" y1="448" x2="432" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="242.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_info</text>
+<text x="67" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">person_code PK</text>
+<text x="67" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="67" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">name / DOB / gender</text>
+<text x="67" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">identity &amp; contact</text>
+</g>
+<g id="t_interro_person_addr">
+<rect x="52" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 64 569 H 420 Q 432 569 432 581 V 612 H 52 V 581 Q 52 569 64 569" fill="#ede9fe"/>
+<line x1="52" y1="612" x2="432" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="242.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_addr</text>
+<text x="67" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_addr_srno PK</text>
+<text x="67" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="67" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="67" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">address / location</text>
+</g>
+<g id="t_interro_person_nationality">
+<rect x="52" y="733" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 64 733 H 420 Q 432 733 432 745 V 776 H 52 V 745 Q 52 733 64 733" fill="#ede9fe"/>
+<line x1="52" y1="776" x2="432" y2="776" stroke="#8b7cf6" stroke-width="2"/>
+<text x="242.0" y="761" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_nationality</text>
+<text x="67" y="800" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">national_id_srno PK</text>
+<text x="67" y="822" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="67" y="844" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">nationality_cd</text>
+<text x="67" y="866" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">national ID / passport</text>
+</g>
+<g id="t_interro_person_socialmedia">
+<rect x="52" y="897" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 64 897 H 420 Q 432 897 432 909 V 940 H 52 V 909 Q 52 897 64 897" fill="#ede9fe"/>
+<line x1="52" y1="940" x2="432" y2="940" stroke="#8b7cf6" stroke-width="2"/>
+<text x="242.0" y="925" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_socialmedia</text>
+<text x="67" y="964" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_soc_med_srno PK</text>
+<text x="67" y="986" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="67" y="1008" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">socialmedia_type</text>
+<text x="67" y="1030" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">ID / email / mobile</text>
+</g>
+<path d="M 242.0 390 H 44 V 971.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 44 479.0 H 52" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 44 643.0 H 52" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 44 807.0 H 52" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 44 971.0 H 52" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 670.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="464" y="342" width="412" height="721" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="464" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="464" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="670.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Physical Description</text>
+<g id="t_interro_person_phy_feature">
+<rect x="480" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 492 405 H 848 Q 860 405 860 417 V 448 H 480 V 417 Q 480 405 492 405" fill="#ede9fe"/>
+<line x1="480" y1="448" x2="860" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="670.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_phy_feature</text>
+<text x="495" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_phy_feat_srno PK</text>
+<text x="495" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="495" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">feature category</text>
+<text x="495" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">major / minor feature</text>
+</g>
+<g id="t_interro_person_spl_feature">
+<rect x="480" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 492 569 H 848 Q 860 569 860 581 V 612 H 480 V 581 Q 480 569 492 569" fill="#ede9fe"/>
+<line x1="480" y1="612" x2="860" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="670.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_spl_feature</text>
+<text x="495" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_feat_srno PK</text>
+<text x="495" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="495" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="495" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">special feature</text>
+</g>
+<g id="t_interro_person_id_marks">
+<rect x="480" y="733" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 492 733 H 848 Q 860 733 860 745 V 776 H 480 V 745 Q 480 733 492 733" fill="#ede9fe"/>
+<line x1="480" y1="776" x2="860" y2="776" stroke="#8b7cf6" stroke-width="2"/>
+<text x="670.0" y="761" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_id_marks</text>
+<text x="495" y="800" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">identiy_marks_srno PK</text>
+<text x="495" y="822" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="495" y="844" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">body part</text>
+<text x="495" y="866" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">tattoo / mark details</text>
+</g>
+<g id="t_interro_person_dress">
+<rect x="480" y="897" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 492 897 H 848 Q 860 897 860 909 V 940 H 480 V 909 Q 480 897 492 897" fill="#ede9fe"/>
+<line x1="480" y1="940" x2="860" y2="940" stroke="#8b7cf6" stroke-width="2"/>
+<text x="670.0" y="925" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_dress</text>
+<text x="495" y="964" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_dress_srno PK</text>
+<text x="495" y="986" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="495" y="1008" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">dress type / subtype</text>
+<text x="495" y="1030" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">other details</text>
+</g>
+<path d="M 670.0 390 H 472 V 971.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 472 479.0 H 480" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 472 643.0 H 480" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 472 807.0 H 480" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 472 971.0 H 480" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1098.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="892" y="342" width="412" height="885" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="892" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="892" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="1098.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Behaviour &amp; Context</text>
+<g id="t_interro_person_language">
+<rect x="908" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 920 405 H 1276 Q 1288 405 1288 417 V 448 H 908 V 417 Q 908 405 920 405" fill="#ede9fe"/>
+<line x1="908" y1="448" x2="1288" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1098.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_language</text>
+<text x="923" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_lang_srno PK</text>
+<text x="923" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="923" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="923" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">language_used</text>
+</g>
+<g id="t_interro_person_method">
+<rect x="908" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 920 569 H 1276 Q 1288 569 1288 581 V 612 H 908 V 581 Q 908 569 920 569" fill="#ede9fe"/>
+<line x1="908" y1="612" x2="1288" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1098.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_method</text>
+<text x="923" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_method_srno PK</text>
+<text x="923" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="923" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="923" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">method_type</text>
+</g>
+<g id="t_interro_person_character">
+<rect x="908" y="733" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 920 733 H 1276 Q 1288 733 1288 745 V 776 H 908 V 745 Q 908 733 920 733" fill="#ede9fe"/>
+<line x1="908" y1="776" x2="1288" y2="776" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1098.0" y="761" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_character</text>
+<text x="923" y="800" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_charac_srno PK</text>
+<text x="923" y="822" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="923" y="844" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="923" y="866" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">character_type</text>
+</g>
+<g id="t_interro_person_habits">
+<rect x="908" y="897" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 920 897 H 1276 Q 1288 897 1288 909 V 940 H 908 V 909 Q 908 897 920 897" fill="#ede9fe"/>
+<line x1="908" y1="940" x2="1288" y2="940" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1098.0" y="925" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_habits</text>
+<text x="923" y="964" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">habits_srno PK</text>
+<text x="923" y="986" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="923" y="1008" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="923" y="1030" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">habits_cd</text>
+</g>
+<g id="t_interro_person_motive">
+<rect x="908" y="1061" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 920 1061 H 1276 Q 1288 1061 1288 1073 V 1104 H 908 V 1073 Q 908 1061 920 1061" fill="#ede9fe"/>
+<line x1="908" y1="1104" x2="1288" y2="1104" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1098.0" y="1089" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_motive</text>
+<text x="923" y="1128" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_motive_srno PK</text>
+<text x="923" y="1150" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="923" y="1172" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">fir_reg_num FK</text>
+<text x="923" y="1194" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">crime_motive_type</text>
+</g>
+<path d="M 1098.0 390 H 900 V 1135.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 900 479.0 H 908" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 900 643.0 H 908" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 900 807.0 H 908" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 900 971.0 H 908" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 900 1135.0 H 908" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1526.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="1320" y="342" width="412" height="557" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="1320" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="1320" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="1526.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Criminal History</text>
+<g id="t_interro_person_cases_confessed">
+<rect x="1336" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 1348 405 H 1704 Q 1716 405 1716 417 V 448 H 1336 V 417 Q 1336 405 1348 405" fill="#ede9fe"/>
+<line x1="1336" y1="448" x2="1716" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1526.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_cases_confessed</text>
+<text x="1351" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">confess_case_srno PK</text>
+<text x="1351" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="1351" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">case FIR / year</text>
+<text x="1351" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">receiving agency</text>
+</g>
+<g id="t_interro_person_convictions">
+<rect x="1336" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 1348 569 H 1704 Q 1716 569 1716 581 V 612 H 1336 V 581 Q 1336 569 1348 569" fill="#ede9fe"/>
+<line x1="1336" y1="612" x2="1716" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1526.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_convictions</text>
+<text x="1351" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">convict_case_srno PK</text>
+<text x="1351" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="1351" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">case FIR / year</text>
+<text x="1351" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">conviction details</text>
+</g>
+<g id="t_interro_person_jail_details">
+<rect x="1336" y="733" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 1348 733 H 1704 Q 1716 733 1716 745 V 776 H 1336 V 745 Q 1336 733 1348 733" fill="#ede9fe"/>
+<line x1="1336" y1="776" x2="1716" y2="776" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1526.0" y="761" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_jail_details</text>
+<text x="1351" y="800" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_jail_srno PK</text>
+<text x="1351" y="822" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="1351" y="844" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">jail / arrest details</text>
+<text x="1351" y="866" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">sentence / parole</text>
+</g>
+<path d="M 1526.0 390 H 1328 V 807.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 1328 479.0 H 1336" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1328 643.0 H 1336" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1328 807.0 H 1336" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1954.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="1748" y="342" width="412" height="393" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="1748" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="1748" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="1954.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Employment &amp; Network</text>
+<g id="t_interro_person_employer">
+<rect x="1764" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 1776 405 H 2132 Q 2144 405 2144 417 V 448 H 1764 V 417 Q 1764 405 1776 405" fill="#ede9fe"/>
+<line x1="1764" y1="448" x2="2144" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1954.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_employer</text>
+<text x="1779" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">employer_srno PK</text>
+<text x="1779" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="1779" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">employer / phone</text>
+<text x="1779" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">employment period</text>
+</g>
+<g id="t_interro_person_relatives">
+<rect x="1764" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 1776 569 H 2132 Q 2144 569 2144 581 V 612 H 1764 V 581 Q 1764 569 1776 569" fill="#ede9fe"/>
+<line x1="1764" y1="612" x2="2144" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="1954.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_relatives</text>
+<text x="1779" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">relative_srno PK</text>
+<text x="1779" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="1779" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">relative / alias</text>
+<text x="1779" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">criminal background</text>
+</g>
+<path d="M 1954.0 390 H 1756 V 643.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 1756 479.0 H 1764" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 1756 643.0 H 1764" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 2382.0 308 V 342" fill="none" stroke="#5b4bdb" stroke-width="2.5"/>
+<rect x="2176" y="342" width="412" height="721" rx="18" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+<rect x="2176" y="342" width="412" height="48" rx="18" fill="#ddd6fe"/>
+<rect x="2176" y="372" width="412" height="18" fill="#ddd6fe"/>
+<text x="2382.0" y="372" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#3730a3" text-anchor="middle">Assets &amp; Evidence</text>
+<g id="t_interro_person_property">
+<rect x="2192" y="405" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 2204 405 H 2560 Q 2572 405 2572 417 V 448 H 2192 V 417 Q 2192 405 2204 405" fill="#ede9fe"/>
+<line x1="2192" y1="448" x2="2572" y2="448" stroke="#8b7cf6" stroke-width="2"/>
+<text x="2382.0" y="433" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_property</text>
+<text x="2207" y="472" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">acc_prop_srno PK</text>
+<text x="2207" y="494" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="2207" y="516" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">property type</text>
+<text x="2207" y="538" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">disposal details</text>
+</g>
+<g id="t_interro_person_bank_dtls">
+<rect x="2192" y="569" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 2204 569 H 2560 Q 2572 569 2572 581 V 612 H 2192 V 581 Q 2192 569 2204 569" fill="#ede9fe"/>
+<line x1="2192" y1="612" x2="2572" y2="612" stroke="#8b7cf6" stroke-width="2"/>
+<text x="2382.0" y="597" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_bank_dtls</text>
+<text x="2207" y="636" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_bank_srno PK</text>
+<text x="2207" y="658" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="2207" y="680" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">bank / account type</text>
+<text x="2207" y="702" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">account number</text>
+</g>
+<g id="t_interro_person_conveyance">
+<rect x="2192" y="733" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 2204 733 H 2560 Q 2572 733 2572 745 V 776 H 2192 V 745 Q 2192 733 2204 733" fill="#ede9fe"/>
+<line x1="2192" y1="776" x2="2572" y2="776" stroke="#8b7cf6" stroke-width="2"/>
+<text x="2382.0" y="761" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interro_person_conveyance</text>
+<text x="2207" y="800" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_conv_srno PK</text>
+<text x="2207" y="822" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="2207" y="844" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">type / color</text>
+<text x="2207" y="866" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">vehicle number</text>
+</g>
+<g id="t_interrogation_files">
+<rect x="2192" y="897" width="380" height="148" rx="12" fill="#ffffff" stroke="#8b7cf6" stroke-width="2"/>
+<path d="M 2204 897 H 2560 Q 2572 897 2572 909 V 940 H 2192 V 909 Q 2192 897 2204 897" fill="#ede9fe"/>
+<line x1="2192" y1="940" x2="2572" y2="940" stroke="#8b7cf6" stroke-width="2"/>
+<text x="2382.0" y="925" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#312e81" text-anchor="middle">t_interrogation_files</text>
+<text x="2207" y="964" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#7c3aed" text-anchor="start">interro_file_srno PK</text>
+<text x="2207" y="986" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600" fill="#2563eb" text-anchor="start">interro_srno FK</text>
+<text x="2207" y="1008" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">file type / name</text>
+<text x="2207" y="1030" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">path / GUID</text>
+</g>
+<path d="M 2382.0 390 H 2184 V 971.0" fill="none" stroke="#7c83a3" stroke-width="1.5"/>
+<path d="M 2184 479.0 H 2192" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 2184 643.0 H 2192" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 2184 807.0 H 2192" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M 2184 971.0 H 2192" fill="none" stroke="#7c83a3" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="1854" y="1200" width="720" height="170" rx="14" fill="#fffbeb" stroke="#f59e0b" stroke-width="2.5" filter="url(#shadow)"/>
+<path d="M 1868 1200 H 2560 Q 2574 1200 2574 1214 V 1246 H 1854 V 1214 Q 1854 1200 1868 1200" fill="#fef3c7"/>
+<line x1="1854" y1="1246" x2="2574" y2="1246" stroke="#f59e0b" stroke-width="2"/>
+<text x="2214.0" y="1230" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="750" fill="#92400e" text-anchor="middle">t_interro_emp_rel_prop_addr  •  SHARED ADDRESS</text>
+<text x="1872" y="1275" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="650" fill="#7c3aed" text-anchor="start">address_cd PK</text>
+<text x="2097" y="1275" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="650" fill="#b45309" text-anchor="start">employer_srno FK</text>
+<text x="2322" y="1275" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="650" fill="#b45309" text-anchor="start">relative_srno FK</text>
+<text x="1872" y="1304" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="650" fill="#b45309" text-anchor="start">acc_prop_srno FK</text>
+<text x="2097" y="1304" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="400" fill="#475569" text-anchor="start">address / location</text>
+<path d="M 1764 479.0 H 1734 V 1172 H 2034 V 1200" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-orange)"/>
+<path d="M 2144 643.0 H 2166 V 1172 H 2214 V 1200" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-orange)"/>
+<path d="M 2572 479.0 H 2592 V 1172 H 2394 V 1200" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-orange)"/>
+<text x="2214.0" y="1160" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#b45309" text-anchor="middle">Address belongs to employer OR relative OR property</text>
+<rect x="40" y="1437" width="1710" height="112" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="62" y="1468" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="750" fill="#0f172a" text-anchor="start">Reading the flow</text>
+<text x="62" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750" fill="#7c3aed" text-anchor="start">PK</text>
+<text x="92" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">primary key</text>
+<text x="225" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750" fill="#2563eb" text-anchor="start">FK</text>
+<text x="255" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">foreign key</text>
+<text x="406" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750" fill="#5b4bdb" text-anchor="start">Solid branch</text>
+<text x="500" y="1496" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">each section joins to the parent through interro_srno</text>
+<text x="62" y="1526" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750" fill="#b45309" text-anchor="start">Dashed amber branch</text>
+<text x="235" y="1526" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">shared address relationship through employer_srno, relative_srno, or acc_prop_srno</text>
+<text x="1790" y="1473" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="750" fill="#0f172a" text-anchor="start">Scope check</text>
+<text x="1790" y="1503" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="650" fill="#166534" text-anchor="start">24 / 24 interro tables included</text>
+<text x="1790" y="1530" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start">Rows 350 and 405–428 in source sheet</text>
+<text x="40" y="1581" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#64748b" text-anchor="start">First-pass logical ER flow inferred from key names in the supplied JSON samples; database constraints were not provided.</text>
+</svg>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configure xmlns="http://schemas.xmlsoap.org/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://schemas.xmlsoap.org/encoding/ ConfigXMLSchema.xsd"> 
+  <fileGroup treeRootName="Cisco Secure Client" directoryName="Cisco Secure Client\AMP Enabler">
+    <title>AMP Enabler</title>  
+    <file id="csc-amp-profile">
+        <default>true</default>
+        <description>Secure Client AmpEnabler Profile</description>
+        <gui>
+          <label>_tr("Secure Client AmpEnabler Profile")</label>
+          <file_type>log</file_type>
+        </gui>
+        <dart>
+        <required>false</required>
+        <os opsys="mac">
+              <file_copy_action>
+                  <action>
+                      <loc>/opt/cisco/secureclient/ampenabler/AMPEnabler_ServiceProfile.xml</loc>
+                      <clear_log apply="false"></clear_log>
+                  </action>
+                  <action>
+                      <loc>/opt/cisco/secureclient/ampenabler/PersistedData.dat</loc>
+                      <clear_log apply="false"></clear_log>
+                  </action>
+              </file_copy_action>
+          </os>
+      </dart>
+      </file>
+  </fileGroup> 
+  <fileGroup treeRootName="Legacy - Cisco AnyConnect Secure Mobility Client" directoryName="Legacy - Cisco AnyConnect Secure Mobility Client\Cisco AnyConnect AMP Enabler Module">
+      <title>Cisco AnyConnect AMP Enabler Module</title>
+      <file id="ampe-install">
+          <default>false</default>
+          <description>AMP Enabler install logs</description>
+          <gui>
+              <label>_tr("AMP Enabler install logs")</label>
+              <file_type>log</file_type>
+          </gui>
+          <dart>
+              <required>false</required>
+  	          <os opsys="win">
+                  <file_copy_action>
+                    <action>
+                      <loc>%TEMP%\anyconnect*-amp-*.log</loc>
+                      <clear_log apply="false"></clear_log>
+                    </action>
+                    <action>
+                      <loc>%WINDIR%\Temp\anyconnect*-amp-*.log</loc>
+                      <clear_log apply="false"></clear_log>
+                    </action>
+                  </file_copy_action>
+              </os>
+          </dart>
+      </file>
+      <file id="ampe-logs">
+        <default>false</default>
+        <description>AMP Enabler application logs</description>
+        <gui>
+          <label>_tr("AMP Enabler application logs")</label>
+          <file_type>log</file_type>
+        </gui>
+        <dart>
+          <required>false</required>
+    	  <os opsys="win">
+            <use_extern_action>
+              <action>
+                <plugin></plugin>
+                <args>wineventlog.exe -l "Cisco AnyConnect AMP Enabler Module" -f %TEMP%\AMPEnabler.txt</args>
+                <clear_log apply="false"></clear_log>
+                <temp_out>%TEMP%\AMPEnabler.txt</temp_out>
+              </action>
+              <action>
+                <path>%WINDIR%\system32</path>
+                <args>wevtutil epl "Cisco AnyConnect AMP Enabler Module" %TEMP%\AMPEnabler.evtx</args>
+                <clear_log apply="true">wevtutil cl "Cisco AnyConnect AMP Enabler Module"</clear_log>
+                <temp_out>%TEMP%\AMPEnabler.evtx</temp_out>
+              </action>
+            </use_extern_action>
+          </os>
+        </dart>
+      </file>
+      <file id="amp-connector-logs">
+        <default>false</default>
+        <description>AMP Connector installation logs</description>
+        <gui>
+          <label>_tr("AMP Connector installation logs")</label>
+          <file_type>log</file_type>
+        </gui>
+        <dart>
+          <required>false</required>
+    	    <os opsys="win">
+             <file_copy_action>
+                <action>
+                    <loc>%WINDIR%\Temp\immpro_install.log</loc>
+                    <clear_log apply="false"></clear_log>
+                </action>
+            </file_copy_action>
+          </os>
+        </dart>
+      </file>
+      <file id="amp-profile">
+        <default>false</default>
+        <description>AmpEnabler Profile</description>
+        <gui>
+          <label>_tr("AmpEnabler Profile")</label>
+          <file_type>log</file_type>
+        </gui>
+        <dart>
+          <required>false</required>
+    	  <os opsys="win">
+            <file_copy_action>
+              <action>
+                <loc>%ALLUSERSPROFILE%\Cisco\Cisco AnyConnect Secure Mobility Client\AMPEnabler\AMPEnabler_ServiceProfile.xml</loc>
+                <clear_log apply="false"></clear_log>
+              </action>
+              <action>
+                <loc>%ALLUSERSPROFILE%\Cisco\Cisco AnyConnect Secure Mobility Client\AMPEnabler\PersistedData.dat</loc>
+                <clear_log apply="false"></clear_log>
+              </action>
+            </file_copy_action>
+          </os>
+    	</dart>
+      </file>
+	  <file id="amp-profile">
+        <default>false</default>
+        <description>AmpEnabler Profile</description>
+        <gui>
+          <label>_tr("AmpEnabler Profile")</label>
+          <file_type>log</file_type>
+        </gui>
+        <dart>
+          <required>false</required>
+    	  <os opsys="mac">
+              <file_copy_action>
+                  <action>
+                      <loc>/opt/cisco/anyconnect/ampenabler/AMPEnabler_ServiceProfile.xml</loc>
+                      <clear_log apply="false"></clear_log>
+                  </action>
+                  <action>
+                      <loc>/opt/cisco/anyconnect/ampenabler/PersistedData.dat</loc>
+                      <clear_log apply="false"></clear_log>
+                  </action>
+              </file_copy_action>
+          </os>
+    	</dart>
+      </file>
+  </fileGroup>
+</configure>
+

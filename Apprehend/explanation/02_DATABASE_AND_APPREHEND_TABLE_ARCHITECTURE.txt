@@ -1,0 +1,429 @@
+DATABASE AND APPREHEND TABLE ARCHITECTURE
+========================================
+
+1. NORMALIZED STORAGE VERSUS NESTED JSON
+----------------------------------------
+
+Relational databases avoid storing the same information repeatedly. Data is
+split into related tables. This is called normalization.
+
+An API usually wants a nested document. These are two different shapes:
+
+Relational storage:
+
+    memo row
+    file rows
+    address rows
+    witness rows
+    witness-address rows
+
+Nested response:
+
+    {
+      "memo fields": "...",
+      "files": [ ... ],
+      "addresses": [ ... ],
+      "witnesses": [
+        {
+          "witness fields": "...",
+          "addressGrid": [ ... ]
+        }
+      ]
+    }
+
+The SQL JSON function performs the shape conversion.
+
+
+2. KNOWN APPREHEND TABLE GRAPH
+------------------------------
+
+The supplied Apprehend lookup CSV and workbook identify 17 module tables.
+
+Root:
+
+    t_apprehend_memo
+    Primary key: apprehend_srno
+
+Direct children linked by apprehend_srno:
+
+    t_apprehend_act_section
+    t_apprehend_addresses
+    t_apprehend_bank_dtls
+    t_apprehend_files
+    t_apprehend_intimate_addr
+    t_apprehend_national_id
+    t_apprehend_socialmedia
+    t_apprehend_witness
+    t_juv_background_report
+
+Second-level witness child:
+
+    t_apprehend_witness_addr
+    Linked to t_apprehend_witness by appr_witns_srno
+
+Second-level juvenile-background children:
+
+    t_jcl_background_files
+    t_juv_dress
+    t_juv_family_dtls
+    t_juv_identity_marks
+    t_juv_phy_abuse
+    t_juv_phy_feature
+
+These link primarily to t_juv_background_report by bg_report_srno.
+
+
+3. TREE VIEW
+------------
+
+    t_apprehend_memo (one selected root)
+    |
+    +-- t_apprehend_act_section (zero or many)
+    |
+    +-- t_apprehend_addresses (zero or many)
+    |
+    +-- t_apprehend_bank_dtls (zero or many)
+    |
+    +-- t_apprehend_files (zero or many)
+    |
+    +-- t_apprehend_intimate_addr (zero or many)
+    |
+    +-- t_apprehend_national_id (zero or many)
+    |
+    +-- t_apprehend_socialmedia (zero or many)
+    |
+    +-- t_apprehend_witness (zero or many)
+    |   |
+    |   +-- t_apprehend_witness_addr (zero or many per witness)
+    |
+    +-- t_juv_background_report (zero, one or many - Java must confirm)
+        |
+        +-- t_jcl_background_files (zero or many)
+        +-- t_juv_dress (zero or many)
+        +-- t_juv_family_dtls (zero or many)
+        +-- t_juv_identity_marks (zero or many)
+        +-- t_juv_phy_abuse (zero or many)
+        +-- t_juv_phy_feature (zero or many)
+
+
+4. WHY APPREHEND_SRNO IS THE LIKELY INPUT
+-----------------------------------------
+
+A good function input should locate exactly one logical root record.
+
+apprehend_srno is a strong candidate because:
+
+    - It is shown as the primary key of t_apprehend_memo.
+    - Direct child tables carry it.
+    - It represents one Apprehend event rather than an entire FIR/person.
+
+Other identifiers have different meanings:
+
+    fir_reg_num
+        One FIR can involve several juveniles or Apprehend events.
+
+    juvenile_vid
+        Likely identifies the person's version/profile, not necessarily one
+        specific Apprehend event.
+
+    juvenile_srno
+        Likely identifies a juvenile record but may still span event-specific
+        information.
+
+    fir_juvenile_srno
+        Likely identifies the FIR-to-juvenile relationship.
+
+The Java service must confirm whether the endpoint's generic id is translated to
+apprehend_srno or whether the function needs a flag plus multiple input paths.
+
+
+5. RELATIONSHIP TYPES
+---------------------
+
+5.1 One-to-one
+
+At most one child row belongs to the root. SQL can return one object:
+
+    'details', (
+        SELECT to_jsonb(detail.*)
+        FROM detail
+        WHERE detail.apprehend_srno = memo.apprehend_srno
+        LIMIT 1
+    )
+
+Never use LIMIT 1 merely to hide duplicates. First prove the relationship is
+truly one-to-one and define deterministic ordering if multiple historical rows
+can exist.
+
+5.2 One-to-many
+
+Many child rows can belong to the root. SQL returns an array with jsonb_agg.
+
+5.3 Nested one-to-many
+
+Witness -> addresses and background report -> background children are nested
+one-to-many relationships. Child aggregation belongs inside parent aggregation.
+
+
+6. WHY ONE LARGE JOIN IS DANGEROUS
+----------------------------------
+
+Suppose one memo has:
+
+    2 act/section rows
+    3 files
+    4 witnesses
+
+One query joining all three child tables can create:
+
+    2 x 3 x 4 = 24 combined rows
+
+Each file is repeated for each act and witness. jsonb_agg then produces duplicate
+objects, or requires expensive/error-prone DISTINCT.
+
+Preferred architecture:
+
+    root memo
+      + independently aggregate acts
+      + independently aggregate files
+      + independently aggregate witnesses
+      + merge the completed JSON pieces
+
+This avoids cross-products and keeps every relationship understandable.
+
+
+7. TABLE-BY-TABLE ROLE
+----------------------
+
+7.1 t_apprehend_memo
+
+Likely contains:
+
+    - Root identifiers and FIR/person references.
+    - Apprehension date, type, place and circumstances.
+    - Personal and relative information.
+    - Age, gender, occupation and nationality codes.
+    - Apprehending officer and investigating officer IDs.
+    - Intimation information.
+    - Risk/history Boolean fields.
+    - Custody/JCL information.
+    - Physical description summary.
+    - Audit fields.
+
+It contains many logical sections even though they occupy one database row.
+Java may split those columns into several nested response objects.
+
+7.2 t_apprehend_act_section
+
+Stores applicable act and section codes. It needs dedicated joins:
+
+    act_cd     -> mdm.m_act
+    section_cd -> mdm.m_section
+
+The response may call this actSection, actSectionList or another DTO property.
+
+7.3 t_apprehend_addresses
+
+Stores juvenile/person addresses. Address codes require master resolution for
+country, state, district, sub-district, village and police station.
+
+7.4 t_apprehend_bank_dtls
+
+Stores bank/account information. Known lookups:
+
+    bank_cd         -> BANKS
+    account_type_cd -> ACCNT_TYP
+
+Verify whether Java combines this table with any VDA/virtual asset table not
+shown in the current Apprehend workbook.
+
+7.5 t_apprehend_files
+
+Stores file metadata, not necessarily file bytes. Known lookups:
+
+    file_type_cd    -> UPLOAD_FILE_TYP
+    file_subtype_cd -> UPLOAD_FILE_SUB_TYP
+
+Java may call another service to create previewUrl or imageBase64. SQL should not
+invent those values.
+
+7.6 t_apprehend_intimate_addr
+
+Stores addresses associated with intimation. This is a separate response section
+from the juvenile's main addresses.
+
+7.7 t_apprehend_national_id
+
+Stores zero or more identity-document records, including document type, number,
+passport issue date and place.
+
+7.8 t_apprehend_socialmedia
+
+Stores social-media type and URL. The database uses socialmedia_* while Java may
+use socialMedia*; this is not handled correctly by a simple underscore converter
+unless explicit aliases are added.
+
+7.9 t_apprehend_witness
+
+Stores witness personal/contact details and statement/evidence data. Each witness
+may have its own addressGrid from t_apprehend_witness_addr.
+
+7.10 t_apprehend_witness_addr
+
+Connects to one witness through appr_witns_srno, not directly to the memo. Using
+apprehend_srno here would be logically wrong because that column is not shown in
+this table.
+
+7.11 t_juv_background_report
+
+The root of the JCL background branch. It contains family/social/education,
+history, health, rehabilitation and physical-summary information.
+
+7.12 t_jcl_background_files
+
+File metadata belonging to one background report.
+
+7.13 t_juv_dress
+
+Dress/appearance description belonging to a background report.
+
+7.14 t_juv_family_dtls
+
+Family members and their demographic, education, occupation, health and legal
+details.
+
+7.15 t_juv_identity_marks
+
+Identity mark and body-part/tattoo details.
+
+7.16 t_juv_phy_abuse
+
+Physical abuse type and remarks.
+
+7.17 t_juv_phy_feature
+
+Physical feature hierarchy. The major feature uses lookup parent-code/value
+columns; the minor feature uses normal lookup code/value columns.
+
+
+8. MASTER-DATA ARCHITECTURE
+---------------------------
+
+8.1 Generic lookup master
+
+mdm.m_lookup_masters contains many categories. A correct lookup uses:
+
+    api_master_code + look_up_code + lang_cd
+
+Why all three?
+
+    - api_master_code identifies the meaning/domain.
+    - look_up_code identifies the selected value.
+    - lang_cd selects display language.
+
+Joining only on look_up_code is incorrect because code 1 occurs in many domains.
+
+Known Apprehend categories include:
+
+    OFFCL_LANG, ARR_SURR_TYPE, RELATION_TYP, RELIGION,
+    NTNL_ID_DOC_TYP, GENDER, CATEGORY, EDU_QUAL,
+    LIVING_STATUS, MARTL_STATUS, OCCUPATION, AGE_DETERM,
+    LANG_DIALECTS, AGE_PANEL_TYPE, NATIONALITY, BLOOD_GROUP,
+    INCOME_GROUP, ARRST_ACTN, ARRST_STATUS, INFO_MODE,
+    EVIDENCE_TYP, IDENTITY_TYP, CUSTODY_TYPE,
+    PHY_FEAT_PCODE_BUILD, PHY_FEAT_PCODE_COMPL,
+    ADD_TYP, BANKS, ACCNT_TYP, UPLOAD_FILE_TYP,
+    UPLOAD_FILE_SUB_TYP, SOCIAL_MEDIA_TYP, EVIDENCE_TENDERED,
+    JUV_AGE_PROOF, PHY_DESC_TYP, PHYSCL_FEATURES,
+    IDENTITY_MARKS and ABUSE_TYPE.
+
+8.2 Dedicated masters
+
+Some codes use dedicated tables:
+
+    state_id/sub-state references -> mdm.m_state
+    district references           -> mdm.m_district
+    ps_id                         -> mdm.m_police_station
+    beat code                     -> mdm.m_ps_beat
+    act code                      -> mdm.m_act
+    section code                  -> mdm.m_section
+    staff ID                      -> users.t_police_staff_info
+
+8.3 Address helper
+
+The existing Arrest SQL uses mdm.common_get_address_master_values(...). A shared
+helper can keep address resolution consistent across modules. Before reusing it,
+verify:
+
+    - Function exists in target database.
+    - Argument order and types.
+    - Returned column names/case.
+    - Language and inactive-record behavior.
+
+8.4 Unknown mappings
+
+The workbook marks these as unknown:
+
+    t_apprehend_memo.criminal_gang_cd
+    t_apprehend_memo.physical_cond_cd
+    t_apprehend_memo.court_estbl_cd
+    t_juv_background_report.physical_cond_cd
+    t_juv_family_dtls.addiction_cd
+
+Correct behavior until confirmed:
+
+    - Preserve the raw code.
+    - Do not guess a master category.
+    - Do not return a false human-readable label.
+    - Document the unresolved mapping.
+
+
+9. LANGUAGE ARCHITECTURE
+------------------------
+
+There may be two possible language sources:
+
+    - Row's lang_cd.
+    - Request's langCd.
+
+The existing Arrest draft resolves using the row language. Java may instead use
+the requested language. This must be verified because it changes every lookup.
+
+Also define fallback behavior:
+
+    requested language label exists -> use it
+    requested label missing         -> fallback to 99/English?
+    no label anywhere               -> return null, keep raw code
+
+Never invent fallback rules without finding them in Java or project standards.
+
+
+10. RECORD STATUS AND HISTORY
+-----------------------------
+
+Many tables contain record_status. Determine the meanings of values such as C,
+D, A or I. Java repository queries may exclude deleted/inactive rows.
+
+Questions for every child table:
+
+    - Include all versions or current rows only?
+    - Exclude record_status = 'D'?
+    - Choose the latest by record_updated_on?
+    - Does migration data use different status rules?
+    - Should child arrays contain deterministic ordering?
+
+
+11. PHYSICAL SCHEMA VERSUS BUSINESS MODULE
+------------------------------------------
+
+"Apprehend module" does not prove that the PostgreSQL schema is named
+apprehend. Tables could physically live in arrest, fir, juvenile or another
+schema. Confirm from:
+
+    - @Table(schema = "...") on Java entities.
+    - Existing repository SQL.
+    - information_schema.tables.
+    - Database DDL.
+
+Hard-coding the wrong schema makes an otherwise correct function unusable.
+

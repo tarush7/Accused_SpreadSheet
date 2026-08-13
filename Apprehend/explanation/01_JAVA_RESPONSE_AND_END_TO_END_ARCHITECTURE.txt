@@ -1,0 +1,427 @@
+JAVA RESPONSE AND END-TO-END ARCHITECTURE
+=========================================
+
+1. WHY THIS ARCHITECTURE MATTERS
+--------------------------------
+
+A database function cannot be designed correctly by looking only at tables.
+Tables describe storage. An API response describes the public contract.
+
+The complete path normally looks like this:
+
+    Client/UI
+       |
+       | HTTP request (JSON)
+       v
+    Java Controller
+       |
+       | validated request object
+       v
+    Java Service
+       |
+       | business rules and repository calls
+       v
+    Repository / SQL / Database
+       |
+       | rows or JSONB
+       v
+    Service / Mapper
+       |
+       | builds Java response DTO
+       v
+    Controller
+       |
+       | wraps result in API envelope
+       v
+    Client/UI receives JSON
+
+When a database JSON function replaces several repository calls, it moves some
+assembly work into PostgreSQL. It does not erase the Java API contract.
+
+
+2. ROLE OF EACH JAVA LAYER
+--------------------------
+
+2.1 Controller
+
+The controller is the HTTP entry point. Inspect it to learn:
+
+    - Endpoint path.
+    - HTTP method.
+    - Request DTO class.
+    - Validation annotations.
+    - Service method called.
+    - Response wrapper class.
+    - Error/exception handling annotations.
+
+Simplified example:
+
+    @PostMapping("/fetch-details-for-apprehend-prepare")
+    public ResponseEntity<ApiResponse<ApprehendPrepareResponse>> fetch(
+            @Valid @RequestBody ApprehendPrepareRequest request) {
+        return ok(service.fetchApprehend(request));
+    }
+
+This shows the main response class but not how its fields are populated.
+
+2.2 Request DTO
+
+The request class identifies input fields and validation. Relevant questions:
+
+    - Does the endpoint receive apprehendSrno, juvenileSrno or a generic id?
+    - Does flag decide whether id refers to FIR, Apprehend or another record?
+    - Is langCd mandatory?
+    - Does isArchived select different tables?
+    - Are office/role fields used for permission filtering?
+
+The supplied notes show that fetchDetailsForApprehendPrepare reuses the Arrest
+prepare request shape, including a generic id and a flag. This means the SQL
+function's input cannot be chosen only from the request notes. The service code
+must reveal how id and flag are interpreted.
+
+2.3 Response DTO
+
+The response DTO is the primary JSON blueprint. Read:
+
+    - Every field name.
+    - Every Java type.
+    - Every nested DTO type.
+    - Every List/Set/array type.
+    - Jackson annotations such as @JsonProperty and @JsonSerialize.
+    - Date formatting annotations.
+    - Ignore/include annotations.
+
+Example:
+
+    public class ApprehendResponse {
+        @JsonSerialize(using = ToStringSerializer.class)
+        private Long apprehendSrno;
+
+        private ApprehensionDetails apprehensionDetails;
+        private List<WitnessResponse> witnessDetails;
+    }
+
+Likely JSON consequence:
+
+    {
+      "apprehendSrno": "3810100126000078",
+      "apprehensionDetails": { ... },
+      "witnessDetails": [ ... ]
+    }
+
+Notice that the database BIGINT may become a JSON string because Java uses a
+serializer. SQL returning a numeric JSON value would differ from Java.
+
+2.4 Nested response DTOs
+
+Do not stop after reading the top-level DTO. If it contains:
+
+    PersonalAndOtherInformationDetails personalAndOtherInformationDetails;
+
+then read that class. If that class contains PhysicalDescription, Address,
+NationalId and SocialMedia types, read those too. Continue until every leaf
+field is known.
+
+Build a response tree:
+
+    MainResponse
+    ├── arrestSurrenderApprehensionDetails
+    │   ├── apprehensionDetailsOfJCL
+    │   └── fileList[]
+    ├── intimationDetails
+    │   └── addrList[]
+    ├── personalAndOtherInformationDetails
+    │   ├── personalDetails
+    │   │   ├── accusedPhoto
+    │   │   └── aliases[]
+    │   ├── addressGrid[]
+    │   ├── additionalDetails
+    │   │   ├── educationQualList[]
+    │   │   └── idList[]
+    │   ├── physicalDescription
+    │   │   ├── dressTypeList[]
+    │   │   ├── identityMarkList[]
+    │   │   └── physicalFeatureList[]
+    │   ├── bankDetailsList[]
+    │   └── socialMedia[]
+    ├── witnessDetails[]
+    │   └── addressGrid[]
+    └── actSectionList[]
+
+This is only an illustration based on the supplied notes. The actual Java files
+must control the final tree.
+
+2.5 Entity classes
+
+Entity classes help verify:
+
+    - Physical table/schema names.
+    - Column names and types.
+    - Primary keys.
+    - Relationships.
+    - Enum converters.
+    - Attribute converters.
+
+Example:
+
+    @Entity
+    @Table(name = "t_apprehend_memo", schema = "arrest")
+    public class ApprehendMemoEntity {
+        @Id
+        @Column(name = "apprehend_srno")
+        private Long apprehendSrno;
+    }
+
+This example would prove the tables are in schema arrest, even if a spreadsheet
+groups them conceptually under Apprehend.
+
+2.6 Repository
+
+Repository code shows the actual query filters. Look for:
+
+    - WHERE record_status <> 'D'.
+    - Active language filters.
+    - Ordering.
+    - Archive selection.
+    - Composite keys.
+    - Joins not documented in the workbook.
+    - Native SQL projections.
+
+If Java excludes deleted rows and SQL includes them, the two responses will not
+match even when all fields are named correctly.
+
+2.7 Service
+
+The service contains the business meaning. It may:
+
+    - Interpret request.flag.
+    - Select FIR versus Apprehend data.
+    - Check permissions.
+    - Choose archived versus current repositories.
+    - Calculate full names or ages.
+    - Group files by fileBelongsTo.
+    - Pick one photo from many files.
+    - Turn null lists into empty lists.
+    - Merge tables into one nested object.
+    - Change Boolean/null behavior.
+    - Call external file services for preview URLs or base64 data.
+
+A database-only function cannot reproduce external file-service results unless
+the database contains enough information or Java continues to enrich the JSON.
+
+2.8 Mapper
+
+A mapper can hide significant transformations. Check manual mappers, MapStruct
+interfaces, constructors, projection interfaces and utility methods.
+
+Examples:
+
+    DTO field                    Possible database source
+    --------------------------   --------------------------------------------
+    fullName                     first_name + middle_name + last_name
+    id                           apprehend_srno or child primary key
+    socialMediaType              lookup value
+    isMobVerified                is_witn_mobile_verf
+    arrestSurrenderDt            apprehend_dt
+    arrAprehReason               apprehend_reason (possibly misspelled JSON)
+    bodyBuildTypeCd              build_type_cd
+
+The mapper establishes aliases that the lookup workbook cannot reliably infer.
+
+
+3. THE API ENVELOPE VERSUS THE DATA OBJECT
+------------------------------------------
+
+Many APIs return an envelope:
+
+    {
+      "message": "Success",
+      "status": "SUCCESS",
+      "statusCode": 200,
+      "errors": [],
+      "data": { ... }
+    }
+
+Usually the SQL function should return only the data object:
+
+    { ...complete Apprehend details... }
+
+Java remains responsible for HTTP concepts such as status code and error
+messages. This separation is usually cleaner because the database should not
+pretend to be an HTTP server.
+
+However, inspect existing project functions and repository integration. If the
+project deliberately returns the full envelope from SQL, follow that established
+contract only after confirming it.
+
+
+4. REQUEST SHAPE IS NOT RESPONSE SHAPE
+--------------------------------------
+
+The request may contain:
+
+    id, flag, langCd, staffId, officeCd, allowedRoleCd
+
+The response may contain hundreds of different fields. Do not copy request
+fields into SQL output merely because they are present in the request.
+
+Each request field must be classified:
+
+    Locator       - identifies the record, e.g. id.
+    Selector      - changes query path, e.g. flag or isArchived.
+    Localization  - selects language, e.g. langCd.
+    Authorization - limits access, e.g. officeCd or roles.
+    Trace data    - requestId/authToken; normally not passed into a read function.
+
+
+5. RESPONSE TYPE DETAILS THAT SQL MUST MATCH
+--------------------------------------------
+
+5.1 Long serialized as String
+
+Java:
+
+    @JsonSerialize(using = ToStringSerializer.class)
+    Long apprehendSrno;
+
+Expected JSON:
+
+    "apprehendSrno": "3810100126000078"
+
+SQL must explicitly use to_jsonb(memo.apprehend_srno::TEXT) or an equivalent
+construction if byte-for-byte type compatibility is required.
+
+5.2 Boolean
+
+Database values might be Boolean, character flags or integers. Confirm mapping:
+
+    true/false
+    "Y"/"N"
+    1/0
+    null
+
+Do not silently convert without matching Java behavior.
+
+5.3 Date/time
+
+Possible Java outputs:
+
+    "2026-03-13T14:30:00"
+    "2026-03-13 14:30"
+    "2026-03-13"
+    "2026-03-13T09:00:00Z"
+
+PostgreSQL to_jsonb(timestamp) may not exactly match a custom Jackson format.
+Time zone and precision also matter.
+
+5.4 Null versus missing property
+
+Java can be configured to:
+
+    - Include "field": null.
+    - Omit null fields.
+    - Convert a null list into [].
+
+SQL must match the intended contract. jsonb_strip_nulls may be needed only if
+Java omits nulls. Do not use it without proof.
+
+5.5 Empty object versus null
+
+A missing nested one-to-one section might be:
+
+    "section": null
+
+or:
+
+    "section": {}
+
+These are not equivalent to clients.
+
+5.6 Empty array versus null
+
+For collections, [] is usually safer, but Java behavior is the authority.
+
+
+6. HOW TO DISCOVER THE JAVA RESPONSE COMPLETELY
+-----------------------------------------------
+
+Recommended source-search sequence:
+
+    1. Search endpoint text:
+       rg "fetch-details-for-apprehend-prepare" <java-source-root>
+
+    2. Open the controller method.
+
+    3. Record the request and response types.
+
+    4. Search the service method name.
+
+    5. Follow every method the service calls.
+
+    6. Open every nested response DTO.
+
+    7. Search every setXxx call on the main response.
+
+    8. Search builder usage and mapper methods.
+
+    9. Find repository methods and native queries.
+
+   10. Search Jackson annotations on fields/getters.
+
+   11. Capture at least one real API response for comparison.
+
+
+7. THE RESPONSE-CONTRACT DOCUMENT TO CREATE FIRST
+-------------------------------------------------
+
+Before SQL, write a neutral outline:
+
+    data
+    ├── id: string
+    ├── apprehensionDetails: object|null
+    │   ├── apprehendTypeCd: integer|null
+    │   └── apprehendType: string|null
+    ├── witnessDetails: array
+    │   └── each witness
+    │       ├── id: string
+    │       └── addressGrid: array
+    └── juvenileBackground: object|null
+
+For every field, record:
+
+    - Exact JSON name.
+    - Java type.
+    - Nullability.
+    - Serialization rule.
+    - Database source.
+    - Lookup source.
+    - Calculation.
+    - Filter/order rule.
+    - Evidence file and line.
+
+Only after this document is complete should SQL construction begin.
+
+
+8. SAFE DIVISION OF RESPONSIBILITY
+----------------------------------
+
+Good work for PostgreSQL:
+
+    - Reading relational records.
+    - Joining master tables.
+    - Aggregating child rows.
+    - Constructing stable nested JSON.
+    - Applying deterministic calculations close to the data.
+
+Good work for Java:
+
+    - Authentication and authorization policy.
+    - HTTP status and error envelope.
+    - External service calls.
+    - File preview/base64 generation when files are outside the database.
+    - Business orchestration across systems.
+    - Backward-compatible API versioning.
+
+The final architecture may deliberately split assembly: SQL returns the database
+portion and Java adds external or policy-dependent fields.
+

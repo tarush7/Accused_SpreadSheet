@@ -1,0 +1,285 @@
+requested_sheet,workbook_sheet,excel_row,table_name,column_name,lookup_code,lookup_value,sample_data,status,api_code
+accused_lookup_appeal_module,accused_lookup_appeal_module,6,t_accused_appeal,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_appeal_module,accused_lookup_appeal_module,12,t_accused_appeal,kalandra_acc_pers_cd,??,??,"""kalandra_acc_pers_cd"":100,",unknown_lookup,
+accused_lookup_appeal_module,accused_lookup_appeal_module,14,t_accused_appeal,appeal_result_cd,mdm.m_lookup_masters.look_up_code : APPEAL_RSLT_TYP,look_up_value,"""appeal_result_cd"":2,",m_lookup_masters,APPEAL_RSLT_TYP
+accused_lookup_appeal_module,accused_lookup_appeal_module,17,t_accused_appeal,court_estbl_cd,??,??,"""court_estbl_cd"":null,",unknown_lookup,
+accused_lookup_appeal_module,accused_lookup_appeal_module,18,t_accused_appeal,court_name_cd,??,??,"""court_name_cd"":""string"",",unknown_lookup,
+accused_lookup_appeal_module,accused_lookup_appeal_module,21,t_accused_appeal,punishment_type_cd,??,??,"""punishment_type_cd"":2,",unknown_lookup,
+accused_lookup_appeal_module,accused_lookup_appeal_module,24,t_accused_appeal,appeal_party_cd,mdm.m_lookup_masters.look_up_code : APPEAL_PARTY,look_up_value,"""appeal_party_cd"":1,",m_lookup_masters,APPEAL_PARTY
+accused_lookup_appeal_module,accused_lookup_appeal_module,31,t_accused_appeal,disposal_type_cd,mdm.m_lookup_masters.look_up_code : ACC_DISPSL_TTP,look_up_value,"""disposal_type_cd"":3,",m_lookup_masters,ACC_DISPSL_TTP
+accused_lookup_appeal_module,accused_lookup_appeal_module,44,t_accused_appeal_acts,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_appeal_module,accused_lookup_appeal_module,48,t_accused_appeal_acts,act_cd,mdm.m_act.act_cd,act_long,"""act_cd"":4375,",not_m_lookup_masters,
+accused_lookup_appeal_module,accused_lookup_appeal_module,49,t_accused_appeal_acts,section_cd,mdm.m_section.section_code,"section,section_desc","""section_cd"":""string"",",not_m_lookup_masters,
+accused_lookup_seizure_module,accused_lookup_seizure_module,6,t_property_currency,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_seizure_module,accused_lookup_seizure_module,10,t_property_currency,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_seizure_module,accused_lookup_seizure_module,11,t_property_currency,currency_type_cd,mdm.m_lookup_masters.look_up_code : CURR_TYP,look_up_value,"""currency_type_cd"":895,",m_lookup_masters,CURR_TYP
+accused_lookup_seizure_module,accused_lookup_seizure_module,12,t_property_currency,denomination_cd,mdm.m_lookup_masters.look_up_code : DENOMINATION,look_up_value,"""denomination_cd"":100,",m_lookup_masters,DENOMINATION
+accused_lookup_seizure_module,accused_lookup_seizure_module,13,t_property_currency,seizd_curr_src_cd,,,"""seizd_curr_src_cd"":0,",blank_lookup,
+accused_lookup_seizure_module,accused_lookup_seizure_module,14,t_property_currency,seizure_agency_cd,,,"""seizure_agency_cd"":0,",blank_lookup,
+accused_lookup_seizure_module,accused_lookup_seizure_module,15,t_property_currency,init_seiz_detect_src_cd,,,"""init_seiz_detect_src_cd"":0,",blank_lookup,
+accused_lookup_seizure_module,accused_lookup_seizure_module,16,t_property_currency,print_modus_oper_cd,,,"""print_modus_oper_cd"":0,",blank_lookup,
+accused_lookup_seizure_module,accused_lookup_seizure_module,17,t_property_currency,dissem_modus_oper_cd,mdm.m_lookup_masters.look_up_code : DISSEMINATOIN,look_up_value,"""dissem_modus_oper_cd"":0,",m_lookup_masters,DISSEMINATOIN
+accused_lookup_seizure_module,accused_lookup_seizure_module,37,t_property_curr_accused,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_seizure_module,accused_lookup_seizure_module,42,t_property_curr_accused,denomination_cd,mdm.m_lookup_masters.look_up_code : DENOMINATION,look_up_value,"""denomination_cd"":null,",m_lookup_masters,DENOMINATION
+accused_lookup_seizure_module,accused_lookup_seizure_module,57,t_property_attachment,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_seizure_module,accused_lookup_seizure_module,67,t_property_attachment,imm_prop_type_cd,mdm.m_lookup_masters.look_up_code : MAJOR_PROP_TYP,look_up_value,"""imm_prop_type_cd"":null,",m_lookup_masters,MAJOR_PROP_TYP
+accused_lookup_seizure_module,accused_lookup_seizure_module,69,t_property_attachment,court_estbl_cd,,,"""court_estbl_cd"":null,",blank_lookup,
+accused_lookup_reports_module,accused_lookup_reports_module,6,rep_fir_accused,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_reports_module,accused_lookup_reports_module,17,rep_fir_accused,category_cd,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,"""category_cd"":null,",m_lookup_masters,CATEGORY
+accused_lookup_reports_module,accused_lookup_reports_module,18,rep_fir_accused,gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,"""gender_cd"":null,",m_lookup_masters,GENDER
+accused_lookup_reports_module,accused_lookup_reports_module,28,rep_fir_accused,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":null,",m_lookup_masters,NATIONALITY
+accused_lookup_reports_module,accused_lookup_reports_module,29,rep_fir_accused,addr_state_cd,mdm.m_state.state_cd,"state, state_id","""addr_state_cd"":null,",not_m_lookup_masters,
+accused_lookup_reports_module,accused_lookup_reports_module,30,rep_fir_accused,addr_district_cd,mdm.m_district.district_cd,"district, district_id","""addr_district_cd"":null,",not_m_lookup_masters,
+accused_lookup_reports_module,accused_lookup_reports_module,31,rep_fir_accused,addr_ps_cd,mdm.m_police_station.ps_cd,"ps, ps_id","""addr_ps_cd"":null,",not_m_lookup_masters,
+accused_lookup_reports_module,accused_lookup_reports_module,33,rep_fir_accused,action_taken_cd,mdm.m_lookup_masters.look_up_code : FIR_ACTN_TAKEN,look_up_value,"""action_taken_cd"":null,",m_lookup_masters,FIR_ACTN_TAKEN
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,5,t_freezing_order_accused,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,6,t_freezing_order_accused,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,8,t_freezing_order_accused,accused_person_cd_migr,,,"""accused_person_cd_migr"":null,",blank_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,17,t_freezing_order_accused,acc_relation_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""acc_relation_type_cd"":5,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,25,t_freezing_order_accused,acc_gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,"""acc_gender_cd"":3,",m_lookup_masters,GENDER
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,29,t_freezing_order_accused,acc_nationality_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""acc_nationality_cd"":null,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,32,t_freezing_order_accused,compl_relation_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""compl_relation_type_cd"":0,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,50,t_freezing_order_acc_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,52,t_freezing_order_acc_addr,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,53,t_freezing_order_acc_addr,address_cd_migr,,,"""address_cd_migr"":null,",blank_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,54,t_freezing_order_acc_addr,address_type_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""address_type_cd"":null,",m_lookup_masters,ADD_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,58,t_freezing_order_acc_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":223753296,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,59,t_freezing_order_acc_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":223753296438837,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,62,t_freezing_order_acc_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,78,t_freezing_order_acc_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":252",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,84,t_freezing_order_acc_bank,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,86,t_freezing_order_acc_bank,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,89,t_freezing_order_acc_bank,acc_addr_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""acc_addr_cd"":1001,",m_lookup_masters,ADD_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,90,t_freezing_order_acc_bank,relative_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""relative_type_cd"":2,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,95,t_freezing_order_acc_bank,action_type_cd,??,??,"""action_type_cd"":16,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,115,t_freezing_order_acc_depository,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,117,t_freezing_order_acc_depository,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,120,t_freezing_order_acc_depository,action_type_cd,??,??,"""action_type_cd"":85,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,138,t_freezing_order_acc_email,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,140,t_freezing_order_acc_email,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,146,t_freezing_order_acc_email,action_type_cd,??,??,"""action_type_cd"":59,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,164,t_freezing_order_acc_insurance,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,166,t_freezing_order_acc_insurance,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,169,t_freezing_order_acc_insurance,holder_addr_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""holder_addr_cd"":null,",m_lookup_masters,ADD_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,170,t_freezing_order_acc_insurance,relative_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""relative_type_cd"":0,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,172,t_freezing_order_acc_insurance,policy_nature_cd,??,??,"""policy_nature_cd"":0,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,176,t_freezing_order_acc_insurance,action_type_cd,??,??,"""action_type_cd"":33,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,195,t_freezing_order_acc_insurance_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,202,t_freezing_order_acc_insurance_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":142521874,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,203,t_freezing_order_acc_insurance_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":142521874928301,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,206,t_freezing_order_acc_insurance_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,207,t_freezing_order_acc_insurance_addr,distrct_cd,mdm.m_district.district_cd,look_up_value,"""distrct_cd"":null,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,220,t_freezing_order_acc_insurance_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":252,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,227,t_freezing_order_acc_network,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":0,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,229,t_freezing_order_acc_network,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,234,t_freezing_order_acc_network,action_type_cd,??,??,"""action_type_cd"":0,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,252,t_freezing_order_acc_other_agency,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":0,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,255,t_freezing_order_acc_other_agency,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,259,t_freezing_order_acc_other_agency,relative_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""relative_type_cd"":0,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,278,t_freezing_order_acc_subregistrar,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":0,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,281,t_freezing_order_acc_subregistrar,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,286,t_freezing_order_acc_subregistrar,property_type_cd,mdm.m_lookup_masters.look_up_code : PROP_TYP,look_up_value,"""property_type_cd"":0,",m_lookup_masters,PROP_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,287,t_freezing_order_acc_subregistrar,action_type_cd,??,??,"""action_type_cd"":0,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,306,t_freezing_order_acc_subregistrar_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,313,t_freezing_order_acc_subregistrar_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":142521874,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,314,t_freezing_order_acc_subregistrar_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":142521874928301,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,317,t_freezing_order_acc_subregistrar_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,318,t_freezing_order_acc_subregistrar_addr,distrct_cd,??,??,"""distrct_cd"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,331,t_freezing_order_acc_subregistrar_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":252,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,338,t_freezing_order_acc_voip_dtls,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":0,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,341,t_freezing_order_acc_voip_dtls,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,345,t_freezing_order_acc_voip_dtls,action_type_cd,??,??,"""action_type_cd"":0,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,363,t_freezing_order_acc_web_domain,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":0,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,365,t_freezing_order_acc_web_domain,accused_person_cd,??,??,"""accused_person_cd"":14,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,369,t_freezing_order_acc_web_domain,action_type_cd,??,??,"""action_type_cd"":0,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,387,t_freezing_order_agncy_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,389,t_freezing_order_agncy_addr,accused_person_cd,??,??,"""accused_person_cd"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,390,t_freezing_order_agncy_addr,agency_type_cd,??,??,"""agency_type_cd"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,392,t_freezing_order_agncy_addr,action_type_cd,??,??,"""action_type_cd"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,397,t_freezing_order_agncy_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":null,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,398,t_freezing_order_agncy_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":null,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,401,t_freezing_order_agncy_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":null,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,402,t_freezing_order_agncy_addr,distrct_cd,??,??,"""distrct_cd"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,415,t_freezing_order_agncy_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":null,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,421,t_fir_notice_requests_accused,accused_person_cd,??,??,"""accused_person_cd"":22,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,422,t_fir_notice_requests_accused,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,424,t_fir_notice_requests_accused,accused_person_cd_migr,??,??,"""accused_person_cd_migr"":null,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,434,t_fir_notice_requests_accused,acc_relation_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""acc_relation_type_cd"":1,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,442,t_fir_notice_requests_accused,acc_gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,"""acc_gender_cd"":2,",m_lookup_masters,GENDER
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,443,t_fir_notice_requests_accused,acc_mob_std_cd,??,??,"""acc_mob_std_cd"":91,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,447,t_fir_notice_requests_accused,acc_nationality_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""acc_nationality_cd"":null,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,450,t_fir_notice_requests_accused,compl_relation_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""compl_relation_type_cd"":0,",m_lookup_masters,RELATION_TYP
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,465,t_fir_notice_requests_acc_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,467,t_fir_notice_requests_acc_addr,accused_person_cd,??,??,"""accused_person_cd"":22,",unknown_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,468,t_fir_notice_requests_acc_addr,address_cd_migr,,,"""address_cd_migr"":null,",blank_lookup,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,473,t_fir_notice_requests_acc_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":142521874,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,474,t_fir_notice_requests_acc_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":142521874928301,",not_m_lookup_masters,
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,477,t_fir_notice_requests_acc_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_notc_ordr_module,accused_lookup_notc_ordr_module,490,t_fir_notice_requests_acc_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":252,",not_m_lookup_masters,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,6,t_kalandra_accused_bail,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,18,t_kalandra_accused_bail,bail_type_cd,mdm.m_lookup_masters.look_up_code : BAIL_TYP,look_up_value,"""bail_type_cd"":3,",m_lookup_masters,BAIL_TYP
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,20,t_kalandra_accused_bail,bail_court_cd,??,??,"""bail_court_cd"":""ANPB01"",",unknown_lookup,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,47,t_kalandra_accused_bail_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,49,t_kalandra_accused_bail_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":4,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,50,t_kalandra_accused_bail_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":22,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,70,t_kalandra_accused_surety_prop,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,75,t_kalandra_accused_surety_prop,surety_prop_addr_cd_migr,,,"""surety_prop_addr_cd_migr"":null,",blank_lookup,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,81,t_kalandra_accused_surety_prop,survey_land_addr_cd,,,"""survey_land_addr_cd"":null,",blank_lookup,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,82,t_kalandra_accused_surety_prop,address_cd,,,"""address_cd"":null,",blank_lookup,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,97,t_kalandra_accused_surety_prop_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,100,t_kalandra_accused_surety_prop_addr,address_type_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""address_type_cd"":2,",m_lookup_masters,ADD_TYP
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,104,t_kalandra_accused_surety_prop_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":285025320,",not_m_lookup_masters,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,105,t_kalandra_accused_surety_prop_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":285025320594931,",not_m_lookup_masters,
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,108,t_kalandra_accused_surety_prop_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_kalandra_module,accused_lookup_kalandra_module,120,t_kalandra_accused_surety_prop_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":28502,",not_m_lookup_masters,
+accused_lookup_imot_module,accused_lookup_imot_module,6,t_imot_addnl_accused_terrorists,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_imot_module,accused_lookup_imot_module,16,t_imot_addnl_accused_terrorists,major_terrorist_grp_cd,mdm.m_lookup_masters.look_up_code : TERR_GRP,look_up_value,"""major_terrorist_grp_cd"":null,",m_lookup_masters,TERR_GRP
+accused_lookup_imot_module,accused_lookup_imot_module,19,t_imot_addnl_accused_terrorists,terrorist_orgzn_cd,mdm.m_lookup_masters.look_up_code : TERR_ORG,look_up_value,"""terrorist_orgzn_cd"":null,",m_lookup_masters,TERR_ORG
+accused_lookup_imot_module,accused_lookup_imot_module,21,t_imot_addnl_accused_terrorists,accused_status_cd,mdm.m_lookup_masters.look_up_code : ACC_STATUS,look_up_value,"""accused_status_cd"":null,",m_lookup_masters,ACC_STATUS
+accused_lookup_imot_module,accused_lookup_imot_module,23,t_imot_addnl_accused_terrorists,attack_type_cd,mdm.m_lookup_masters.look_up_code : ATTACK_TYP,look_up_value,"""attack_type_cd"":null,",m_lookup_masters,ATTACK_TYP
+accused_lookup_imot_module,accused_lookup_imot_module,39,t_imot_addn_acc_train_country,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_imot_module,accused_lookup_imot_module,48,t_imot_addn_acc_train_country,training_country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""training_country_cd"":null,",m_lookup_masters,NATIONALITY
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,7,t_fir_accused_info,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,13,t_fir_accused_info,reg_type_cd,,,"""reg_type_cd"":25,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,23,t_fir_accused_info,relation_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""relation_type_cd"":52,",m_lookup_masters,RELATION_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,26,t_fir_accused_info,othr_rel_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""othr_rel_type_cd"":9,",m_lookup_masters,RELATION_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,30,t_fir_accused_info,age_type_cd,,,"""age_type_cd"":3,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,40,t_fir_accused_info,nationality_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""nationality_cd"":209,",m_lookup_masters,NATIONALITY
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,41,t_fir_accused_info,category_cd,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,"""category_cd"":5,",m_lookup_masters,CATEGORY
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,42,t_fir_accused_info,occupation_cd,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value,"""occupation_cd"":216,",m_lookup_masters,OCCUPATION
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,43,t_fir_accused_info,age_proof_type_cd,mdm.m_lookup_masters.look_up_code : AGE_DETERM,look_up_value,"""age_proof_type_cd"":3,",m_lookup_masters,AGE_DETERM
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,44,t_fir_accused_info,income_group_cd,mdm.m_lookup_masters.look_up_code : INCOME_GROUP,look_up_value,"""income_group_cd"":7,",m_lookup_masters,INCOME_GROUP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,45,t_fir_accused_info,gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,"""gender_cd"":4,",m_lookup_masters,GENDER
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,46,t_fir_accused_info,religion_cd,mdm.m_lookup_masters.look_up_code : RELIGION,look_up_value,"""religion_cd"":12,",m_lookup_masters,RELIGION
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,47,t_fir_accused_info,marital_status_cd,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value,"""marital_status_cd"":7,",m_lookup_masters,MARTL_STATUS
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,48,t_fir_accused_info,edu_qual_cd,mdm.m_lookup_masters.look_up_code : EDU_QUAL,look_up_value,"""edu_qual_cd"":[""8"", ""17""],",m_lookup_masters,EDU_QUAL
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,53,t_fir_accused_info,acc_police_cd,??,??,"""acc_police_cd"":14271510911575,",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,66,t_fir_accused_info,physical_cond_cd,??,??,"""physical_cond_cd"":5,",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,74,t_fir_accused_info,criminal_gang_cd,??,??,"""criminal_gang_cd"":0,",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,76,t_fir_accused_info,arrest_type_cd,mdm.m_lookup_masters.look_up_code :ARR_SURR_TYPE,look_up_value,"""arrest_type_cd"":2,",m_lookup_masters,ARR_SURR_TYPE
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,78,t_fir_accused_info,surrenderd_estbl_cd,??,??,"""surrenderd_estbl_cd"":""EST123"",",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,83,t_fir_accused_info,arrest_action_taken_cd,mdm.m_lookup_masters.look_up_code :ARRST_ACTN,look_up_value,"""arrest_action_taken_cd"":7,",m_lookup_masters,ARRST_ACTN
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,87,t_fir_accused_info,arr_intimate_rel_cd,??,??,"""arr_intimate_rel_cd"":28,",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,90,t_fir_accused_info,arr_intimate_mode_cd,??,??,"""arr_intimate_mode_cd"":7,",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,102,t_fir_accused_info,accused_status_cd,mdm.m_lookup_masters.look_up_code :ACC_STATUS,look_up_value,"""accused_status_cd"":26,",m_lookup_masters,ACC_STATUS
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,108,t_fir_accused_info,blood_group_cd,mdm.m_lookup_masters.look_up_code : BLOOD_GROUP,look_up_value,"""blood_group_cd"":9,",m_lookup_masters,BLOOD_GROUP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,122,t_fir_accused_info,other_reg_type_cd,mdm.m_lookup_masters.look_up_code : LINK_REG_TYPE,look_up_value,"""other_reg_type_cd"":0,",m_lookup_masters,LINK_REG_TYPE
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,128,t_fir_accused_info,build_type_cd,mdm.m_lookup_masters.look_up_code :PHY_FEAT_PCODE_BUILD,look_up_value,"""build_type_cd"":6,",m_lookup_masters,PHY_FEAT_PCODE_BUILD
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,129,t_fir_accused_info,complexion_type_cd,mdm.m_lookup_masters.look_up_code :PHY_FEAT_PCODE_COMPL,look_up_value,"""complexion_type_cd"":570,",m_lookup_masters,PHY_FEAT_PCODE_COMPL
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,130,t_fir_accused_info,living_status_cd,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value,"""living_status_cd"":9",m_lookup_masters,LIVING_STATUS
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,136,t_accused_procl_offender,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,140,t_accused_procl_offender,procl_offend_cd_srno,,,"""procl_offend_cd_srno"":null,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,141,t_accused_procl_offender,procl_offend_cd_dt,,,"""procl_offend_cd_dt"":null,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,142,t_accused_procl_offender,procl_court_estbl_cd,??,??,"""procl_court_estbl_cd"":""LDLH01"",",unknown_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,180,t_accused_procl_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,185,t_accused_procl_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":null,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,187,t_accused_procl_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":null,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,208,t_fir_accused_address,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,212,t_fir_accused_address,address_type_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""address_type_cd"":2,",m_lookup_masters,ADD_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,216,t_fir_accused_address,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":356325920,",not_m_lookup_masters,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,217,t_fir_accused_address,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":35603064980645200,",not_m_lookup_masters,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,220,t_fir_accused_address,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":209,",m_lookup_masters,NATIONALITY
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,233,t_fir_accused_address,lg_district_cd,mdm.m_district.lg_district_cd,lg_district_name,"""lg_district_cd"":98956,",not_m_lookup_masters,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,241,t_fir_acc_national_id,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,245,t_fir_acc_national_id,national_id_type_cd,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,"""national_id_type_cd"":8,",m_lookup_masters,NTNL_ID_DOC_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,261,t_fir_accused_bank_dtls,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,265,t_fir_accused_bank_dtls,bank_cd,,,"""bank_cd"":101,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,266,t_fir_accused_bank_dtls,account_type_cd,mdm.m_lookup_masters.look_up_code : ACCNT_TYP,look_up_value,"""account_type_cd"":4,",m_lookup_masters,ACCNT_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,281,t_fir_accused_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,288,t_fir_accused_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":10,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,289,t_fir_accused_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":143,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,309,t_fir_accused_phy_feature,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,313,t_fir_accused_phy_feature,phy_feat_category_cd,,,"""phy_feat_category_cd"":20,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,314,t_fir_accused_phy_feature,phy_feature_maj_cd,,,"""phy_feature_maj_cd"":686,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,315,t_fir_accused_phy_feature,phy_feature_min_cd,,,"""phy_feature_min_cd"":546,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,331,t_fir_accused_id_marks,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,335,t_fir_accused_id_marks,id_marks_type_cd,mdm.m_lookup_masters.look_up_code : IDENTITY_MARKS,look_up_value,"""id_marks_type_cd"":102,",m_lookup_masters,IDENTITY_MARKS
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,336,t_fir_accused_id_marks,body_part_loc_cd,,,"""body_part_loc_cd"":321,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,337,t_fir_accused_id_marks,tattoo_type_cd,,,"""tattoo_type_cd"":3,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,351,t_fir_accused_dress,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,356,t_fir_accused_dress,reg_type_cd,,,"""reg_type_cd"":2,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,359,t_fir_accused_dress,dress_for_cd,,,"""dress_for_cd"":8,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,360,t_fir_accused_dress,dress_type_cd,,,"""dress_type_cd"":443,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,362,t_fir_accused_dress,dress_subtype_cd,,,"""dress_subtype_cd"":688,",blank_lookup,
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,378,t_fir_accused_med_exam,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_fir_update_module,accused_lookup_fir_Updated_modu,397,t_fir_multi_accused,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,6,t_accused_confessed_cases,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,15,t_accused_confessed_cases,case_status_cd,mdm.m_lookup_masters.look_up_code : CASE_STATUS,look_up_value,"""case_status_cd"":null,",m_lookup_masters,CASE_STATUS
+accused_lookup_disposal_module,accused_lookup_disposal_module,17,t_accused_confessed_cases,accused_status_cd,mdm.m_lookup_masters.look_up_code : ACC_STATUS,look_up_value,"""accused_status_cd"":null,",m_lookup_masters,ACC_STATUS
+accused_lookup_disposal_module,accused_lookup_disposal_module,36,t_accused_convict_cases,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,45,t_accused_convict_cases,case_status_cd,mdm.m_lookup_masters.look_up_code : CASE_STATUS,look_up_value,"""case_status_cd"":null,",m_lookup_masters,CASE_STATUS
+accused_lookup_disposal_module,accused_lookup_disposal_module,47,t_accused_convict_cases,accused_status_cd,mdm.m_lookup_masters.look_up_code : ACC_STATUS,look_up_value,"""accused_status_cd"":null,",m_lookup_masters,ACC_STATUS
+accused_lookup_disposal_module,accused_lookup_disposal_module,67,t_accused_disposal,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,74,t_accused_disposal,disposal_type_cd,mdm.m_lookup_masters.look_up_code : ACC_DISPSL_TTP,look_up_value,"""disposal_type_cd"":4,",m_lookup_masters,ACC_DISPSL_TTP
+accused_lookup_disposal_module,accused_lookup_disposal_module,75,t_accused_disposal,aquittal_reas_cd,mdm.m_lookup_masters.look_up_code : ACQTL_RSN,look_up_value,"""aquittal_reas_cd"":null,",m_lookup_masters,ACQTL_RSN
+accused_lookup_disposal_module,accused_lookup_disposal_module,76,t_accused_disposal,punishment_type_cd,mdm.m_lookup_masters.look_up_code : PNSHMNT_TYP,look_up_value,"""punishment_type_cd"":null,",m_lookup_masters,PNSHMNT_TYP
+accused_lookup_disposal_module,accused_lookup_disposal_module,78,t_accused_disposal,kalandra_acc_pers_cd,??,??,"""kalandra_acc_pers_cd"":null,",unknown_lookup,
+accused_lookup_disposal_module,accused_lookup_disposal_module,89,t_accused_disposal,juvenile_disposal_type_cd,mdm.m_lookup_masters.look_up_code : JUV_DISPSL_TYP,look_up_value,"""juvenile_disposal_type_cd"":null,",m_lookup_masters,JUV_DISPSL_TYP
+accused_lookup_disposal_module,accused_lookup_disposal_module,104,t_accused_disposal,appeal_party_cd,mdm.m_lookup_masters.look_up_code : APPEAL_PARTY,look_up_value,"""appeal_party_cd"":null,",m_lookup_masters,APPEAL_PARTY
+accused_lookup_disposal_module,accused_lookup_disposal_module,122,t_accused_disposal_acts,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,128,t_accused_disposal_acts,act_cd,mdm.m_act.act_cd,act_long,"""act_cd"":4375,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,130,t_accused_disposal_acts,section_cd,mdm.m_section.section_code,"section,section_desc","""section_cd"":""77-131a"",",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,133,t_accused_disposal_acts,kalandra_acc_pers_cd,??,??,"""kalandra_acc_pers_cd"":null,",unknown_lookup,
+accused_lookup_disposal_module,accused_lookup_disposal_module,147,t_accused_punishment,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,154,t_accused_punishment,act_cd,mdm.m_act.act_cd,act_long,"""act_cd"":77,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,156,t_accused_punishment,section_cd,mdm.m_section.section_code,"section,section_desc","""section_cd"":""77-131a"",",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,166,t_accused_punishment,punishment_type_cd,mdm.m_lookup_masters.look_up_code : PNSHMNT_TYP,look_up_value,"""punishment_type_cd"":9,",m_lookup_masters,PNSHMNT_TYP
+accused_lookup_disposal_module,accused_lookup_disposal_module,168,t_accused_punishment,kalandra_acc_pers_cd,??,??,"""kalandra_acc_pers_cd"":null,",unknown_lookup,
+accused_lookup_disposal_module,accused_lookup_disposal_module,183,t_accused_jail_details,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,190,t_accused_jail_details,jail_cd,mdm.m_jail_stg.jail_cd,"jail_name, state_cd, district_cd","""jail_cd"":324,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,217,t_accused_jail_release,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_disposal_module,accused_lookup_disposal_module,220,t_accused_jail_release,jail_cd,mdm.m_jail_stg.jail_cd,"jail_name, state_cd, district_cd","""jail_cd"":null,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,221,t_accused_jail_release,release_type_cd,mdm.m_lookup_masters.look_up_code : JAIL_RELEASE_TYP,look_up_value,"""release_type_cd"":1,",m_lookup_masters,JAIL_RELEASE_TYP
+accused_lookup_disposal_module,accused_lookup_disposal_module,232,t_accused_jail_release,releas_village_cd,mdm.m_subdist_villages.village_cd,village_name,"""releas_village_cd"":142521873269868,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,234,t_accused_jail_release,releas_country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""releas_country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_disposal_module,accused_lookup_disposal_module,239,t_accused_jail_release,transf_to_jail_cd,mdm.m_jail_stg.jail_cd,"jail_name, state_cd, district_cd","""transf_to_jail_cd"":0,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,251,t_accused_jail_release,releas_sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""releas_sub_district_cd"":null,",not_m_lookup_masters,
+accused_lookup_disposal_module,accused_lookup_disposal_module,252,t_accused_jail_release,releas_lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""releas_lg_district_cd"":null",not_m_lookup_masters,
+accused_lookup_court_module,accused_lookup_court_module,6,t_accused_remand,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_court_module,accused_lookup_court_module,20,t_accused_remand,remand_io_cd,??,??,"""remand_io_cd"":4370,",unknown_lookup,
+accused_lookup_court_module,accused_lookup_court_module,21,t_accused_remand,remand_court_cd,??,??,"""remand_court_cd"":""MLSO01"",",unknown_lookup,
+accused_lookup_court_module,accused_lookup_court_module,22,t_accused_remand,remand_jail_cd,??,??,"""remand_jail_cd"":null,",unknown_lookup,
+accused_lookup_court_module,accused_lookup_court_module,44,t_accused_remand_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_court_module,accused_lookup_court_module,47,t_accused_remand_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":null,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_court_module,accused_lookup_court_module,48,t_accused_remand_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":null,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_court_module,accused_lookup_court_module,68,t_accused_fingerprints,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_court_module,accused_lookup_court_module,74,t_accused_fingerprints,finger_type_cd,,,"""finger_type_cd"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,6,t_accused_bail_details,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,19,t_accused_bail_details,bail_type_cd,mdm.m_lookup_masters.look_up_code : BAIL_TYP,look_up_value,"""bail_type_cd"":4,",m_lookup_masters,BAIL_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,21,t_accused_bail_details,bail_court_cd,??,??,"""bail_court_cd"":""ANPB01"",",unknown_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,50,t_accused_bail_details,bail_cancel_estbl_cd,??,??,"""bail_cancel_estbl_cd"":null",unknown_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,56,t_acc_bail_cancel_review,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,77,t_acc_bail_cancel_review,pp_status_cd,??,??,"""pp_status_cd"":null,",unknown_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,83,t_acc_bail_cancel_review,pp_review_status_cd,??,??,"""pp_review_status_cd"":null,",unknown_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,100,t_accused_bail_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,103,t_accused_bail_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":4,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,104,t_accused_bail_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":22,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,124,t_accused_bail_surety,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,129,t_accused_bail_surety,surety_person_cd_migr,,,"""surety_person_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,133,t_accused_bail_surety,relative_type_cd,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,"""relative_type_cd"":5,",m_lookup_masters,RELATION_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,135,t_accused_bail_surety,gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,"""gender_cd"":3,",m_lookup_masters,GENDER
+accused_lookup_bail_module,accused_lookup_bail_module,148,t_accused_bail_surety,occupation_cd,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value,"""occupation_cd"":4,",m_lookup_masters,OCCUPATION
+accused_lookup_bail_module,accused_lookup_bail_module,163,t_accused_bail_surety_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,165,t_accused_bail_surety_addr,address_cd_migr,,,"""address_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,166,t_accused_bail_surety_addr,surety_person_cd_migr,,,"""surety_person_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,167,t_accused_bail_surety_addr,address_type_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""address_type_cd"":2,",m_lookup_masters,ADD_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,171,t_accused_bail_surety_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":285025320,",not_m_lookup_masters,
+accused_lookup_bail_module,accused_lookup_bail_module,172,t_accused_bail_surety_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":285025320594931,",not_m_lookup_masters,
+accused_lookup_bail_module,accused_lookup_bail_module,175,t_accused_bail_surety_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_bail_module,accused_lookup_bail_module,188,t_accused_bail_surety_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":28502,",not_m_lookup_masters,
+accused_lookup_bail_module,accused_lookup_bail_module,196,t_accused_bail_surety_files,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":null,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,199,t_accused_bail_surety_files,file_type_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,"""file_type_cd"":null,",m_lookup_masters,UPLOAD_FILE_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,200,t_accused_bail_surety_files,file_subtype_cd,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,"""file_subtype_cd"":null,",m_lookup_masters,UPLOAD_FILE_SUB_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,220,t_accused_bail_surety_nationality,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,221,t_accused_bail_surety_nationality,surety_person_cd_migr,,,"""surety_person_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,223,t_accused_bail_surety_nationality,national_id_type_cd,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,"""national_id_type_cd"":4,",m_lookup_masters,NTNL_ID_DOC_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,239,t_accused_bail_surety_prop,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,261,t_acc_bail_surety_prop_addr,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,"""lang_cd"":99,",m_lookup_masters,OFFCL_LANG
+accused_lookup_bail_module,accused_lookup_bail_module,263,t_acc_bail_surety_prop_addr,address_cd_migr,,,"""address_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,265,t_acc_bail_surety_prop_addr,surety_prop_addr_cd_migr,,,"""surety_prop_addr_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,266,t_acc_bail_surety_prop_addr,survey_land_addr_cd_migr,,,"""survey_land_addr_cd_migr"":null,",blank_lookup,
+accused_lookup_bail_module,accused_lookup_bail_module,268,t_acc_bail_surety_prop_addr,address_type_cd,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,"""address_type_cd"":2,",m_lookup_masters,ADD_TYP
+accused_lookup_bail_module,accused_lookup_bail_module,272,t_acc_bail_surety_prop_addr,sub_district_cd,mdm.m_sub_district.sub_district_cd,sub_district,"""sub_district_cd"":285025320,",not_m_lookup_masters,
+accused_lookup_bail_module,accused_lookup_bail_module,273,t_acc_bail_surety_prop_addr,village_cd,mdm.m_subdist_villages.village_cd,village_name,"""village_cd"":285025320594931,",not_m_lookup_masters,
+accused_lookup_bail_module,accused_lookup_bail_module,276,t_acc_bail_surety_prop_addr,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,"""country_cd"":80,",m_lookup_masters,NATIONALITY
+accused_lookup_bail_module,accused_lookup_bail_module,289,t_acc_bail_surety_prop_addr,lg_district_cd,mdm.m_district.district_cd,"district, district_cd","""lg_district_cd"":28502,",not_m_lookup_masters,

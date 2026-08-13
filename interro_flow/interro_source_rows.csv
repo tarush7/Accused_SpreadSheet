@@ -1,0 +1,25 @@
+workbook_row,complaint_type,table_name,json_key_count,relationship_keys
+350,interro,t_interro_person_language,13,"interro_srno, fir_reg_num"
+405,interro,t_interro_emp_rel_prop_addr,32,"address_cd, employer_srno, person_code, relative_srno, acc_prop_srno"
+406,interro,t_interro_person_method,13,"interro_srno, fir_reg_num"
+408,interro,t_interro_person_addr,29,"interro_srno, fir_reg_num"
+409,interro,t_interro_person_bank_dtls,12,interro_srno
+410,interro,t_interro_person_cases_confessed,22,"fir_reg_num, interro_srno"
+411,interro,t_interro_person_character,13,"interro_srno, fir_reg_num"
+412,interro,t_interro_person_conveyance,15,"interro_srno, fir_reg_num"
+413,interro,t_interro_person_convictions,23,"fir_reg_num, interro_srno"
+414,interro,t_interro_person_dress,19,"interro_srno, fir_reg_num"
+415,interro,t_interro_person_employer,19,"employer_srno, interro_srno, fir_reg_num, address_cd"
+416,interro,t_interro_person_habits,13,"interro_srno, fir_reg_num"
+417,interro,t_interro_person_id_marks,16,"interro_srno, fir_reg_num"
+418,interro,t_interro_person_info,55,"person_code, interro_srno"
+419,interro,t_interro_person_jail_details,44,"fir_reg_num, interro_srno"
+420,interro,t_interro_person_motive,13,"interro_srno, fir_reg_num"
+421,interro,t_interro_person_nationality,17,"interro_srno, fir_reg_num"
+422,interro,t_interro_person_phy_feature,17,interro_srno
+423,interro,t_interro_person_property,25,"acc_prop_srno, interro_srno, fir_reg_num, address_cd"
+424,interro,t_interro_person_relatives,20,"relative_srno, interro_srno, fir_reg_num, address_cd"
+425,interro,t_interro_person_socialmedia,12,interro_srno
+426,interro,t_interro_person_spl_feature,13,"interro_srno, fir_reg_num"
+427,interro,t_interrogation_files,23,"interro_srno, fir_reg_num"
+428,interro,t_interrogation_info,67,"interro_srno, fir_reg_num, accused_srno, person_code"

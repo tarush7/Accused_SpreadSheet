@@ -1,0 +1,474 @@
+STEP-BY-STEP SQL JSON FUNCTION CONSTRUCTION
+===========================================
+
+This document describes the correct order of work. The order matters. Writing
+SQL before understanding Java usually creates a large query that looks complete
+but returns the wrong contract.
+
+
+PHASE 0 - DEFINE THE EXACT GOAL
+-------------------------------
+
+Write one sentence:
+
+    Given ____________________, return ____________________ in the exact shape
+    used by Java endpoint ____________________.
+
+Example only:
+
+    Given one apprehend_srno, return the data object used by
+    /fetch-details-for-apprehend-prepare.
+
+Questions:
+
+    - Is this prepare, view, search or print data?
+    - Is it one record or paginated records?
+    - Is it current data, archived data or both?
+    - Does Java need one generic function or separate functions?
+
+
+PHASE 1 - TRACE THE JAVA ENDPOINT
+--------------------------------
+
+1. Find the controller method.
+2. Record the method's endpoint, request type and response type.
+3. Find its service method.
+4. Follow service calls to repositories and mappers.
+5. Read the main response DTO.
+6. Recursively read all nested DTOs.
+7. Record annotations affecting JSON.
+8. Record conditions and calculations.
+9. Obtain a real or test API response if possible.
+
+Deliverable: JAVA_RESPONSE_CONTRACT table/tree.
+
+
+PHASE 2 - BUILD A FIELD INVENTORY
+---------------------------------
+
+For every response field, classify its source:
+
+    DIRECT
+        One database column maps directly.
+
+        Java: firstName
+        DB:   t_apprehend_memo.first_name
+
+    RENAMED
+        Database and JSON names differ.
+
+        Java: isMobVerified
+        DB:   t_apprehend_witness.is_witn_mobile_verf
+
+    LOOKUP
+        Raw code plus readable display label.
+
+        Java: genderCd / gender
+        DB: gender_cd + GENDER lookup
+
+    CALCULATED
+        Derived from one or more values.
+
+        Java: fullName
+        DB: first_name + middle_name + last_name
+
+    NESTED OBJECT
+        Several columns/rows form one object.
+
+    CHILD ARRAY
+        Several child rows form a list.
+
+    EXTERNAL
+        Value comes from file/object service or other API.
+
+    CONSTANT/DEFAULT
+        Java deliberately supplies a default.
+
+    UNKNOWN
+        Source not yet proven. Stop and investigate.
+
+
+PHASE 3 - PROVE TABLE RELATIONSHIPS
+-----------------------------------
+
+For each table, record:
+
+    - Primary key.
+    - Parent foreign key.
+    - Expected cardinality.
+    - Record-status filter.
+    - Language rule.
+    - Sort order.
+
+Example:
+
+    Response section: witnessDetails
+    Table: t_apprehend_witness
+    Parent key: apprehend_srno
+    Primary key: appr_witns_srno
+    Cardinality: zero-to-many
+    Nested child: t_apprehend_witness_addr via appr_witns_srno
+    Ordering: confirm Java/repository; otherwise stable PK order
+
+Do not assume matching column names always represent valid relationships. Verify
+constraints, repository joins or data samples.
+
+
+PHASE 4 - DECIDE THE FUNCTION SIGNATURE
+---------------------------------------
+
+Possible signatures:
+
+    get_apprehend_json(p_apprehend_srno BIGINT)
+
+or:
+
+    get_apprehend_json(
+        p_id BIGINT,
+        p_flag TEXT,
+        p_lang_cd INTEGER,
+        p_is_archived BOOLEAN
+    )
+
+Choose the smallest signature that reproduces the required behavior.
+
+Do not pass loginId, authToken or requestId merely because they exist in the HTTP
+request. Authentication tokens should not normally enter a SQL data function.
+
+If access control belongs in SQL, design it deliberately with verified office,
+role and staff rules; do not silently omit security filters.
+
+
+PHASE 5 - CREATE SMALL REUSABLE HELPERS
+---------------------------------------
+
+Typical helpers:
+
+    jsonb_camel_keys(jsonb)
+        Converts flat database keys to camelCase.
+
+    lookup_value(category, code, language)
+        Resolves a generic master value.
+
+    lookup_parent_value(category, parent_code, language)
+        Resolves a parent hierarchy label.
+
+    address master helper
+        Resolves address components consistently.
+
+Helpers reduce repetition, but there are cautions:
+
+    - A generic camelCase converter cannot infer semantic renames.
+    - Calling lookup helper hundreds of times can have performance cost.
+    - Helper ownership/schema must be consistent.
+    - Helper behavior must be deterministic and language-aware.
+
+
+PHASE 6 - BUILD ONLY THE ROOT FIRST
+-----------------------------------
+
+Start with one memo record:
+
+    SELECT to_jsonb(memo.*)
+    FROM <schema>.t_apprehend_memo memo
+    WHERE memo.apprehend_srno = p_apprehend_srno;
+
+Test:
+
+    - Exactly one row for a valid identifier.
+    - No row for invalid identifier.
+    - Correct root table and schema.
+    - Correct identifier type.
+
+Then convert keys if the Java contract permits raw-column conversion:
+
+    apprehend.jsonb_camel_keys(to_jsonb(memo.*))
+
+This includes every database column. That is convenient, but may expose fields
+the API does not return. A stricter production contract may need explicit
+jsonb_build_object with only approved fields.
+
+
+PHASE 7 - SHAPE ROOT FIELDS INTO JAVA SECTIONS
+----------------------------------------------
+
+Java may split one wide memo row into nested sections. For example:
+
+    'apprehensionDetails', jsonb_build_object(
+        'apprehendTypeCd', memo.apprehend_type_cd,
+        'apprehendDt', memo.apprehend_dt,
+        'apprehendPlace', memo.apprehend_place
+    )
+
+    'personalDetails', jsonb_build_object(
+        'firstName', memo.first_name,
+        'middleName', memo.middle_name,
+        'lastName', memo.last_name
+    )
+
+Do not merely return all memo columns at the top level if Java nests them.
+
+
+PHASE 8 - ADD ROOT LOOKUPS
+--------------------------
+
+For a generic lookup:
+
+    'genderCd', memo.gender_cd,
+    'gender', apprehend.lookup_value(
+        'GENDER', memo.gender_cd::TEXT, chosen_language
+    )
+
+For dedicated masters, use an explicit join:
+
+    LEFT JOIN mdm.m_state state
+      ON state.state_id = memo.state_id
+     AND state.lang_cd = chosen_language
+
+Then return the precise Java names:
+
+    'stateId', memo.state_id,
+    'state', state.state
+
+Keep raw codes/IDs alongside labels unless Java explicitly omits them.
+
+
+PHASE 9 - ADD ONE DIRECT CHILD ARRAY AT A TIME
+----------------------------------------------
+
+Pattern:
+
+    'fileList', (
+        SELECT COALESCE(
+            jsonb_agg(
+                jsonb_build_object(
+                    'id', file.appr_file_srno,
+                    'fileName', file.file_name
+                )
+                ORDER BY file.appr_file_srno
+            ),
+            '[]'::jsonb
+        )
+        FROM <schema>.t_apprehend_files file
+        WHERE file.apprehend_srno = memo.apprehend_srno
+          AND <confirmed status filter>
+    )
+
+After adding each array:
+
+    - Run function for a record with several children.
+    - Compare count with direct SQL count.
+    - Verify no duplicate child IDs.
+    - Verify stable ordering.
+    - Verify [] when there are no rows.
+
+
+PHASE 10 - ADD NESTED CHILDREN
+------------------------------
+
+Witness example:
+
+    'witnessDetails', (
+        SELECT COALESCE(jsonb_agg(
+            witness_json
+            || jsonb_build_object(
+                'addressGrid', (
+                    SELECT COALESCE(jsonb_agg(address_json), '[]'::jsonb)
+                    FROM t_apprehend_witness_addr address
+                    WHERE address.appr_witns_srno = witness.appr_witns_srno
+                )
+            )
+        ), '[]'::jsonb)
+        FROM t_apprehend_witness witness
+        WHERE witness.apprehend_srno = memo.apprehend_srno
+    )
+
+Juvenile background follows the same parent-inside-root and children-inside-
+background pattern.
+
+
+PHASE 11 - ADD CALCULATED AND ALIASED FIELDS
+--------------------------------------------
+
+Full name:
+
+    NULLIF(TRIM(CONCAT_WS(
+        ' ', first_name, middle_name, last_name
+    )), '')
+
+Explicit alias:
+
+    'isMobVerified', witness.is_witn_mobile_verf
+
+Use explicit aliases whenever automatic camelCase gives the wrong Java name.
+
+Examples of risky automatic names:
+
+    socialmedia_type_cd -> socialmediaTypeCd
+    Java might require  -> socialMediaTypeCd
+
+    age_frm_yrs         -> ageFrmYrs
+    Java might require  -> ageFromYrs
+
+
+PHASE 12 - MATCH TYPES AND FORMATS
+---------------------------------
+
+For every field compare PostgreSQL JSON type with Java JSON type:
+
+    BIGINT -> number or string?
+    timestamp -> exact string format?
+    numeric -> number or formatted string?
+    char flag -> Boolean or string?
+    SQL array -> JSON array?
+    json/jsonb column -> nested object or encoded text?
+
+Example for string ID:
+
+    'id', to_jsonb(memo.apprehend_srno::TEXT)
+
+Example for formatted timestamp (only if Java proves format):
+
+    'apprehendDt', to_char(memo.apprehend_dt, 'YYYY-MM-DD HH24:MI')
+
+Formatting a timestamp discards its native JSON type/time-zone semantics, so do
+it only when required by the API contract.
+
+
+PHASE 13 - DEFINE MISSING-RECORD BEHAVIOR
+-----------------------------------------
+
+Options:
+
+    RETURN NULL;
+    RETURN '{}'::jsonb;
+    RAISE EXCEPTION;
+
+The existing Arrest function returns {}. The Apprehend endpoint may behave
+differently. Compare service exception handling and existing project standards.
+
+
+PHASE 14 - DEFINE FILTERING AND ORDERING
+----------------------------------------
+
+For every collection explicitly decide:
+
+    - Which record statuses are included.
+    - Whether migrated/historical duplicates are excluded.
+    - Whether language rows are filtered.
+    - Which column determines order.
+
+Without ORDER BY inside jsonb_agg, array order is not guaranteed.
+
+
+PHASE 15 - COMPARE AGAINST JAVA
+-------------------------------
+
+For the same identifier:
+
+    A. Capture Java API response data object.
+    B. Execute SQL function.
+    C. Canonically compare keys, types, values and arrays.
+
+Classify every difference:
+
+    MISSING_KEY
+    EXTRA_KEY
+    WRONG_NESTING
+    WRONG_TYPE
+    WRONG_VALUE
+    WRONG_LOOKUP_LANGUAGE
+    WRONG_NULL_EMPTY_BEHAVIOR
+    DUPLICATE_CHILD
+    WRONG_ORDER
+    EXTERNAL_JAVA_ENRICHMENT
+
+
+PHASE 16 - PERFORMANCE REVIEW
+-----------------------------
+
+Run EXPLAIN (ANALYZE, BUFFERS). Verify indexes on:
+
+    - Root apprehend_srno.
+    - Every direct child apprehend_srno.
+    - Witness-address appr_witns_srno.
+    - Background-child bg_report_srno.
+    - Lookup join columns if appropriate.
+
+Avoid premature optimization. First achieve exact correctness, then measure.
+
+
+PHASE 17 - SECURITY AND DEPLOYMENT REVIEW
+-----------------------------------------
+
+Decide:
+
+    - Invoker permissions versus SECURITY DEFINER.
+    - Function owner.
+    - EXECUTE grants.
+    - Search path safety.
+    - Exposure of personal/sensitive data.
+    - Versioning and rollback plan.
+
+Do not use SECURITY DEFINER simply because another project function does. It can
+allow callers to read with the owner's privileges and needs deliberate review.
+
+
+PHASE 18 - DOCUMENT THE FINAL CONTRACT
+--------------------------------------
+
+The final documentation should include:
+
+    - Function signature and example call.
+    - Exact endpoint/DTO mirrored.
+    - Table graph.
+    - Field mapping artifact.
+    - Lookup mapping artifact.
+    - Filters and ordering.
+    - Null/empty rules.
+    - Known external Java enrichment.
+    - Test identifiers and expected behavior.
+    - Required indexes.
+    - Unresolved assumptions, ideally none before production.
+
+
+COMMON WRONG APPROACHES
+-----------------------
+
+Wrong: Start from all table columns and invent JSON group names.
+Why:   Database storage does not define API shape.
+
+Wrong: Join every child table in one SELECT.
+Why:   Produces row multiplication and duplicate arrays.
+
+Wrong: Resolve a lookup only by code.
+Why:   Codes repeat across master categories and languages.
+
+Wrong: Convert every snake_case name automatically.
+Why:   Java semantic aliases and acronyms may differ.
+
+Wrong: Add LIMIT 1 when duplicates appear.
+Why:   Hides unclear business rules and creates nondeterministic results.
+
+Wrong: Guess unknown master categories.
+Why:   Returns authoritative-looking but false labels.
+
+Wrong: Call it complete after SQL compiles.
+Why:   Compilation does not prove response-contract equivalence.
+
+
+DEFINITION OF DONE
+------------------
+
+The function is done only when:
+
+    - The target Java response tree is fully documented.
+    - Every returned field has a proven source/rule.
+    - Every relationship and filter is verified.
+    - Valid, empty and missing cases are tested.
+    - SQL data matches Java response keys, nesting, types and values.
+    - Duplicate and ordering tests pass.
+    - Performance is acceptable with verified indexes.
+    - Security and deployment ownership are approved.
+    - Remaining differences are intentionally handled by Java and documented.
+

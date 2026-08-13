@@ -1,0 +1,47 @@
+Table Name,Column Name,Lookup_code,Lookup Value,,Sample Data
+,,,,,{
+rep_fir_accused,,,,,"""rep_fir_accused"":["
+,,,,,{
+,acc_srno,,,,"""acc_srno"":null,"
+,lang_cd,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,,"""lang_cd"":null,"
+,fir_reg_num,,,,"""fir_reg_num"":null,"
+,fir_dt,,,,"""fir_dt"":null,"
+,first_name,,,,"""first_name"":null,"
+,middle_name,,,,"""middle_name"":null,"
+,last_name,,,,"""last_name"":null,"
+,age,,,,"""age"":null,"
+,yob,,,,"""yob"":null,"
+,age_from_yrs,,,,"""age_from_yrs"":null,"
+,age_to_yrs,,,,"""age_to_yrs"":null,"
+,dob,,,,"""dob"":null,"
+,category_cd,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,,"""category_cd"":null,"
+,gender_cd,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,,"""gender_cd"":null,"
+,arrest_surrend,,,,"""arrest_surrend"":null,"
+,arrest_surr_dt,,,,"""arrest_surr_dt"":null,"
+,is_accused_police,,,,"""is_accused_police"":null,"
+,accused_known,,,,"""accused_known"":null,"
+,address_line_1,,,,"""address_line_1"":null,"
+,address_line_2,,,,"""address_line_2"":null,"
+,address_line_3,,,,"""address_line_3"":null,"
+,village,,,,"""village"":null,"
+,tehsil,,,,"""tehsil"":null,"
+,country_cd,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,,"""country_cd"":null,"
+,addr_state_cd,mdm.m_state.state_cd,"state, state_id",,"""addr_state_cd"":null,"
+,addr_district_cd,mdm.m_district.district_cd,"district, district_id",,"""addr_district_cd"":null,"
+,addr_ps_cd,mdm.m_police_station.ps_cd,"ps, ps_id",,"""addr_ps_cd"":null,"
+,pincode,,,,"""pincode"":null,"
+,action_taken_cd,mdm.m_lookup_masters.look_up_code : FIR_ACTN_TAKEN,look_up_value,,"""action_taken_cd"":null,"
+,fir_status,mdm.m_lookup_masters.look_up_code : FIR_STATUS,look_up_value,,"""fir_status"":null,"
+,address,,,,"""address"":null,"
+,full_name,,,,"""full_name"":null,"
+,accused_srno,,,,"""accused_srno"":null,"
+,is_fir_secret,,,,"""is_fir_secret"":null,"
+,bg_report_srno,,,,"""bg_report_srno"":null"
+,,,,,}
+,,,,,"],"
+rep_arrested_accused,,,,,"""rep_arrested_accused"":["
+,,,,,{
+,fir_reg_num,,,,"""fir_reg_num"":null"
+,,,,,}
+,,,,,]
+,,,,,}

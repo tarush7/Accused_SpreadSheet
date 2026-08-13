@@ -1,0 +1,147 @@
+package com.cctns.apprehend.core.domain.accused;
+
+import com.cctns.apprehend.core.domain.CommonParamsDomain;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class FirAccusedInfoDomain extends CommonParamsDomain {
+    private Long accusedVid;
+    private Long accusedSrno;
+    private Integer langCd;
+    private Long firRegNum;
+    private Long crmDetailSrno;
+    private Integer crmSeqNum;
+    private Integer regTypeCd;
+    private String accusedRcn;
+    private String accusedNcn;
+    private Boolean accusedKnown;
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private String firstNameEng;
+    private String middleNameEng;
+    private String lastNameEng;
+    private Integer relationTypeCd;
+    private String relativeName;
+    private String relativeNameEng;
+    private Integer othrRelTypeCd;
+    private String othrRelName;
+    private String othrRelNameEng;
+    private Long othrRelMobileNum;
+    private Integer ageTypeCd;
+    private Integer ageYrs;
+    private Integer ageMnths;
+    private Integer yob;
+    private LocalDate dob;
+    private Integer ageFromYrs;
+    private Integer ageToYrs;
+    private Long mobileNum;
+    private String telephone;
+    private String email;
+    private Integer nationalityCd;
+    private Integer categoryCd;
+    private Integer occupationCd;
+    private Integer ageProofTypeCd;
+    private Integer incomeGroupCd;
+    private Integer genderCd;
+    private Integer religionCd;
+    private Integer maritalStatusCd;
+    private Boolean isAccusedPolice;
+    private Boolean isAccPolWitninPs;
+    private Long policeGpfNum;
+    private String policeOfficeName;
+    private Long accPoliceCd;
+    private Boolean isProclaimedOffender;
+    private Boolean isAccusedInfirm;
+    private Boolean hasDyspApprvTaken;
+    private Boolean hasDyspApprv;
+    private LocalDateTime dyspApprvDt;
+    private LocalDateTime sentToDyspDt;
+    private String dyspSendingRemrk;
+    private Long dyspLoginId;
+    private String dyspAppRejRemrk;
+    private Integer accusedPriority;
+    private Boolean isJuvenile;
+    private Boolean isAccusedDisable;
+    private Integer physicalCondCd;
+    private Boolean isAgeProofReq;
+    private Boolean isMedExamReq;
+    private Long relMobileNum;
+    private String relTelephone;
+    private String heightFromCm;
+    private String heightToCm;
+    private Boolean isPhotoTaken;
+    private Integer criminalGangCd;
+    private String injuryDetails;
+    private Integer arrestTypeCd;
+    private Long arrSurrSrno;
+    private String surrenderdEstblCd;
+    private Integer arrestSurrStatId;
+    private Integer arrestSurrDistId;
+    private Integer arrestSurrPsId;
+    private String accSurrMagistrate;
+    private LocalDateTime arrestSurrDt;
+    private Integer arrestActionTakenCd;
+    private Boolean isReArrested;
+    private Long reArrSurrSrno;
+    private String custodyActionOther;
+    private Integer arrIntimateRelCd;
+    private String arrIntimateRelName;
+    private LocalDateTime arrIntimateDt;
+    private Integer arrIntimateModeCd;
+    private Boolean isAccFpTaken;
+    private Boolean isAccFpChance;
+    private Boolean isAccDangerous;
+    private Boolean hasAccPrevJumpBail;
+    private Boolean isAccGenArmed;
+    private Boolean isAccOperatesAccompl;
+    private Boolean isAccKnownCriminal;
+    private Boolean isAccRecidivist;
+    private Boolean doesAccLikelyJumpBail;
+    private Boolean afterBailCommitsCrime;
+    private Boolean isWantedOtherCase;
+    private Integer accusedStatusCd;
+    private String crpiId;
+    private String eprisonId;
+    private Boolean isDressForMF;
+    private String otherOccupation;
+    private String otherLivingStatus;
+    private Long interroSrno;
+    private Integer bloodGroupCd;
+    private String intimationGivenTo;
+    private String othIdentificationMarks;
+    private Long bgReportSrno;
+    private Integer otherRegTypeCd;
+    private Long otherRegNum;
+    private Boolean isMedAssisReq;
+    private Integer medModeOfTransport;
+
+    private List<SocialMediaJsonDomain> socialMedia;
+    private List<AliasJsonDomain> aliases;
+    private List<String> languageUsed;
+    private List<String> eduQualCd;
+
+    private String recordStatus;
+    private LocalDateTime recordCreatedOn;
+    private Long recordCreatedBy;
+    private LocalDateTime recordUpdatedOn;
+    private Long recordUpdatedBy;
+
+    private List<FirAccusedIdMarksDomain> firAccusedIdMarkList;
+    private List<FirAccusedAddressDomain> firAccusedAddressList;
+    private List<FirAccusedNationalIdDomain> firAccusedNationalityList;
+    private List<FirAccusedPhysicalFeatureDomain> firAccusedPhyFeatureList;
+    private List<FirAccusedBankDetailsDomain> firAccusedBankcardDetailList;
+    private List<FirAccusedFilesDomain> firAccusedFilesList;
+
+}

@@ -1,0 +1,165 @@
+﻿Table Name,Column Name,Sample Value,Lookup_code,Lookup Value,Validation Status,Resolved Sample Value,Notes
+t_interro_person_language,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_language,language_used,1,mdm.m_lookup_masters.look_up_code : LANG_DIALECTS,look_up_value,matched,ASSAMESE,
+t_interro_person_language,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_language,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_emp_rel_prop_addr,addr_type_cd,2,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,matched,Residential Permanent Address,
+t_interro_emp_rel_prop_addr,sub_district_cd,142521874,mdm.m_sub_district.sub_district_cd,sub_district,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,village_cd,234093619487986,mdm.m_subdist_villages.village_cd,village_name,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,country_cd,80,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,matched,INDIA,
+t_interro_emp_rel_prop_addr,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,state_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,lg_district_cd,252,mdm.m_district.lg_district_cd,lg_district_name,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_emp_rel_prop_addr,ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_method,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_method,method_type,9,mdm.m_lookup_masters.look_up_code : MODUS_METHOD,look_up_value,matched,INTOXICATING VICTIM BY LIQUOR/DRUGGING,
+t_interro_person_method,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_method,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_addr,addr_type,2,mdm.m_lookup_masters.look_up_code : ADD_TYP,look_up_value,matched,Residential Permanent Address,
+t_interro_person_addr,sub_district_cd,142521874,mdm.m_sub_district.sub_district_cd,sub_district,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,village_cd,234093619487986,mdm.m_subdist_villages.village_cd,village_name,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,country_cd,80,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,matched,INDIA,
+t_interro_person_addr,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,state_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,lg_district_cd,252,mdm.m_district.lg_district_cd,lg_district_name,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_addr,ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_bank_dtls,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_bank_dtls,bank_cd,101,mdm.m_lookup_masters.look_up_code : BANKS,look_up_value,sample_not_in_master,,"Mapping is semantically supported, but the supplied sample code is absent from this master group."
+t_interro_person_bank_dtls,account_type_cd,2,mdm.m_lookup_masters.look_up_code : ACCNT_TYP,look_up_value,matched,Saving Account,
+t_interro_person_bank_dtls,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_bank_dtls,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_cases_confessed,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_cases_confessed,receiving_agency_cd,7,??,??,unresolved,,Sample code 7 is paired with conflicting agency names; no safe master assignment.
+t_interro_person_cases_confessed,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_cases_confessed,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_cases_confessed,case_district_id,231,mdm.m_district.district_id,"district, district_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_cases_confessed,case_ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_cases_confessed,case_state_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_character,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_character,character_type,1,mdm.m_lookup_masters.look_up_code : CHARACTER_ASSUMED,look_up_value,matched,ACADEMICIAN,
+t_interro_person_character,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_character,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_conveyance,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_conveyance,conveyance_type,35,mdm.m_lookup_masters.look_up_code : MV_TYP,look_up_value,matched,Ambulance,
+t_interro_person_conveyance,conveyance_color,15,mdm.m_lookup_masters.look_up_code : MV_COLOR,look_up_value,matched,Black,
+t_interro_person_conveyance,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_conveyance,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_convictions,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_convictions,accused_status_cd,1,mdm.m_lookup_masters.look_up_code : INTERRO_ACC_STATUS,look_up_value,matched,Chargesheeted,
+t_interro_person_convictions,acquit_reason_cd,0,mdm.m_lookup_masters.look_up_code : ACQTL_RSN,look_up_value,sentinel_not_in_master,,Sample appears to use a sentinel/default value not present in the master.
+t_interro_person_convictions,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_convictions,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_convictions,case_district_id,231,mdm.m_district.district_id,"district, district_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_convictions,case_ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_convictions,case_state_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_dress,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_dress,dress_for_cd,1,mdm.m_lookup_masters.look_up_code : PHY_DESC_TYP,look_up_value,matched,Face,
+t_interro_person_dress,dress_type_cd,1,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,matched,FAT,
+t_interro_person_dress,dress_subtype_cd,2,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,matched,VERY FAT,
+t_interro_person_dress,record_created_by,4370,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_dress,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_employer,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_employer,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_employer,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_habits,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_habits,habits_cd,2,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,master_domain_mismatch,VERY FAT,"Code exists, but not under expected parent code 52."
+t_interro_person_habits,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_habits,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_id_marks,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_id_marks,id_marks_type_cd,1,mdm.m_lookup_masters.look_up_code : IDENTITY_MARKS,look_up_value,matched,Burn Marks,
+t_interro_person_id_marks,body_part_loc_cd,5,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,matched,MUSCULAR ,
+t_interro_person_id_marks,tattoo_type_cd,3,mdm.m_lookup_masters.look_up_code : IDENTITY_MARKS,look_up_value,matched,Moles (Small),
+t_interro_person_id_marks,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_id_marks,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_info,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_info,ps_id,20411005,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_info,edu_qual_cd,4,mdm.m_lookup_masters.look_up_code : EDU_QUAL,look_up_value,matched,HIGHER SECONDARY - SENIOR SECONDARY,
+t_interro_person_info,gender_cd,1,mdm.m_lookup_masters.look_up_code : GENDER,look_up_value,matched,Transgender,
+t_interro_person_info,relation_type_cd,8,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,matched,Husband,
+t_interro_person_info,nationality_cd,82,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,matched,IRAN,
+t_interro_person_info,national_id_type_cd,1,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,matched,Passport,
+t_interro_person_info,occupation_cd,3,mdm.m_lookup_masters.look_up_code : OCCUPATION,look_up_value,matched,AGENT,
+t_interro_person_info,religion_cd,1,mdm.m_lookup_masters.look_up_code : RELIGION,look_up_value,matched,BUDDHIST,
+t_interro_person_info,living_status_cd,1,mdm.m_lookup_masters.look_up_code : LIVING_STATUS,look_up_value,matched,HOMELESS,
+t_interro_person_info,marital_status_cd,1,mdm.m_lookup_masters.look_up_code : MARTL_STATUS,look_up_value,matched,Married ,
+t_interro_person_info,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_info,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_info,caste_cd,null,mdm.m_lookup_masters.look_up_code : CASTE_TRIBE,look_up_value,blank_sample,,"Mapping retained, but the supplied sample value is null."
+t_interro_person_info,category_cd,4,mdm.m_lookup_masters.look_up_code : CATEGORY,look_up_value,matched,GENERAL,
+t_interro_person_info,income_group_cd,2,mdm.m_lookup_masters.look_up_code : INCOME_GROUP,look_up_value,matched,"LOWER INCOME GROUP (Annual Income Between Rs.25,001/- to Rs.50,000/-)",
+t_interro_person_info,build_type_cd,null,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_BUILD,look_up_value,blank_sample,,"Mapping retained, but the supplied sample value is null."
+t_interro_person_info,complexion_type_cd,null,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_COMPL,look_up_value,blank_sample,,"Mapping retained, but the supplied sample value is null."
+t_interro_person_jail_details,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_jail_details,jail_stat_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,jail_dist_id,2020,mdm.m_district.district_id,"district, district_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,jail_city_cd,101,??,??,unresolved,,No matching convention in the non-Accused lookup templates or m_lookup_masters.
+t_interro_person_jail_details,jail_vill_cd,142521874928301,mdm.m_subdist_villages.village_cd,village_name,external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,fir_status_cd,3,mdm.m_lookup_masters.look_up_code : FIR_STATUS,look_up_value,matched,Under Investigation,
+t_interro_person_jail_details,rel_type_cd,7,mdm.m_lookup_masters.look_up_code : JAIL_RELEASE_TYP,look_up_value,matched,On special occasions,
+t_interro_person_jail_details,transf_jail_cd,101,??,??,unresolved,,No matching convention in the non-Accused lookup templates or m_lookup_masters.
+t_interro_person_jail_details,receive_agency_cd,7,??,??,unresolved,,Sample code 7 is paired with conflicting agency names; no safe master assignment.
+t_interro_person_jail_details,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,arrest_district_id,35603,mdm.m_district.district_id,"district, district_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,arrest_ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,arrest_state_id,75,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,jail_ps_id,20411005,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_jail_details,arrest_by_ps_id,1001002,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_motive,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_motive,crime_motive_type,87,mdm.m_lookup_masters.look_up_code : CRM_MOTIVE,look_up_value,matched,ACCIDENT,
+t_interro_person_motive,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_motive,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_nationality,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_nationality,nationality_cd,82,mdm.m_lookup_masters.look_up_code : NATIONALITY,look_up_value,matched,IRAN,
+t_interro_person_nationality,national_id_type,7,mdm.m_lookup_masters.look_up_code : NTNL_ID_DOC_TYP,look_up_value,matched,OTHERS,
+t_interro_person_nationality,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_nationality,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_phy_feature,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_phy_feature,phy_feature_maj_cd,1,mdm.m_lookup_masters.look_up_parentcode : PHYSCL_FEATURES,look_up_parentvalue,matched,BODY BUILD TYPE,
+t_interro_person_phy_feature,phy_feature_min_cd,2,mdm.m_lookup_masters.look_up_code : PHYSCL_FEATURES,look_up_value,matched,VERY FAT,
+t_interro_person_phy_feature,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_phy_feature,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_phy_feature,phy_feat_category_cd,1,mdm.m_lookup_masters.look_up_code : PHY_DESC_TYP,look_up_value,matched,Face,
+t_interro_person_property,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_property,prop_nature_cd,1,mdm.m_lookup_masters.look_up_code : PROP_NATURE,look_up_value,matched,INTESTATE PROPERTY (PROP. OF DEAD PERSON),
+t_interro_person_property,property_type_cd,14,mdm.m_lookup_masters.look_up_code : PROP_TYP,look_up_value,sample_not_in_master,,"Mapping is semantically supported, but the supplied sample code is absent from this master group."
+t_interro_person_property,prop_disposed_by,1,??,??,unresolved,,No matching convention in the non-Accused lookup templates or m_lookup_masters.
+t_interro_person_property,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_property,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_relatives,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_relatives,relative_type_cd,5,mdm.m_lookup_masters.look_up_code : RELATION_TYP,look_up_value,matched,Father,
+t_interro_person_relatives,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_relatives,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_socialmedia,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_socialmedia,socialmedia_type,4,mdm.m_lookup_masters.look_up_code : SOCIAL_MEDIA_TYP,look_up_value,matched,Instagram,
+t_interro_person_socialmedia,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_socialmedia,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_spl_feature,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interro_person_spl_feature,accused_spl_feature,1,mdm.m_lookup_masters.look_up_code : SPCL_FEATURE,look_up_value,matched,ABANDONING VEHICLE,
+t_interro_person_spl_feature,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interro_person_spl_feature,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_files,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interrogation_files,file_type_cd,5,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_TYP,look_up_value,matched,Documents,
+t_interrogation_files,file_subtype_cd,17,mdm.m_lookup_masters.look_up_code : UPLOAD_FILE_SUB_TYP,look_up_value,matched,Address Proof,
+t_interrogation_files,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_files,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,lang_cd,99,mdm.m_lookup_masters.look_up_code : OFFCL_LANG,look_up_value,matched,English,
+t_interrogation_info,interro_by_pis_cd,67968,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,acc_police_cd,4595,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,juv_age_proof,1,mdm.m_lookup_masters.look_up_code : JUV_AGE_PROOF,look_up_value,matched,Matriculation or equivalent certificate,
+t_interrogation_info,offence_period_cd,2,mdm.m_lookup_masters.look_up_code : OFFENCE_PERIOD,look_up_value,matched,Moonlight,
+t_interrogation_info,indulge_bef_offence_cd,3,mdm.m_lookup_masters.look_up_code : BFR_OFFNC_ACT,look_up_value,matched,Consuming Ganja,
+t_interrogation_info,offence_prepare_acts,6,mdm.m_lookup_masters.look_up_code : CRM_PREPRATION,look_up_value,matched,Regular house,
+t_interrogation_info,indulge_aft_offence_cd,5,mdm.m_lookup_masters.look_up_code : AFTR_OFFNC_ACT,look_up_value,matched,Relatives’  house,
+t_interrogation_info,blood_group_cd,2,mdm.m_lookup_masters.look_up_code : BLOOD_GROUP,look_up_value,matched,B+,
+t_interrogation_info,record_created_by,20411005,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,record_updated_by,null,users.t_police_staff_info.staff_id,"first_name, middle_name, last_name, login_id, rank_desc",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,arrest_district_id,231,mdm.m_district.district_id,"district, district_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,arrest_ps_id,20661,mdm.m_police_station.ps_id,"ps, ps_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,arrest_state_id,27,mdm.m_state.state_id,"state, state_cd",external_master_not_validated,,Mapped from the established non-Accused module lookup convention.
+t_interrogation_info,complexion_type_cd,8,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_COMPL,look_up_value,sample_not_in_master,,"Mapping is semantically supported, but the supplied sample code is absent from this master group."
+t_interrogation_info,build_type_cd,3,mdm.m_lookup_masters.look_up_code : PHY_FEAT_PCODE_BUILD,look_up_value,sample_not_in_master,,"Mapping is semantically supported, but the supplied sample code is absent from this master group."

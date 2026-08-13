@@ -1,0 +1,565 @@
+INTERRO PROCEDURE — BEGINNER'S GUIDE
+=====================================
+
+You already have enough information to design the database side, but not enough to safely finish the Interro function. The missing piece is the exact Java response contract.
+
+The simplest mental model is:
+
+Java sends one identifier (interroSrno)
+    -> Find root row (t_interrogation_info)
+    -> Find child rows using interro_srno
+    -> Translate codes using lookup/master tables
+    -> Group child rows into JSON arrays
+    -> Return one JSON object
+    -> Java maps/wraps the response
+
+
+1. WHAT YOU CURRENTLY KNOW
+==========================
+
+From the spreadsheet and Interro/interro_lookup.csv, you know:
+
+- The Interro module has 24 tables.
+- The probable root table is t_interrogation_info.
+- The probable root identifier is interro_srno.
+- Most child tables also contain interro_srno.
+- Which fields are raw data.
+- Which fields are lookup codes.
+- Which master table should provide their readable value.
+- Sample data for understanding the columns.
+
+The relationship diagram is in:
+
+Interro/interro_module_tables_mermaid.md
+
+The likely structure is:
+
+t_interrogation_info
+    |-- t_interro_person_info
+    |-- t_interro_person_addr
+    |-- t_interro_person_nationality
+    |-- t_interro_person_socialmedia
+    |-- t_interro_person_language
+    |-- t_interro_person_phy_feature
+    |-- t_interro_person_spl_feature
+    |-- t_interro_person_id_marks
+    |-- t_interro_person_dress
+    |-- t_interro_person_character
+    |-- t_interro_person_habits
+    |-- t_interro_person_method
+    |-- t_interro_person_motive
+    |-- t_interro_person_cases_confessed
+    |-- t_interro_person_convictions
+    |-- t_interro_person_jail_details
+    |-- t_interro_person_employer
+    |-- t_interro_person_relatives
+    |-- t_interro_person_property
+    |-- t_interro_person_bank_dtls
+    |-- t_interro_person_conveyance
+    `-- t_interrogation_files
+
+Then there is a second-level table:
+
+t_interro_emp_rel_prop_addr
+
+It can belong to:
+
+Employer -> employer_srno
+Relative -> relative_srno
+Property -> acc_prop_srno
+
+These relationships are inferred from repeated column names in the spreadsheet. They should still be confirmed against the real PostgreSQL schema and foreign keys.
+
+
+2. WHAT THE SQL FUNCTION IS SUPPOSED TO DO
+==========================================
+
+The Interro SQL function should answer one simple question:
+
+"Give me everything belonging to this one interrogation record."
+
+The likely function signature is:
+
+interro.get_interro_json(p_interro_srno BIGINT)
+
+The caller would use it like:
+
+SELECT interro.get_interro_json(3810100326000004);
+
+Although people may call it a "procedure", this should normally be a PostgreSQL function because it returns a JSON value.
+
+
+WHY USE interro_srno?
+---------------------
+
+The root sample contains:
+
+{
+  "interro_srno": 3810100326000004,
+  "fir_reg_num": 381010012600006,
+  "accused_srno": 38101001260000006,
+  "accused_vid": 45415
+}
+
+One FIR might have multiple accused persons. One accused might also have multiple interrogation records.
+
+Therefore:
+
+fir_reg_num  = identifies the case
+accused_vid  = identifies the person
+interro_srno = identifies this particular interrogation
+
+For a detail-view function, interro_srno is probably the safest input. Ask Java to confirm this.
+
+
+3. THE FIVE PIECES OF THE FUNCTION
+==================================
+
+PIECE 1: CONVERT DATABASE NAMES TO JAVA NAMES
+---------------------------------------------
+
+PostgreSQL columns usually use snake case:
+
+interro_srno
+interro_by_pis_cd
+is_person_accused
+record_created_by
+
+Java JSON normally uses camel case:
+
+interroSrno
+interroByPisCd
+isPersonAccused
+recordCreatedBy
+
+The other module procedures use a helper such as:
+
+interro.jsonb_camel_keys(to_jsonb(i.*))
+
+That means:
+
+Take every root column and convert its JSON key to camelCase.
+
+The same pattern appears in Arrest/arrest_proc.sql and complaint_proc.sql.
+
+
+PIECE 2: KEEP THE RAW CODE AND ADD ITS READABLE VALUE
+-----------------------------------------------------
+
+The root table has:
+
+juv_age_proof = 1
+
+The lookup CSV says:
+
+JUV_AGE_PROOF -> look_up_value
+
+Your function should return something like:
+
+{
+  "juvAgeProof": 1,
+  "juvAgeProofValue": "Birth Certificate"
+}
+
+The SQL idea is:
+
+'juvAgeProofValue',
+interro.lookup_value(
+    'JUV_AGE_PROOF',
+    i.juv_age_proof::TEXT,
+    i.lang_cd
+)
+
+Another example is the method table:
+
+method_type = 9
+Master = MODUS_METHOD
+Value = INTOXICATING VICTIM BY LIQUOR/DRUGGING
+
+Possible result:
+
+{
+  "methodType": 9,
+  "methodTypeValue": "INTOXICATING VICTIM BY LIQUOR/DRUGGING"
+}
+
+But Java might want the readable field called methodType, methodTypeValue, method, or methodName. That exact name must come from Java.
+
+
+PIECE 3: GET VALUES FROM DEDICATED MASTER TABLES
+------------------------------------------------
+
+Not all codes use m_lookup_masters.
+
+For example:
+
+interro_by_pis_cd -> users.t_police_staff_info
+arrest_state_id   -> mdm.m_state
+arrest_district_id -> mdm.m_district
+arrest_ps_id      -> mdm.m_police_station
+
+For a police staff ID, you might add:
+
+{
+  "interroByPisCd": 67968,
+  "interroByFullName": "Ravi Kumar",
+  "interroByLoginId": "ravi.kumar",
+  "interroByRankDesc": "Sub-Inspector"
+}
+
+For a state:
+
+{
+  "arrestStateId": 27,
+  "arrestState": "Karnataka",
+  "arrestStateCd": 29
+}
+
+Keep the ID because Java may need it when editing. Add the name because the screen must show readable text.
+
+
+PIECE 4: BUILD CHILD ARRAYS
+---------------------------
+
+Suppose one interrogation has:
+
+- Two languages
+- Three methods
+- Two relatives
+
+The JSON should contain arrays:
+
+{
+  "languages": [
+    {
+      "languageUsed": 1,
+      "languageUsedValue": "ASSAMESE"
+    },
+    {
+      "languageUsed": 2,
+      "languageUsedValue": "BENGALI"
+    }
+  ],
+  "methods": [
+    {
+      "methodType": 9,
+      "methodTypeValue": "INTOXICATING VICTIM"
+    }
+  ],
+  "relatives": [
+    {
+      "relativeName": "Jane Doe",
+      "relativeTypeCd": 5,
+      "relativeTypeCdValue": "Father"
+    }
+  ]
+}
+
+The basic SQL pattern is:
+
+'languages', (
+    SELECT COALESCE(
+        jsonb_agg(
+            interro.jsonb_camel_keys(to_jsonb(language.*))
+            || jsonb_build_object(
+                'languageUsedValue',
+                interro.lookup_value(
+                    'LANG_DIALECTS',
+                    language.language_used::TEXT,
+                    language.lang_cd
+                )
+            )
+            ORDER BY language.acc_lang_srno
+        ),
+        '[]'::JSONB
+    )
+    FROM interro.t_interro_person_language language
+    WHERE language.interro_srno = i.interro_srno
+)
+
+Read it in plain English:
+
+1. Find all language rows for this interrogation.
+2. Convert each row to camelCase JSON.
+3. Add the language name.
+4. Put the rows into a JSON array.
+5. If no language exists, return [].
+
+The important filter is:
+
+WHERE language.interro_srno = i.interro_srno
+
+Without this, you could accidentally return languages belonging to every interrogation in the database.
+
+
+PIECE 5: NEST SECOND-LEVEL INFORMATION
+--------------------------------------
+
+The shared address table should probably be nested inside employer, relative and property objects.
+
+For example:
+
+{
+  "employers": [
+    {
+      "employerSrno": 233,
+      "employerName": "ABC Corp",
+      "addresses": [
+        {
+          "addressLine1": "Address Line 1",
+          "state": "Karnataka"
+        }
+      ]
+    }
+  ]
+}
+
+The relationship would be:
+
+WHERE address.employer_srno = employer.employer_srno
+
+For relatives:
+
+WHERE address.relative_srno = relative.relative_srno
+
+For properties:
+
+WHERE address.acc_prop_srno = property.acc_prop_srno
+
+You must ask whether Java actually wants addresses nested this way. It could instead expect one separate addressList.
+
+
+4. VERY IMPORTANT: DO NOT JOIN ALL 24 TABLES DIRECTLY
+=====================================================
+
+A beginner's natural attempt might be:
+
+FROM t_interrogation_info i
+LEFT JOIN t_interro_person_language language ...
+LEFT JOIN t_interro_person_method method ...
+LEFT JOIN t_interro_person_relatives relative ...
+
+This can multiply the rows.
+
+If there are:
+
+2 languages
+3 methods
+4 relatives
+
+one large join can produce:
+
+2 x 3 x 4 = 24 rows
+
+Then the same language, method and relative will appear repeatedly.
+
+The safer pattern used in the existing procedures is:
+
+Root SELECT
+    |-- separate subquery for languages
+    |-- separate subquery for methods
+    |-- separate subquery for relatives
+    `-- separate subquery for every other list
+
+Each subquery performs its own jsonb_agg().
+
+That is the core technical idea behind these module functions.
+
+
+5. SIMPLIFIED INTERRO FUNCTION SHAPE
+====================================
+
+This is a teaching skeleton, not the finished procedure:
+
+CREATE OR REPLACE FUNCTION interro.get_interro_json(
+    p_interro_srno BIGINT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE
+AS $$
+DECLARE
+    v_result JSONB;
+BEGIN
+
+    SELECT
+        -- Root-table columns
+        interro.jsonb_camel_keys(to_jsonb(i.*))
+
+        -- Root lookup values
+        || jsonb_build_object(
+            'langCdValue',
+                interro.lookup_value(
+                    'OFFCL_LANG',
+                    i.lang_cd::TEXT,
+                    i.lang_cd
+                ),
+
+            'juvAgeProofValue',
+                interro.lookup_value(
+                    'JUV_AGE_PROOF',
+                    i.juv_age_proof::TEXT,
+                    i.lang_cd
+                ),
+
+            'bloodGroupCdValue',
+                interro.lookup_value(
+                    'BLOOD_GROUP',
+                    i.blood_group_cd::TEXT,
+                    i.lang_cd
+                )
+        )
+
+        -- Child tables
+        || jsonb_build_object(
+            'languages', (
+                SELECT COALESCE(
+                    jsonb_agg(
+                        interro.jsonb_camel_keys(to_jsonb(language.*))
+                        ORDER BY language.acc_lang_srno
+                    ),
+                    '[]'::JSONB
+                )
+                FROM interro.t_interro_person_language language
+                WHERE language.interro_srno = i.interro_srno
+            ),
+
+            'methods', (
+                SELECT COALESCE(
+                    jsonb_agg(
+                        interro.jsonb_camel_keys(to_jsonb(method.*))
+                        ORDER BY method.acc_method_srno
+                    ),
+                    '[]'::JSONB
+                )
+                FROM interro.t_interro_person_method method
+                WHERE method.interro_srno = i.interro_srno
+            )
+        )
+
+    INTO v_result
+    FROM interro.t_interrogation_info i
+    WHERE i.interro_srno = p_interro_srno;
+
+    RETURN COALESCE(v_result, '{}'::JSONB);
+END;
+$$;
+
+You would gradually add the remaining child tables after confirming their Java names and nesting.
+
+
+6. WHAT YOUR CURRENT FILES DO NOT TELL YOU
+==========================================
+
+The spreadsheet gives you tables and sample rows. The lookup CSV gives you code-to-master mappings.
+
+They do not reliably tell you:
+
+- The exact endpoint being supported.
+- Whether the function is for Search, View, Prepare or Edit.
+- The exact Java response field names.
+- Which child is an object and which is an array.
+- How Java groups the fields into screen sections.
+- Whether Java wants all database columns.
+- Whether deleted records should be excluded.
+- Whether large IDs should be returned as numbers or strings.
+- The required date format.
+- Whether Java maps the SQL result or passes it directly.
+- Whether aliases and friends should remain embedded JSON.
+- How archived records are handled.
+- How missing lookups should appear.
+
+This is why the Java contract must be known before completing the function.
+
+
+7. EXACT QUESTIONS TO ASK THE JAVA DEVELOPER
+============================================
+
+You can send this message:
+
+I am creating the PostgreSQL JSON function for the Interro detail module. Please provide the following:
+
+1. What Interro endpoint will call this function: Search, View, Prepare or Edit?
+2. What is the primary request identifier: interroSrno, firRegNum, accusedVid, or another ID?
+3. Please share the actual Interro response DTO classes and one complete successful JSON response.
+4. Does Java expect the DB function to return the final data structure, or will Java map a database-oriented JSON result into DTOs?
+5. What are the exact JSON property names for every child list--for example languages, methods, motives, relatives, employers, properties, jail history and files?
+6. Is t_interro_person_info a single object or a list?
+7. Should employer, relative and property addresses be nested inside their respective objects?
+8. For lookup fields, what names are expected: gender, genderValue, or genderCdValue?
+9. Should large Long identifiers such as interroSrno be serialized as JSON strings?
+10. What date format and timezone should be returned?
+11. Should rows with record_status = 'D' be excluded?
+12. Should empty child collections return [] or null?
+13. Which fields are calculated or constructed in Java, such as full names, display case numbers, file preview URLs or Base64 images?
+14. How should missing lookup values be handled?
+15. Please confirm the expected error/no-record response.
+
+Ask for the actual DTO classes or an actual API response--not only screenshots of the screen.
+
+
+8. QUESTIONS FOR THE DATABASE/MDM OWNER
+=======================================
+
+Some issues cannot safely be answered from the existing lookup.
+
+The validation file currently contains five unresolved mappings and several suspicious sample mappings:
+
+Interro/interro_lookup_validation.csv
+
+You need confirmation for:
+
+- receiving_agency_cd
+- receive_agency_cd
+- jail_city_cd
+- transf_jail_cd
+- prop_disposed_by
+- The correct domain/parent for habits_cd
+- Whether the sample bank code exists in BANKS
+- Whether property type sample codes are valid
+- Correct build and complexion master data
+- Actual PostgreSQL schema name
+- Actual primary and foreign-key constraints
+
+Do not guess these mappings. Return the raw code temporarily if necessary and mark the display value as unresolved.
+
+
+9. RECOMMENDED WORKING ORDER
+============================
+
+Do not write all 24 tables in one attempt.
+
+1. Get the Java DTO and successful response.
+2. Confirm the input identifier.
+3. Make a response mapping table containing:
+
+   - Java JSON path
+   - Source table
+   - Source column
+   - Join key
+   - Lookup/master
+   - Object or array
+   - Transformation
+
+4. Build the function with only t_interrogation_info.
+5. Add its lookup values.
+6. Add t_interro_person_info.
+7. Add simple child arrays such as languages, methods and motives.
+8. Add physical-description arrays.
+9. Add employer, relative and property objects.
+10. Add their nested addresses.
+11. Add jail, confession and conviction records.
+12. Add files.
+13. Compare the final JSON against the Java response property by property.
+
+
+FINAL RULE TO REMEMBER
+======================
+
+The spreadsheet tells you where the data is stored.
+
+The lookup tells you how to translate codes.
+
+The Java DTO tells you exactly how the final JSON must be shaped.
+
+Until you receive the Java DTO or real response, you can build the database relationships and lookup enrichment, but you should not finalize the JSON property names and nesting.

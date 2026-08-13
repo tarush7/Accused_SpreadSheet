@@ -1,0 +1,451 @@
+FIELD MAPPING WORKSHEET
+=======================
+
+PURPOSE
+-------
+
+Fill this document from actual Java and database evidence before writing the
+final Apprehend SQL function. One row should exist for every JSON response field.
+
+
+A. ENDPOINT SUMMARY
+-------------------
+
+Controller class:
+Controller method:
+Endpoint path:
+HTTP method:
+Request DTO:
+Main response DTO:
+Service method:
+Mapper(s):
+Repository method(s):
+Archive path:
+Observed API response file/link:
+Physical Apprehend table schema:
+
+
+B. INPUT SEMANTICS
+------------------
+
+Request field: id
+Java type:
+Validation:
+Meaning for each flag:
+Database identifier produced:
+Evidence:
+
+Request field: flag
+Allowed values:
+Meaning:
+Evidence:
+
+Request field: langCd
+Does it control lookup language?:
+Fallback language rule:
+Evidence:
+
+Request field: isArchived
+Tables/views selected:
+Evidence:
+
+Authorization fields used:
+SQL or Java enforcement:
+Evidence:
+
+
+C. RESPONSE TREE TEMPLATE
+-------------------------
+
+Replace this example with the exact Java response tree:
+
+data
+|
++-- field: type/null rule
++-- nestedObject: object|null
+|   +-- field: type/null rule
+|   +-- childList: array
+|       +-- item field: type/null rule
++-- topLevelList: array
+    +-- item field: type/null rule
+
+
+D. FIELD MAPPING ROW TEMPLATE
+-----------------------------
+
+Copy this block once for every response field:
+
+JSON path:
+Exact JSON key:
+Java declaring class:
+Java field/getter:
+Java type:
+Jackson annotation/serializer:
+Required/nullable:
+Empty/default behavior:
+
+Source classification:
+    [ ] DIRECT COLUMN
+    [ ] RENAMED COLUMN
+    [ ] LOOKUP LABEL
+    [ ] DEDICATED MASTER
+    [ ] CALCULATED
+    [ ] CHILD ARRAY
+    [ ] NESTED OBJECT
+    [ ] EXTERNAL SERVICE
+    [ ] CONSTANT/DEFAULT
+    [ ] UNKNOWN
+
+Source schema/table:
+Source column(s):
+Join path:
+Parent key:
+Child key:
+Cardinality:
+Record-status filter:
+Language rule:
+Ordering rule:
+Lookup category/table:
+Calculation/conversion:
+SQL JSON type required:
+Sample Java value:
+Sample database value:
+Verified test result:
+Evidence file and line:
+Open question:
+
+
+E. TABLE RELATIONSHIP WORKSHEET
+-------------------------------
+
+Table: t_apprehend_memo
+Role: root
+Primary key: apprehend_srno
+Parent: none
+Expected cardinality: exactly one selected row
+Status filter:
+Language rule:
+Java response sections populated:
+Evidence:
+
+Table: t_apprehend_act_section
+Role: direct child
+Primary key: apprehend_act_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_addresses
+Role: direct child
+Primary key: appr_addr_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_bank_dtls
+Role: direct child
+Primary key: appr_bank_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_files
+Role: direct child
+Primary key: appr_file_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+File grouping/filter:
+Status filter:
+Ordering:
+Java response path:
+External enrichment:
+Evidence:
+
+Table: t_apprehend_intimate_addr
+Role: direct child
+Primary key: intmt_addr_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_national_id
+Role: direct child
+Primary key: national_id_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_socialmedia
+Role: direct child
+Primary key: appr_soc_med_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_witness
+Role: direct child/nested parent
+Primary key: appr_witns_srno
+Parent key: apprehend_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_apprehend_witness_addr
+Role: nested child of witness
+Primary key: appr_witn_addr_srno
+Parent key: appr_witns_srno
+Expected cardinality: zero-to-many per witness
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_background_report
+Role: direct child/nested parent
+Primary key: bg_report_srno
+Parent key: apprehend_srno
+Expected cardinality: confirm zero-to-one or zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_jcl_background_files
+Role: nested background child
+Primary key: file_upload_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_dress
+Role: nested background child
+Primary key: juv_dress_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_family_dtls
+Role: nested background child
+Primary key: juv_family_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_identity_marks
+Role: nested background child
+Primary key: juv_identity_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_phy_abuse
+Role: nested background child
+Primary key: juv_abuse_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+Table: t_juv_phy_feature
+Role: nested background child
+Primary key: juv_phy_feat_srno
+Parent key: bg_report_srno
+Expected cardinality: zero-to-many
+Status filter:
+Ordering:
+Java response path:
+Evidence:
+
+
+F. LOOKUP VERIFICATION WORKSHEET
+--------------------------------
+
+For every code/label pair:
+
+Source table.column:
+Response code path:
+Response label path:
+Lookup table:
+API master category:
+Lookup code column:
+Lookup label column:
+Language source:
+Active/status rule:
+Duplicate-row resolution:
+Fallback rule:
+Sample code:
+Expected label:
+Verified direct query:
+Evidence:
+
+
+G. KNOWN UNRESOLVED LOOKUPS
+---------------------------
+
+1. t_apprehend_memo.criminal_gang_cd
+   Confirmed master:
+   Java label field:
+   Evidence:
+
+2. t_apprehend_memo.physical_cond_cd
+   Confirmed master:
+   Java label field:
+   Evidence:
+
+3. t_apprehend_memo.court_estbl_cd
+   Confirmed master/dedicated table:
+   Java label field:
+   Evidence:
+
+4. t_juv_background_report.physical_cond_cd
+   Confirmed master:
+   Java label field:
+   Evidence:
+
+5. t_juv_family_dtls.addiction_cd
+   Confirmed master:
+   Java label field:
+   Evidence:
+
+
+H. TYPE AND SERIALIZATION WORKSHEET
+-----------------------------------
+
+IDs serialized as JSON strings:
+
+JSON path | Java annotation | DB type | SQL conversion | verified
+----------+-----------------+---------+----------------+---------
+
+Date/time fields:
+
+JSON path | Java type/format | DB type | timezone | SQL rule | verified
+----------+------------------+---------+----------+----------+---------
+
+Boolean/flag fields:
+
+JSON path | Java type | DB storage | conversion | null rule | verified
+----------+-----------+------------+------------+-----------+---------
+
+Array fields stored in one column:
+
+JSON path | DB column/type | expansion rule | lookup rule | verified
+----------+----------------+----------------+-------------+---------
+
+
+I. JAVA-ONLY OR EXTERNAL ENRICHMENT
+-----------------------------------
+
+Response path:
+Provider/service:
+Input database fields:
+Can SQL produce it safely?:
+If not, Java enrichment stage:
+Failure/default behavior:
+Evidence:
+
+Likely candidates to investigate:
+
+    previewUrl
+    imageBase64
+    remote file contents
+    authorization-derived actions
+    calculated display case number
+    data from unrelated modules/services
+
+
+J. SQL SECTION BUILD ORDER
+--------------------------
+
+[ ] Function signature confirmed.
+[ ] Root row query proven.
+[ ] Root Java object shape built.
+[ ] Root types/serialization matched.
+[ ] Root generic lookups added.
+[ ] Root dedicated masters added.
+[ ] Audit-user behavior matched.
+[ ] Act/section section added and tested.
+[ ] Main addresses added and tested.
+[ ] Bank details added and tested.
+[ ] File metadata added and tested.
+[ ] Intimation addresses added and tested.
+[ ] National IDs added and tested.
+[ ] Social media added and tested.
+[ ] Witnesses added and tested.
+[ ] Witness addressGrid added and tested.
+[ ] Background report added and tested.
+[ ] Background files added and tested.
+[ ] Dress details added and tested.
+[ ] Family details added and tested.
+[ ] Identity marks added and tested.
+[ ] Physical abuse details added and tested.
+[ ] Physical features added and tested.
+[ ] Missing-record behavior matched.
+[ ] Java-only enrichment documented.
+
+
+K. CONTRACT COMPARISON RESULTS
+------------------------------
+
+Test record:
+Java capture date/version:
+SQL function version:
+
+Missing SQL keys:
+Extra SQL keys:
+Wrong nesting:
+Wrong types:
+Wrong values:
+Wrong lookup values:
+Wrong empty/null behavior:
+Duplicate children:
+Wrong ordering:
+Expected Java-only fields:
+Overall result:
+
+
+L. APPROVAL
+-----------
+
+Java/API owner reviewed:
+Database owner reviewed:
+Security owner reviewed:
+QA evidence location:
+Performance evidence location:
+Approved for non-production date:
+Approved for production date:
+Remaining limitations:
+

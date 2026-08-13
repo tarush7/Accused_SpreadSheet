@@ -1,0 +1,502 @@
+POSTGRESQL JSON TECHNIQUES USED IN THIS ARCHITECTURE
+===================================================
+
+1. JSON VERSUS JSONB
+--------------------
+
+PostgreSQL supports json and jsonb.
+
+json:
+    Stores JSON text mostly as supplied.
+
+jsonb:
+    Stores a parsed binary representation.
+    Supports operators, merging, containment and indexing more effectively.
+
+The project functions return JSONB because they construct and merge many JSON
+objects.
+
+
+2. TO_JSONB
+-----------
+
+to_jsonb converts a SQL value or row into JSONB.
+
+    SELECT to_jsonb(memo.*)
+    FROM t_apprehend_memo memo;
+
+If the row contains:
+
+    apprehend_srno = 123
+    first_name      = 'Amit'
+
+the result resembles:
+
+    {
+      "apprehend_srno": 123,
+      "first_name": "Amit"
+    }
+
+Advantages:
+
+    - Quickly preserves all table columns.
+    - Automatically handles SQL values.
+
+Risks:
+
+    - Exposes every column, possibly including internal/sensitive fields.
+    - Uses database names, not necessarily Java names.
+    - New database columns silently appear in the API output.
+    - Does not create nested DTO sections.
+
+For a strict API contract, explicit jsonb_build_object is safer despite being
+more verbose.
+
+
+3. JSONB_BUILD_OBJECT
+---------------------
+
+Creates an object from key/value pairs:
+
+    jsonb_build_object(
+        'apprehendSrno', memo.apprehend_srno,
+        'firstName', memo.first_name
+    )
+
+Result:
+
+    {
+      "apprehendSrno": 123,
+      "firstName": "Amit"
+    }
+
+The arguments must be pairs:
+
+    key1, value1, key2, value2, ...
+
+An odd number of arguments is an error. PostgreSQL also has a practical argument
+limit, so a very wide root object may need to be split and merged.
+
+
+4. JSONB MERGE OPERATOR ||
+--------------------------
+
+The || operator combines objects:
+
+    jsonb_build_object('id', 1)
+    || jsonb_build_object('name', 'Amit')
+
+Result:
+
+    {"id": 1, "name": "Amit"}
+
+If both objects contain the same key, the right-hand value wins:
+
+    {"name": "old"} || {"name": "new"}
+
+Result:
+
+    {"name": "new"}
+
+This is useful for explicit Java aliases that should replace an automatically
+converted raw key. It also means key collisions must be reviewed carefully.
+
+
+5. CAMELCASE KEY CONVERSION
+---------------------------
+
+Database:
+
+    record_created_by
+
+Java JSON:
+
+    recordCreatedBy
+
+A helper can split on underscores and capitalize later words.
+
+Concept:
+
+    record + Created + By = recordCreatedBy
+
+This works mechanically for many fields but not semantic differences:
+
+    socialmedia_type_cd -> socialmediaTypeCd
+    Java may require    -> socialMediaTypeCd
+
+    age_frm_yrs         -> ageFrmYrs
+    Java may require    -> ageFromYrs
+
+    ps_id               -> psId
+    Java may return     -> policeStationId
+
+Therefore:
+
+    - Use camel conversion for verified direct-name fields.
+    - Add explicit aliases for exceptions.
+    - Prefer explicit response construction for strict contracts.
+
+
+6. JSONB_AGG
+------------
+
+jsonb_agg converts multiple rows/objects into an array.
+
+    SELECT jsonb_agg(
+        jsonb_build_object(
+            'id', file.appr_file_srno,
+            'name', file.file_name
+        )
+        ORDER BY file.appr_file_srno
+    )
+    FROM t_apprehend_files file
+    WHERE file.apprehend_srno = 123;
+
+Result:
+
+    [
+      {"id": 1, "name": "photo.jpg"},
+      {"id": 2, "name": "report.pdf"}
+    ]
+
+Put ORDER BY inside the aggregate for stable array ordering.
+
+
+7. COALESCE FOR EMPTY COLLECTIONS
+---------------------------------
+
+jsonb_agg returns SQL NULL when no rows are aggregated. If Java expects [], use:
+
+    COALESCE(jsonb_agg(...), '[]'::jsonb)
+
+Meaning:
+
+    If aggregation produced a value, return it.
+    Otherwise return an empty JSON array.
+
+Do not use '{}' for a list. {} is an object; [] is an array.
+
+
+8. CORRELATED SUBQUERY
+----------------------
+
+A correlated subquery uses the current parent row:
+
+    SELECT
+        memo.apprehend_srno,
+        (
+            SELECT jsonb_agg(to_jsonb(file.*))
+            FROM t_apprehend_files file
+            WHERE file.apprehend_srno = memo.apprehend_srno
+        ) AS files
+    FROM t_apprehend_memo memo;
+
+The inner query is correlated because it references memo.apprehend_srno from the
+outer query.
+
+This is the central technique for independently building child arrays.
+
+
+9. NESTED CORRELATED AGGREGATION
+--------------------------------
+
+For each witness, aggregate only that witness's addresses:
+
+    SELECT jsonb_agg(
+        to_jsonb(witness.*)
+        || jsonb_build_object(
+            'addressGrid', (
+                SELECT COALESCE(
+                    jsonb_agg(to_jsonb(address.*)),
+                    '[]'::jsonb
+                )
+                FROM t_apprehend_witness_addr address
+                WHERE address.appr_witns_srno = witness.appr_witns_srno
+            )
+        )
+    )
+    FROM t_apprehend_witness witness
+    WHERE witness.apprehend_srno = memo.apprehend_srno;
+
+Read from the inside out:
+
+    1. Current memo selects its witnesses.
+    2. Current witness selects its addresses.
+    3. Addresses become addressGrid.
+    4. Witnesses become witnessDetails.
+
+
+10. LEFT JOIN
+-------------
+
+LEFT JOIN preserves the main row when lookup/master data is missing.
+
+    FROM t_apprehend_memo memo
+    LEFT JOIN mdm.m_state state
+      ON state.state_id = memo.state_id
+
+If state master data is missing:
+
+    - memo is still returned.
+    - raw state_id remains available.
+    - state label becomes null.
+
+INNER JOIN would remove the complete memo, which is usually undesirable for a
+missing display label.
+
+
+11. LEFT JOIN LATERAL
+---------------------
+
+LATERAL permits a joined function/subquery to use columns from the row before
+it.
+
+    FROM t_apprehend_addresses address
+    LEFT JOIN LATERAL mdm.common_get_address_master_values(
+        address.lang_cd,
+        address.address_type_cd,
+        address.country_cd,
+        address.state_id,
+        address.lg_district_cd,
+        address.sub_district_cd,
+        address.village_cd,
+        address.ps_id
+    ) master ON TRUE
+
+For each address row, the helper receives that row's codes and returns readable
+address values. LEFT JOIN keeps the address even when helper output is missing.
+
+
+12. LOOKUP HELPER
+-----------------
+
+Conceptual helper:
+
+    lookup_value(category, code, language)
+
+Query logic:
+
+    SELECT look_up_value
+    FROM mdm.m_lookup_masters
+    WHERE api_master_code = category
+      AND look_up_code::text = code
+      AND lang_cd = language
+    ORDER BY preferred-active/current rule
+    LIMIT 1;
+
+Why cast code to text?
+
+Different source columns may be integer, bigint, text or character. A text
+comparison provides one helper signature. This convenience can prevent index use
+depending on schema/index definitions, so measure performance.
+
+
+13. LOOKUP PARENT VALUE
+-----------------------
+
+Hierarchical physical features can use:
+
+    look_up_parentcode
+    look_up_parentvalue
+
+The major feature code must not be searched in normal look_up_code when the
+workbook specifically maps it to parent-code columns.
+
+
+14. CONCAT_WS, TRIM AND NULLIF
+------------------------------
+
+Full name expression:
+
+    NULLIF(
+        TRIM(CONCAT_WS(' ', first_name, middle_name, last_name)),
+        ''
+    )
+
+CONCAT_WS:
+    Joins non-null values with spaces.
+
+TRIM:
+    Removes leading/trailing spaces.
+
+NULLIF(value, ''):
+    Returns null instead of an empty string.
+
+Confirm Java behavior because it may preserve empty strings or apply different
+name ordering.
+
+
+15. TO_JSONB OF A SCALAR
+------------------------
+
+If an ID must be a JSON string:
+
+    to_jsonb(memo.apprehend_srno::TEXT)
+
+Inside jsonb_build_object, simply passing memo.apprehend_srno::TEXT also results
+in a JSON string.
+
+
+16. JSONB ARRAY ELEMENTS FOR A STORED ARRAY/JSON VALUE
+-----------------------------------------------------
+
+If edu_qual_cd is a JSON array:
+
+    jsonb_array_elements_text(to_jsonb(memo.edu_qual_cd))
+
+This expands values so each code can be looked up, then jsonb_agg collects the
+labels again.
+
+But first confirm the database type. It could be:
+
+    integer[]
+    bigint[]
+    jsonb
+    text containing JSON
+    comma-separated text
+
+Each requires different SQL. A workbook sample such as [null] does not prove the
+physical PostgreSQL column type.
+
+
+17. STABLE, IMMUTABLE AND VOLATILE
+----------------------------------
+
+IMMUTABLE:
+    Same inputs always produce same output forever. Suitable for pure key-name
+    conversion.
+
+STABLE:
+    Same inputs produce consistent results within one statement, but results can
+    change when table data changes. Suitable for lookup/read functions.
+
+VOLATILE:
+    May change on every call or perform writes. Default classification.
+
+A function reading tables should not be marked IMMUTABLE.
+
+
+18. SQL LANGUAGE VERSUS PLPGSQL
+-------------------------------
+
+LANGUAGE sql:
+    Good for a single SELECT helper.
+
+LANGUAGE plpgsql:
+    Useful for declarations, branches, exception handling and multiple
+    statements.
+
+The main function can use plpgsql with v_result and RETURN, or sometimes be a
+single SQL-language SELECT. Follow clarity and project conventions.
+
+
+19. SECURITY DEFINER
+--------------------
+
+Default/invoker behavior:
+    Function runs with caller privileges.
+
+SECURITY DEFINER:
+    Function runs with owner privileges.
+
+SECURITY DEFINER can expose data the caller cannot directly read. If needed, it
+requires controlled ownership, explicit search_path, minimal grants and security
+review. Do not copy it automatically from another function.
+
+
+20. SEARCH_PATH AND QUALIFIED NAMES
+----------------------------------
+
+Using schema-qualified tables is safer:
+
+    apprehend.t_apprehend_memo
+    mdm.m_lookup_masters
+
+This prevents an unexpected search_path object from being selected. It is
+especially important for SECURITY DEFINER functions.
+
+
+21. ORDER BY INSIDE JSONB_AGG
+-----------------------------
+
+Correct stable pattern:
+
+    jsonb_agg(child_json ORDER BY child.primary_key)
+
+Without this, clients may receive different array ordering across executions.
+If Java uses a meaningful business sort (date, sequence, file_srno), use that
+rather than assuming primary-key order.
+
+
+22. FILTER CLAUSE
+-----------------
+
+Sometimes a LEFT JOIN aggregation can include one null object. FILTER can help:
+
+    jsonb_agg(child_json) FILTER (WHERE child.id IS NOT NULL)
+
+Correlated subqueries directly selecting the child table generally avoid this
+problem naturally.
+
+
+23. DISTINCT IS NOT A SUBSTITUTE FOR CORRECT JOINS
+--------------------------------------------------
+
+jsonb_agg(DISTINCT child_json) may hide duplicates caused by a bad join, but it:
+
+    - Can be expensive.
+    - Can hide genuine repeated records.
+    - Does not repair incorrect relationship logic.
+
+Build child arrays independently instead.
+
+
+24. NULL HANDLING
+-----------------
+
+SQL NULL, JSON null, missing key, {}, and [] are distinct states.
+
+    SQL NULL
+        No SQL value; may become JSON null when placed in an object.
+
+    JSON null
+        Key exists with null value.
+
+    Missing key
+        Key is not present.
+
+    {}
+        Present empty object.
+
+    []
+        Present empty array.
+
+Match Java serialization deliberately.
+
+
+25. EXPLICIT OBJECT VERSUS RAW-ROW OBJECT
+-----------------------------------------
+
+Raw-row style:
+
+    jsonb_camel_keys(to_jsonb(row.*)) || extra_fields
+
+Pros:
+    Fast development, preserves data, automatically handles columns.
+
+Cons:
+    Leaks extra fields, weak contract control, schema changes alter output.
+
+Explicit style:
+
+    jsonb_build_object('field', row.column, ...)
+
+Pros:
+    Exact API contract, deliberate types/nesting, stable across table changes.
+
+Cons:
+    More code and maintenance.
+
+For an internal analysis function raw-row style may be acceptable. For a public
+API contract, explicit style is normally preferable.
+
