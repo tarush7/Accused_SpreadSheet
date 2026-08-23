@@ -1,0 +1,1128 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "CCTNS Accused Journey: Chronology, Keys and Verification",
+    "description": "A technical reconstruction of the FIR-linked accused journey, its conditional branches, identifiers and PostgreSQL verification plan.",
+    "generatedAt": "2026-08-20T00:00:00+05:30",
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# CCTNS Accused Journey: Chronology, Keys and Verification"
+      },
+      {
+        "id": "technical-summary",
+        "type": "markdown",
+        "body": "## Technical summary\n\n**The defensible backbone is:** FIR and accused identity → arrest/surrender when applicable → investigation with custody/remand/bail events → police final report or charge-sheet → court process → judgment/disposal and any sentence/jail outcome → appeal when filed.\n\n**This is a state machine, not one compulsory row-by-row sequence.** Notices, warrants, proclaimed-offender action, seizure/freezing, IMOT, Kalandra, bail, compensation, appeal and post-case registers are conditional or parallel branches.\n\n**Use two timelines.** `accused_vid` follows the person across cases; `fir_reg_num` plus `accused_srno` follows that person's journey inside one FIR. Event serial numbers then distinguish repeatable arrests, remands, bail actions, disposals and appeals.\n\n**Current evidence is sufficient for a stage map, not yet for a dated person timeline.** The workbook and metadata result show where data can live; production dates, populated rows and declared foreign keys still need the supplied SQL checks."
+      },
+      {
+        "id": "state-machine-finding",
+        "type": "markdown",
+        "body": "## Direct references are concentrated in profile and conditional branches\n\nThe 53 schema-qualified tables in the pasted result were each assigned once to an interpreted lifecycle area. The chart measures **schema footprint only**—it does not measure how often an event occurs, how long a phase lasts, or whether a phase is mandatory. Its main use is to prevent a common error: sorting schemas or table names and calling that a person's chronology.",
+        "sourceId": "src_phase_map"
+      },
+      {
+        "id": "phase-coverage-chart-block",
+        "type": "chart",
+        "chartId": "phase-coverage-chart"
+      },
+      {
+        "id": "journey-map-intro",
+        "type": "markdown",
+        "body": "## The chronological journey has a backbone with interleaved branches\n\nRead the stages from top to bottom for the normal case direction. Optional, parallel or repeatable events can occur zero, one or many times and sometimes move relative to another stage.\n\n1. **FIR and accused identity — backbone start.** Create the FIR-linked accused occurrence.\n2. **Tracing and coercive action — optional.** Notices, look-out circulars, warrants, proclaimed-offender action, rewards, externment, freezing orders and IMOT details may appear before or after arrest.\n3. **Arrest or surrender — conditional custody milestone.** The arrest/surrender memo is the preferred event anchor.\n4. **Investigation and custody evidence — parallel and repeatable.** Case progress, interrogation, fingerprints, seizure and attachment develop over time.\n5. **Remand and bail — conditional and repeatable.** Requests, sanctions, extensions, hearings, grant, release and cancellation can interleave with investigation.\n6. **Police final report or charge-sheet — backbone decision point.** Investigation reaches a police outcome, including supplementary reports when applicable.\n7. **Court process — conditional and repeatable.** Charges framed, hearings and non-appearance warrants follow the court case.\n8. **Judgment, disposal and custody outcome — terminal for a court level.** Conviction-type outcomes can add punishment, jail and release details.\n9. **Appeal — optional and repeatable by court level.** Filing, order and result events may modify the prior outcome.\n10. **Post-case intelligence and registers — derived.** Dossiers and data banks summarize history; they are not new legal milestones."
+      },
+      {
+        "id": "journey-verification-intro",
+        "type": "markdown",
+        "body": "### Technical field checklist\n\nStart with these parent/event anchors and prefer their business timestamps over audit timestamps:\n\n- FIR identity: `fir.t_fir_accused_info`; retain `fir_reg_num`, `accused_srno` and `accused_vid`.\n- Arrest/surrender: `arrest.t_arrest_memo`; verify `arrest_surrender_dt` and retain `arr_surr_srno`.\n- Investigation: `casediary.t_accused_case_progress`, `interro.t_interrogation_info`, and seizure/attachment parents; verify event-specific dates such as `interro_dt`.\n- Remand/bail: `court.t_accused_remand` and `bail.t_accused_bail_details`; verify request, sanction, extension, hearing, grant and release dates.\n- Police outcome: `finalreport.t_accused_chargesheet`; discover submission/acceptance timestamps and child serials.\n- Court/disposal: `court.t_charges_framed_acts` and `disposal.t_accused_disposal`; verify charges-framed, judgment/disposal and sentence/release dates.\n- Appeal: `appeal.t_accused_appeal`; discover filing, order and result dates plus `accused_appeal_srno`."
+      },
+      {
+        "id": "key-model",
+        "type": "markdown",
+        "body": "## Person identity and case identity must remain separate\n\n`accused_vid` is the most useful cross-module search key, but it is not enough to describe one legal journey because the same person can appear in multiple FIRs. The case-specific grain is normally `fir_reg_num` plus `accused_srno`; module serial numbers identify repeatable event parents and their indirect children. A final timeline should therefore partition by FIR and retain the person identifier rather than collapsing all rows into one undifferentiated sequence.\n\n- `accused_vid`: person across cases.\n- `fir_reg_num`: FIR/case registration context.\n- `accused_srno`: one accused occurrence within an FIR.\n- `arr_surr_srno`: one arrest or surrender event.\n- Module serials such as remand, bailer, disposal and appeal numbers: repeatable event/detail parents."
+      },
+      {
+        "id": "scope-definitions",
+        "type": "markdown",
+        "body": "## Scope and evidence definitions\n\n- **Confirmed** means the table/link is present in both the workbook's accused flow/table material and the pasted database metadata.\n- **Database-confirmed** means a direct `accused_vid` column is present in the pasted production metadata, while exact timing still needs columns and row values.\n- **Backbone** means a normal case-direction milestone, not a guarantee that every case reaches it.\n- **Conditional/parallel** means the event depends on facts, orders or procedural choices and can interleave with other phases.\n- **Audit timestamp** means `record_created_on`, `record_updated_on` or similar system metadata; it must not be substituted for an arrest, remand, bail, judgment or appeal date.\n\nThe adult FIR-linked path controls this report. The workbook's `Apprehend` material is primarily juvenile-oriented, and Kalandra is a preventive/petty-case branch, so neither is forced into the adult FIR backbone."
+      },
+      {
+        "id": "method",
+        "type": "markdown",
+        "body": "## Method: derive order from business events, not schemas\n\n1. The workbook established root/detail structures such as `t_fir_accused_info`, `t_arrest_memo`, remand, bail, disposal and appeal parents.\n2. The user's metadata result established every table with a direct `accused_vid` column.\n3. Official Ministry of Home Affairs material established the high-level CCTNS/ICJS domains: FIR/accused, arrest, investigation, property/seizure, bail/remand, charge-sheet/final report, court, prison/release and judgment/appeal.\n4. The table map classified every direct table into one lifecycle area and labeled branches explicitly.\n5. The PostgreSQL pack discovers populated rows, business-date candidates, declared constraints and indirect descendants. Only after those results are reviewed should a typed `UNION ALL` event timeline be written.\n\nThis method deliberately treats table/schema placement as implementation structure and event dates/statuses as chronology evidence."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## Limitations and robustness checks\n\n**No production rows were queried here.** Presence of `accused_vid` proves a possible direct link, not that a particular accused has a row.\n\n**Direct-column search is incomplete by design.** Acts, files, sureties, addresses and release details often inherit identity through a parent serial number and will only appear after the foreign-key graph is traversed.\n\n**Some event tables also contain copied dates.** For example, an FIR profile may carry `arrest_surr_dt`; the arrest memo should normally control the arrest event after row-level reconciliation.\n\n**Schema names are not time order.** Remand lives under `court` but belongs during investigation/custody; warrants can appear in more than one procedural period; conviction-history fields in a charge-sheet are not the current judgment.\n\n**Foreign keys may be absent or unenforced.** The query pack checks declared constraints, but application-level relationships may still require sample-row reconciliation."
+      },
+      {
+        "id": "next-steps",
+        "type": "markdown",
+        "body": "## Recommended next steps\n\n1. In a fresh PostgreSQL session, open `verification_queries.sql`, replace the sample `119802` with one real `accused_vid`, and run Q1 through Q10 in order.\n2. Return the Q6 identifier/date inventory, Q7 constraints, Q8 indirect-child graph and Q10 JSON bundle.\n3. Reconcile any duplicate event dates, especially arrest dates copied into FIR, interrogation or report tables.\n4. Build the final case-partitioned timeline with typed timestamps and a precedence rule for each event type.\n5. Validate at least three patterns: a simple no-arrest/no-charge-sheet case, an arrest-remand-bail case, and a conviction-appeal case. Add a proclaimed-offender or repeat-arrest case as an edge test."
+      },
+      {
+        "id": "further-questions",
+        "type": "markdown",
+        "body": "## Further questions\n\n- Does `accused_vid` remain stable across migrated and merged person records?\n- Is `accused_srno` globally unique, or only unique with `fir_reg_num`?\n- Which table/date is authoritative when arrest or surrender dates disagree?\n- What are the exact final-report and court-disposal parent tables and event timestamps in this deployment?\n- Are appeal levels stored as repeated rows in `appeal.t_accused_appeal`, and what identifies the court level?\n- Which indirect child tables lack declared foreign keys and must be joined by application convention?"
+      }
+    ],
+    "charts": [
+      {
+        "id": "phase-coverage-chart",
+        "title": "Direct accused_vid tables by interpreted lifecycle area",
+        "description": "53 schema-qualified tables, each classified once; counts show schema footprint rather than event volume.",
+        "type": "bar",
+        "intent": "comparison",
+        "question": "How many direct accused_vid tables fall in each interpreted lifecycle area?",
+        "rationale": "A bar chart compares one count across the ten interpreted lifecycle areas.",
+        "dataset": "phase_counts",
+        "encodings": {
+          "x": {
+            "field": "phase"
+          },
+          "y": {
+            "field": "table_count"
+          }
+        },
+        "palette": {
+          "kind": "sequential",
+          "name": "blue"
+        },
+        "labels": {
+          "values": "all"
+        },
+        "source": {
+          "id": "src_phase_map",
+          "label": "Reviewed accused_vid table-to-phase classification",
+          "path": "table_phase_map.csv",
+          "query": {
+            "description": "Counts each of the 53 direct accused_vid tables once in one interpreted lifecycle area.",
+            "engine": "PostgreSQL",
+            "language": "sql",
+            "sql": "WITH phase_map(phase_order, phase, qualified_table) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_info'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_address'),\n        (1, 'FIR and accused identity', 'fir.t_fir_acc_national_id'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_bank_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_dress'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_files'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_id_marks'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_med_exam'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_phy_feature'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_vda_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_multi_accused'),\n        (2, 'Tracing and coercive branches', 'fir.t_accused_procl_offender'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_fir_lo_circular'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_freezing_order_accused'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrants'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrant_review'),\n        (2, 'Tracing and coercive branches', 'court.t_declare_reward'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_proposal'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_acts'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addnl_accused_terrorists'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addn_acc_train_country'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_memo'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_addresses'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_phy_feature'),\n        (3, 'Arrest or surrender', 'saveforms.t_arrest_saved'),\n        (4, 'Investigation and custody evidence', 'casediary.t_accused_case_progress'),\n        (4, 'Investigation and custody evidence', 'interro.t_interrogation_info'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_attachment'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_curr_accused'),\n        (4, 'Investigation and custody evidence', 'fir.t_fir_property_attachment'),\n        (4, 'Investigation and custody evidence', 'court.t_accused_fingerprints'),\n        (5, 'Remand and bail', 'court.t_accused_remand'),\n        (5, 'Remand and bail', 'bail.t_accused_bail_details'),\n        (5, 'Remand and bail', 'bail.t_acc_bail_cancel_review'),\n        (5, 'Remand and bail', 'kalandra.t_kal_acc_bail_cancel_review'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_accused_chargesheet'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_acts'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_convictions'),\n        (7, 'Court process', 'court.t_charges_framed_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_punishment'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_jail_details'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_confessed_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_convict_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_court_compensation'),\n        (9, 'Appeal', 'appeal.t_accused_appeal'),\n        (10, 'Post-case intelligence and registers', 'crmprof.t_criminal_dossier'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_drug_peddler_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_sex_offender_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_village_convicts'),\n        (10, 'Post-case intelligence and registers', 'other_reg.t_info_sheet_details'),\n        (10, 'Post-case intelligence and registers', 'stranger.t_stranger_roll')\n)\nSELECT phase_order, phase, count(DISTINCT qualified_table)::bigint AS table_count\nFROM phase_map\nGROUP BY phase_order, phase\nORDER BY phase_order;",
+            "metric_definitions": [
+              "table_count = count of distinct schema-qualified tables assigned to the lifecycle area",
+              "Counts describe schema footprint, not event frequency, duration, or mandatory completion"
+            ],
+            "filters": [
+              "column_name = accused_vid",
+              "53 user-provided production-visible tables"
+            ]
+          }
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "journey-table",
+        "title": "Canonical accused journey and branch status",
+        "description": "Lifecycle order for an FIR-linked accused; optional and repeatable rows may interleave.",
+        "dataset": "journey_stages",
+        "columns": [
+          {
+            "field": "stage",
+            "label": "Stage",
+            "type": "number"
+          },
+          {
+            "field": "journey_phase",
+            "label": "Journey phase",
+            "type": "text"
+          },
+          {
+            "field": "path_status",
+            "label": "Path status",
+            "type": "text"
+          }
+        ],
+        "defaultSort": {
+          "field": "stage",
+          "direction": "asc"
+        },
+        "source": {
+          "id": "src_journey_model",
+          "label": "Reviewed CCTNS accused journey stage model",
+          "path": "source_notes.md",
+          "query": {
+            "description": "Reproduces the ten-stage interpreted journey table documented in the report.",
+            "engine": "PostgreSQL",
+            "language": "sql",
+            "sql": "WITH journey_stages(stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'Backbone start', 'An FIR exists and the person is added or identified as an accused.', 'fir.t_fir_registration; fir.t_fir_accused_info', 'FIR registration date; accused profile record_created_on is audit-only', 'fir_reg_num + accused_srno; accused_vid for the person', 'Confirmed anchor; FIR event date still to query'),\n        (2, 'Tracing and coercive branches', 'Optional, may occur before or after arrest', 'Notice, look-out circular, warrant, proclaimed-offender order, reward, externment, freezing order, or IMOT detail is recorded when applicable.', 'notc_ordr.*, court.t_accused_warrants, fir.t_accused_procl_offender', 'Issue/order/review date specific to each branch', 'accused_vid plus FIR/case keys; branch-specific serial number', 'Tables confirmed; relative order is case-dependent'),\n        (3, 'Arrest or surrender', 'Conditional but central when custody occurs', 'The arrest/surrender memo establishes the custody event and captures person-search, address, physical and related details.', 'arrest.t_arrest_memo', 'arrest_surrender_dt (business event); record_created_on (audit)', 'arr_surr_srno; fir_reg_num; accused_vid; accused_srno', 'Confirmed in workbook and lookup extract'),\n        (4, 'Investigation and custody evidence', 'Parallel and repeatable', 'Case progress, interrogation, fingerprints, seizure and property attachment are recorded as investigation develops.', 'casediary.t_accused_case_progress; interro.t_interrogation_info; seizure.*', 'interro_dt and table-specific case-progress/seizure/attachment dates', 'accused_vid and case keys; some children inherit a module parent key', 'Direct links confirmed; event order must come from dates'),\n        (5, 'Remand and bail', 'Conditional and repeatable; interleaves with investigation', 'Police/court remand, extensions, bail hearings, grant, release and cancellation/review can occur in cycles.', 'court.t_accused_remand; bail.t_accused_bail_details; bail.t_acc_bail_cancel_review', 'remand_req_frm_dt, remand_sanc_dt, remand_extn_till_dt, bail_grant_dt, bail_release_dt', 'accused_vid + accused_srno + fir_reg_num; arr_surr_srno when tied to arrest', 'Confirmed fields in workbook lookup sheets'),\n        (6, 'Police final report or charge-sheet', 'Backbone decision point', 'Investigation reaches a police outcome: charge-sheet/supplementary charge-sheet or another final-report outcome.', 'finalreport.t_accused_chargesheet and detail tables', 'Charge-sheet/final-report submission and acceptance dates', 'accused_vid + accused_srno + fir_reg_num; chargesheet_srno for children', 'Official domain and direct tables confirmed; date columns to query'),\n        (7, 'Court process', 'Conditional and repeatable', 'Charges are framed and hearings/process events, including warrants for non-appearance, may follow.', 'court.t_charges_framed_acts; court.t_accused_warrants', 'Charges-framed, hearing, warrant issue and review dates', 'accused_vid plus FIR/court-case identifiers', 'Official process confirmed; production event fields to query'),\n        (8, 'Judgment, disposal and custody outcome', 'Terminal for a court level; custody can continue', 'The accused receives a disposal outcome; conviction-type outcomes may add punishment, jail/sentence and release details.', 'disposal.t_accused_disposal; t_accused_punishment; t_accused_jail_details', 'Judgment/disposal date, sentence_from_dt, sentence_to_dt, jail_last_release_dt', 'accused_vid + accused_srno + fir_reg_num; accused_disposal_srno for children', 'Confirmed parent/detail structure; judgment date to query'),\n        (9, 'Appeal', 'Optional and repeatable across court levels', 'An appeal records the appellate result and whether punishment is retained or modified.', 'appeal.t_accused_appeal', 'Appeal filing, order and result dates', 'accused_vid + accused_srno + fir_reg_num; accused_appeal_srno', 'Confirmed table and result fields; event dates to query'),\n        (10, 'Post-case intelligence and registers', 'Derived/administrative, not a legal step', 'Dossiers, conviction data banks, information sheets and other registers consolidate or reuse the person''s history.', 'crmprof.*, dbank.*, other_reg.*, stranger.*', 'Register effective/entry date; do not substitute audit timestamps for conviction date', 'accused_vid plus source-case identifiers where present', 'Direct tables confirmed; derivation rules to query')\n)\nSELECT stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence FROM journey_stages;",
+            "tables_used": [
+              "fir.t_fir_accused_info",
+              "arrest.t_arrest_memo",
+              "court.t_accused_remand",
+              "bail.t_accused_bail_details",
+              "finalreport.t_accused_chargesheet",
+              "disposal.t_accused_disposal",
+              "appeal.t_accused_appeal"
+            ],
+            "metric_definitions": [
+              "stage is an interpreted lifecycle order, not elapsed time or a mandatory funnel"
+            ]
+          }
+        }
+      },
+      {
+        "id": "journey-verification-table",
+        "title": "Technical anchors and event dates",
+        "description": "Implementation checklist for the same ten lifecycle stages.",
+        "dataset": "journey_stages",
+        "columns": [
+          {
+            "field": "stage",
+            "label": "Stage",
+            "type": "number"
+          },
+          {
+            "field": "anchor_tables",
+            "label": "Anchor tables",
+            "type": "text"
+          },
+          {
+            "field": "date_to_verify",
+            "label": "Date/time to verify",
+            "type": "text"
+          }
+        ],
+        "defaultSort": {
+          "field": "stage",
+          "direction": "asc"
+        },
+        "source": {
+          "id": "src_journey_model",
+          "label": "Reviewed CCTNS accused journey stage model",
+          "path": "source_notes.md",
+          "query": {
+            "description": "Reproduces the ten-stage interpreted journey table documented in the report.",
+            "engine": "PostgreSQL",
+            "language": "sql",
+            "sql": "WITH journey_stages(stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'Backbone start', 'An FIR exists and the person is added or identified as an accused.', 'fir.t_fir_registration; fir.t_fir_accused_info', 'FIR registration date; accused profile record_created_on is audit-only', 'fir_reg_num + accused_srno; accused_vid for the person', 'Confirmed anchor; FIR event date still to query'),\n        (2, 'Tracing and coercive branches', 'Optional, may occur before or after arrest', 'Notice, look-out circular, warrant, proclaimed-offender order, reward, externment, freezing order, or IMOT detail is recorded when applicable.', 'notc_ordr.*, court.t_accused_warrants, fir.t_accused_procl_offender', 'Issue/order/review date specific to each branch', 'accused_vid plus FIR/case keys; branch-specific serial number', 'Tables confirmed; relative order is case-dependent'),\n        (3, 'Arrest or surrender', 'Conditional but central when custody occurs', 'The arrest/surrender memo establishes the custody event and captures person-search, address, physical and related details.', 'arrest.t_arrest_memo', 'arrest_surrender_dt (business event); record_created_on (audit)', 'arr_surr_srno; fir_reg_num; accused_vid; accused_srno', 'Confirmed in workbook and lookup extract'),\n        (4, 'Investigation and custody evidence', 'Parallel and repeatable', 'Case progress, interrogation, fingerprints, seizure and property attachment are recorded as investigation develops.', 'casediary.t_accused_case_progress; interro.t_interrogation_info; seizure.*', 'interro_dt and table-specific case-progress/seizure/attachment dates', 'accused_vid and case keys; some children inherit a module parent key', 'Direct links confirmed; event order must come from dates'),\n        (5, 'Remand and bail', 'Conditional and repeatable; interleaves with investigation', 'Police/court remand, extensions, bail hearings, grant, release and cancellation/review can occur in cycles.', 'court.t_accused_remand; bail.t_accused_bail_details; bail.t_acc_bail_cancel_review', 'remand_req_frm_dt, remand_sanc_dt, remand_extn_till_dt, bail_grant_dt, bail_release_dt', 'accused_vid + accused_srno + fir_reg_num; arr_surr_srno when tied to arrest', 'Confirmed fields in workbook lookup sheets'),\n        (6, 'Police final report or charge-sheet', 'Backbone decision point', 'Investigation reaches a police outcome: charge-sheet/supplementary charge-sheet or another final-report outcome.', 'finalreport.t_accused_chargesheet and detail tables', 'Charge-sheet/final-report submission and acceptance dates', 'accused_vid + accused_srno + fir_reg_num; chargesheet_srno for children', 'Official domain and direct tables confirmed; date columns to query'),\n        (7, 'Court process', 'Conditional and repeatable', 'Charges are framed and hearings/process events, including warrants for non-appearance, may follow.', 'court.t_charges_framed_acts; court.t_accused_warrants', 'Charges-framed, hearing, warrant issue and review dates', 'accused_vid plus FIR/court-case identifiers', 'Official process confirmed; production event fields to query'),\n        (8, 'Judgment, disposal and custody outcome', 'Terminal for a court level; custody can continue', 'The accused receives a disposal outcome; conviction-type outcomes may add punishment, jail/sentence and release details.', 'disposal.t_accused_disposal; t_accused_punishment; t_accused_jail_details', 'Judgment/disposal date, sentence_from_dt, sentence_to_dt, jail_last_release_dt', 'accused_vid + accused_srno + fir_reg_num; accused_disposal_srno for children', 'Confirmed parent/detail structure; judgment date to query'),\n        (9, 'Appeal', 'Optional and repeatable across court levels', 'An appeal records the appellate result and whether punishment is retained or modified.', 'appeal.t_accused_appeal', 'Appeal filing, order and result dates', 'accused_vid + accused_srno + fir_reg_num; accused_appeal_srno', 'Confirmed table and result fields; event dates to query'),\n        (10, 'Post-case intelligence and registers', 'Derived/administrative, not a legal step', 'Dossiers, conviction data banks, information sheets and other registers consolidate or reuse the person''s history.', 'crmprof.*, dbank.*, other_reg.*, stranger.*', 'Register effective/entry date; do not substitute audit timestamps for conviction date', 'accused_vid plus source-case identifiers where present', 'Direct tables confirmed; derivation rules to query')\n)\nSELECT stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence FROM journey_stages;",
+            "tables_used": [
+              "fir.t_fir_accused_info",
+              "arrest.t_arrest_memo",
+              "court.t_accused_remand",
+              "bail.t_accused_bail_details",
+              "finalreport.t_accused_chargesheet",
+              "disposal.t_accused_disposal",
+              "appeal.t_accused_appeal"
+            ],
+            "metric_definitions": [
+              "stage is an interpreted lifecycle order, not elapsed time or a mandatory funnel"
+            ]
+          }
+        }
+      },
+      {
+        "id": "key-table",
+        "title": "Identifier grain and role",
+        "description": "Keep person, case and repeatable event identifiers at their proper grains.",
+        "dataset": "key_model",
+        "columns": [
+          {
+            "field": "identifier",
+            "label": "Identifier",
+            "type": "text"
+          },
+          {
+            "field": "grain",
+            "label": "Grain",
+            "type": "text"
+          },
+          {
+            "field": "role",
+            "label": "Role",
+            "type": "text"
+          }
+        ],
+        "defaultSort": {
+          "field": "identifier",
+          "direction": "asc"
+        },
+        "source": {
+          "id": "src_key_model",
+          "label": "Reviewed CCTNS accused identifier grain model",
+          "path": "source_notes.md",
+          "query": {
+            "description": "Reproduces the identifier-grain table documented in the report.",
+            "engine": "PostgreSQL",
+            "language": "sql",
+            "sql": "WITH key_model(identifier, grain, role, verification) AS (\n    VALUES\n        ('accused_vid', 'Person across cases', 'Cross-module identity anchor', 'Check count(distinct fir_reg_num) per accused_vid and duplicates/merges'),\n        ('fir_reg_num', 'FIR/case registration', 'Case context', 'Join to fir.t_fir_registration and confirm the true FIR date field'),\n        ('accused_srno', 'One accused occurrence in one FIR', 'Case-specific accused identity', 'Test uniqueness with fir_reg_num and compare fir_accused_srno aliases'),\n        ('arr_surr_srno', 'Arrest/surrender event', 'Custody-event parent for arrest details', 'Inspect FK declarations and re-arrest chains'),\n        ('Module serial numbers', 'Repeatable event/detail parent', 'Examples: remand_srno, bailer_srno, accused_disposal_srno, accused_appeal_srno', 'Use pg_constraint output; do not infer joins only from similar names')\n)\nSELECT identifier, grain, role, verification FROM key_model;",
+            "tables_used": [
+              "fir.t_fir_accused_info",
+              "arrest.t_arrest_memo"
+            ]
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "id": "src_workbook",
+        "label": "CCTNS_Modules_Search&View_Figma_26052026_V2 (1).xlsx — accused flow and table sheets"
+      },
+      {
+        "id": "src_pasted",
+        "label": "User-provided information_schema.columns result for column accused_vid"
+      },
+      {
+        "id": "src_phase_map",
+        "label": "Reviewed accused_vid table-to-phase classification",
+        "path": "table_phase_map.csv",
+        "query": {
+          "description": "Counts each of the 53 direct accused_vid tables once in one interpreted lifecycle area.",
+          "engine": "PostgreSQL",
+          "language": "sql",
+          "sql": "WITH phase_map(phase_order, phase, qualified_table) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_info'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_address'),\n        (1, 'FIR and accused identity', 'fir.t_fir_acc_national_id'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_bank_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_dress'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_files'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_id_marks'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_med_exam'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_phy_feature'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_vda_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_multi_accused'),\n        (2, 'Tracing and coercive branches', 'fir.t_accused_procl_offender'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_fir_lo_circular'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_freezing_order_accused'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrants'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrant_review'),\n        (2, 'Tracing and coercive branches', 'court.t_declare_reward'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_proposal'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_acts'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addnl_accused_terrorists'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addn_acc_train_country'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_memo'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_addresses'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_phy_feature'),\n        (3, 'Arrest or surrender', 'saveforms.t_arrest_saved'),\n        (4, 'Investigation and custody evidence', 'casediary.t_accused_case_progress'),\n        (4, 'Investigation and custody evidence', 'interro.t_interrogation_info'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_attachment'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_curr_accused'),\n        (4, 'Investigation and custody evidence', 'fir.t_fir_property_attachment'),\n        (4, 'Investigation and custody evidence', 'court.t_accused_fingerprints'),\n        (5, 'Remand and bail', 'court.t_accused_remand'),\n        (5, 'Remand and bail', 'bail.t_accused_bail_details'),\n        (5, 'Remand and bail', 'bail.t_acc_bail_cancel_review'),\n        (5, 'Remand and bail', 'kalandra.t_kal_acc_bail_cancel_review'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_accused_chargesheet'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_acts'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_convictions'),\n        (7, 'Court process', 'court.t_charges_framed_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_punishment'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_jail_details'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_confessed_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_convict_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_court_compensation'),\n        (9, 'Appeal', 'appeal.t_accused_appeal'),\n        (10, 'Post-case intelligence and registers', 'crmprof.t_criminal_dossier'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_drug_peddler_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_sex_offender_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_village_convicts'),\n        (10, 'Post-case intelligence and registers', 'other_reg.t_info_sheet_details'),\n        (10, 'Post-case intelligence and registers', 'stranger.t_stranger_roll')\n)\nSELECT phase_order, phase, count(DISTINCT qualified_table)::bigint AS table_count\nFROM phase_map\nGROUP BY phase_order, phase\nORDER BY phase_order;",
+          "metric_definitions": [
+            "table_count = count of distinct schema-qualified tables assigned to the lifecycle area",
+            "Counts describe schema footprint, not event frequency, duration, or mandatory completion"
+          ],
+          "filters": [
+            "column_name = accused_vid",
+            "53 user-provided production-visible tables"
+          ]
+        }
+      },
+      {
+        "id": "src_mha_matrix",
+        "label": "Ministry of Home Affairs — Matrix of mandatory Data Sets to be shared as per Law",
+        "href": "https://www.mha.gov.in/sites/default/files/2022-09/CCTNSMHA_11012016%5B1%5D.pdf"
+      },
+      {
+        "id": "src_mha_2025",
+        "label": "Ministry of Home Affairs — Lok Sabha Unstarred Question No. 4954 (1 April 2025)",
+        "href": "https://www.mha.gov.in/MHA1/Par2017/pdfs/par2025-pdfs/LS01042025/4954.pdf"
+      },
+      {
+        "id": "src_mha_cctns",
+        "label": "Ministry of Home Affairs — CCTNS/ICJS overview",
+        "href": "https://www.mha.gov.in/en/divisionofmha/women-safety-division/cctns"
+      },
+      {
+        "id": "src_journey_model",
+        "label": "Reviewed CCTNS accused journey stage model",
+        "path": "source_notes.md",
+        "query": {
+          "description": "Reproduces the ten-stage interpreted journey table documented in the report.",
+          "engine": "PostgreSQL",
+          "language": "sql",
+          "sql": "WITH journey_stages(stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'Backbone start', 'An FIR exists and the person is added or identified as an accused.', 'fir.t_fir_registration; fir.t_fir_accused_info', 'FIR registration date; accused profile record_created_on is audit-only', 'fir_reg_num + accused_srno; accused_vid for the person', 'Confirmed anchor; FIR event date still to query'),\n        (2, 'Tracing and coercive branches', 'Optional, may occur before or after arrest', 'Notice, look-out circular, warrant, proclaimed-offender order, reward, externment, freezing order, or IMOT detail is recorded when applicable.', 'notc_ordr.*, court.t_accused_warrants, fir.t_accused_procl_offender', 'Issue/order/review date specific to each branch', 'accused_vid plus FIR/case keys; branch-specific serial number', 'Tables confirmed; relative order is case-dependent'),\n        (3, 'Arrest or surrender', 'Conditional but central when custody occurs', 'The arrest/surrender memo establishes the custody event and captures person-search, address, physical and related details.', 'arrest.t_arrest_memo', 'arrest_surrender_dt (business event); record_created_on (audit)', 'arr_surr_srno; fir_reg_num; accused_vid; accused_srno', 'Confirmed in workbook and lookup extract'),\n        (4, 'Investigation and custody evidence', 'Parallel and repeatable', 'Case progress, interrogation, fingerprints, seizure and property attachment are recorded as investigation develops.', 'casediary.t_accused_case_progress; interro.t_interrogation_info; seizure.*', 'interro_dt and table-specific case-progress/seizure/attachment dates', 'accused_vid and case keys; some children inherit a module parent key', 'Direct links confirmed; event order must come from dates'),\n        (5, 'Remand and bail', 'Conditional and repeatable; interleaves with investigation', 'Police/court remand, extensions, bail hearings, grant, release and cancellation/review can occur in cycles.', 'court.t_accused_remand; bail.t_accused_bail_details; bail.t_acc_bail_cancel_review', 'remand_req_frm_dt, remand_sanc_dt, remand_extn_till_dt, bail_grant_dt, bail_release_dt', 'accused_vid + accused_srno + fir_reg_num; arr_surr_srno when tied to arrest', 'Confirmed fields in workbook lookup sheets'),\n        (6, 'Police final report or charge-sheet', 'Backbone decision point', 'Investigation reaches a police outcome: charge-sheet/supplementary charge-sheet or another final-report outcome.', 'finalreport.t_accused_chargesheet and detail tables', 'Charge-sheet/final-report submission and acceptance dates', 'accused_vid + accused_srno + fir_reg_num; chargesheet_srno for children', 'Official domain and direct tables confirmed; date columns to query'),\n        (7, 'Court process', 'Conditional and repeatable', 'Charges are framed and hearings/process events, including warrants for non-appearance, may follow.', 'court.t_charges_framed_acts; court.t_accused_warrants', 'Charges-framed, hearing, warrant issue and review dates', 'accused_vid plus FIR/court-case identifiers', 'Official process confirmed; production event fields to query'),\n        (8, 'Judgment, disposal and custody outcome', 'Terminal for a court level; custody can continue', 'The accused receives a disposal outcome; conviction-type outcomes may add punishment, jail/sentence and release details.', 'disposal.t_accused_disposal; t_accused_punishment; t_accused_jail_details', 'Judgment/disposal date, sentence_from_dt, sentence_to_dt, jail_last_release_dt', 'accused_vid + accused_srno + fir_reg_num; accused_disposal_srno for children', 'Confirmed parent/detail structure; judgment date to query'),\n        (9, 'Appeal', 'Optional and repeatable across court levels', 'An appeal records the appellate result and whether punishment is retained or modified.', 'appeal.t_accused_appeal', 'Appeal filing, order and result dates', 'accused_vid + accused_srno + fir_reg_num; accused_appeal_srno', 'Confirmed table and result fields; event dates to query'),\n        (10, 'Post-case intelligence and registers', 'Derived/administrative, not a legal step', 'Dossiers, conviction data banks, information sheets and other registers consolidate or reuse the person''s history.', 'crmprof.*, dbank.*, other_reg.*, stranger.*', 'Register effective/entry date; do not substitute audit timestamps for conviction date', 'accused_vid plus source-case identifiers where present', 'Direct tables confirmed; derivation rules to query')\n)\nSELECT stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence FROM journey_stages;",
+          "tables_used": [
+            "fir.t_fir_accused_info",
+            "arrest.t_arrest_memo",
+            "court.t_accused_remand",
+            "bail.t_accused_bail_details",
+            "finalreport.t_accused_chargesheet",
+            "disposal.t_accused_disposal",
+            "appeal.t_accused_appeal"
+          ],
+          "metric_definitions": [
+            "stage is an interpreted lifecycle order, not elapsed time or a mandatory funnel"
+          ]
+        }
+      },
+      {
+        "id": "src_key_model",
+        "label": "Reviewed CCTNS accused identifier grain model",
+        "path": "source_notes.md",
+        "query": {
+          "description": "Reproduces the identifier-grain table documented in the report.",
+          "engine": "PostgreSQL",
+          "language": "sql",
+          "sql": "WITH key_model(identifier, grain, role, verification) AS (\n    VALUES\n        ('accused_vid', 'Person across cases', 'Cross-module identity anchor', 'Check count(distinct fir_reg_num) per accused_vid and duplicates/merges'),\n        ('fir_reg_num', 'FIR/case registration', 'Case context', 'Join to fir.t_fir_registration and confirm the true FIR date field'),\n        ('accused_srno', 'One accused occurrence in one FIR', 'Case-specific accused identity', 'Test uniqueness with fir_reg_num and compare fir_accused_srno aliases'),\n        ('arr_surr_srno', 'Arrest/surrender event', 'Custody-event parent for arrest details', 'Inspect FK declarations and re-arrest chains'),\n        ('Module serial numbers', 'Repeatable event/detail parent', 'Examples: remand_srno, bailer_srno, accused_disposal_srno, accused_appeal_srno', 'Use pg_constraint output; do not infer joins only from similar names')\n)\nSELECT identifier, grain, role, verification FROM key_model;",
+          "tables_used": [
+            "fir.t_fir_accused_info",
+            "arrest.t_arrest_memo"
+          ]
+        }
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-08-20T00:00:00+05:30",
+    "datasets": {
+      "phase_counts": [
+        {
+          "phase_order": 1,
+          "phase": "FIR and accused identity",
+          "table_count": 11,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 2,
+          "phase": "Tracing and coercive branches",
+          "table_count": 10,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 3,
+          "phase": "Arrest or surrender",
+          "table_count": 4,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 4,
+          "phase": "Investigation and custody evidence",
+          "table_count": 6,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 5,
+          "phase": "Remand and bail",
+          "table_count": 4,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 6,
+          "phase": "Police final report or charge-sheet",
+          "table_count": 3,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 7,
+          "phase": "Court process",
+          "table_count": 1,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 8,
+          "phase": "Judgment disposal and custody outcome",
+          "table_count": 7,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 9,
+          "phase": "Appeal",
+          "table_count": 1,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        },
+        {
+          "phase_order": 10,
+          "phase": "Post-case intelligence and registers",
+          "table_count": 6,
+          "population": "53 direct accused_vid tables",
+          "measure_note": "Schema footprint, not event frequency or duration"
+        }
+      ],
+      "journey_stages": [
+        {
+          "stage": 1,
+          "journey_phase": "FIR and accused identity",
+          "path_status": "Backbone start",
+          "business_event": "An FIR exists and the person is added or identified as an accused.",
+          "anchor_tables": "fir.t_fir_registration; fir.t_fir_accused_info",
+          "date_to_verify": "FIR registration date; accused profile record_created_on is audit-only",
+          "join_context": "fir_reg_num + accused_srno; accused_vid for the person",
+          "confidence": "Confirmed anchor; FIR event date still to query"
+        },
+        {
+          "stage": 2,
+          "journey_phase": "Tracing and coercive branches",
+          "path_status": "Optional, may occur before or after arrest",
+          "business_event": "Notice, look-out circular, warrant, proclaimed-offender order, reward, externment, freezing order, or IMOT detail is recorded when applicable.",
+          "anchor_tables": "notc_ordr.*, court.t_accused_warrants, fir.t_accused_procl_offender",
+          "date_to_verify": "Issue/order/review date specific to each branch",
+          "join_context": "accused_vid plus FIR/case keys; branch-specific serial number",
+          "confidence": "Tables confirmed; relative order is case-dependent"
+        },
+        {
+          "stage": 3,
+          "journey_phase": "Arrest or surrender",
+          "path_status": "Conditional but central when custody occurs",
+          "business_event": "The arrest/surrender memo establishes the custody event and captures person-search, address, physical and related details.",
+          "anchor_tables": "arrest.t_arrest_memo",
+          "date_to_verify": "arrest_surrender_dt (business event); record_created_on (audit)",
+          "join_context": "arr_surr_srno; fir_reg_num; accused_vid; accused_srno",
+          "confidence": "Confirmed in workbook and lookup extract"
+        },
+        {
+          "stage": 4,
+          "journey_phase": "Investigation and custody evidence",
+          "path_status": "Parallel and repeatable",
+          "business_event": "Case progress, interrogation, fingerprints, seizure and property attachment are recorded as investigation develops.",
+          "anchor_tables": "casediary.t_accused_case_progress; interro.t_interrogation_info; seizure.*",
+          "date_to_verify": "interro_dt and table-specific case-progress/seizure/attachment dates",
+          "join_context": "accused_vid and case keys; some children inherit a module parent key",
+          "confidence": "Direct links confirmed; event order must come from dates"
+        },
+        {
+          "stage": 5,
+          "journey_phase": "Remand and bail",
+          "path_status": "Conditional and repeatable; interleaves with investigation",
+          "business_event": "Police/court remand, extensions, bail hearings, grant, release and cancellation/review can occur in cycles.",
+          "anchor_tables": "court.t_accused_remand; bail.t_accused_bail_details; bail.t_acc_bail_cancel_review",
+          "date_to_verify": "remand_req_frm_dt, remand_sanc_dt, remand_extn_till_dt, bail_grant_dt, bail_release_dt",
+          "join_context": "accused_vid + accused_srno + fir_reg_num; arr_surr_srno when tied to arrest",
+          "confidence": "Confirmed fields in workbook lookup sheets"
+        },
+        {
+          "stage": 6,
+          "journey_phase": "Police final report or charge-sheet",
+          "path_status": "Backbone decision point",
+          "business_event": "Investigation reaches a police outcome: charge-sheet/supplementary charge-sheet or another final-report outcome.",
+          "anchor_tables": "finalreport.t_accused_chargesheet and detail tables",
+          "date_to_verify": "Charge-sheet/final-report submission and acceptance dates",
+          "join_context": "accused_vid + accused_srno + fir_reg_num; chargesheet_srno for children",
+          "confidence": "Official domain and direct tables confirmed; date columns to query"
+        },
+        {
+          "stage": 7,
+          "journey_phase": "Court process",
+          "path_status": "Conditional and repeatable",
+          "business_event": "Charges are framed and hearings/process events, including warrants for non-appearance, may follow.",
+          "anchor_tables": "court.t_charges_framed_acts; court.t_accused_warrants",
+          "date_to_verify": "Charges-framed, hearing, warrant issue and review dates",
+          "join_context": "accused_vid plus FIR/court-case identifiers",
+          "confidence": "Official process confirmed; production event fields to query"
+        },
+        {
+          "stage": 8,
+          "journey_phase": "Judgment, disposal and custody outcome",
+          "path_status": "Terminal for a court level; custody can continue",
+          "business_event": "The accused receives a disposal outcome; conviction-type outcomes may add punishment, jail/sentence and release details.",
+          "anchor_tables": "disposal.t_accused_disposal; t_accused_punishment; t_accused_jail_details",
+          "date_to_verify": "Judgment/disposal date, sentence_from_dt, sentence_to_dt, jail_last_release_dt",
+          "join_context": "accused_vid + accused_srno + fir_reg_num; accused_disposal_srno for children",
+          "confidence": "Confirmed parent/detail structure; judgment date to query"
+        },
+        {
+          "stage": 9,
+          "journey_phase": "Appeal",
+          "path_status": "Optional and repeatable across court levels",
+          "business_event": "An appeal records the appellate result and whether punishment is retained or modified.",
+          "anchor_tables": "appeal.t_accused_appeal",
+          "date_to_verify": "Appeal filing, order and result dates",
+          "join_context": "accused_vid + accused_srno + fir_reg_num; accused_appeal_srno",
+          "confidence": "Confirmed table and result fields; event dates to query"
+        },
+        {
+          "stage": 10,
+          "journey_phase": "Post-case intelligence and registers",
+          "path_status": "Derived/administrative, not a legal step",
+          "business_event": "Dossiers, conviction data banks, information sheets and other registers consolidate or reuse the person's history.",
+          "anchor_tables": "crmprof.*, dbank.*, other_reg.*, stranger.*",
+          "date_to_verify": "Register effective/entry date; do not substitute audit timestamps for conviction date",
+          "join_context": "accused_vid plus source-case identifiers where present",
+          "confidence": "Direct tables confirmed; derivation rules to query"
+        }
+      ],
+      "key_model": [
+        {
+          "identifier": "accused_vid",
+          "grain": "Person across cases",
+          "role": "Cross-module identity anchor",
+          "verification": "Check count(distinct fir_reg_num) per accused_vid and duplicates/merges"
+        },
+        {
+          "identifier": "fir_reg_num",
+          "grain": "FIR/case registration",
+          "role": "Case context",
+          "verification": "Join to fir.t_fir_registration and confirm the true FIR date field"
+        },
+        {
+          "identifier": "accused_srno",
+          "grain": "One accused occurrence in one FIR",
+          "role": "Case-specific accused identity",
+          "verification": "Test uniqueness with fir_reg_num and compare fir_accused_srno aliases"
+        },
+        {
+          "identifier": "arr_surr_srno",
+          "grain": "Arrest/surrender event",
+          "role": "Custody-event parent for arrest details",
+          "verification": "Inspect FK declarations and re-arrest chains"
+        },
+        {
+          "identifier": "Module serial numbers",
+          "grain": "Repeatable event/detail parent",
+          "role": "Examples: remand_srno, bailer_srno, accused_disposal_srno, accused_appeal_srno",
+          "verification": "Use pg_constraint output; do not infer joins only from similar names"
+        }
+      ],
+      "table_phase_map": [
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "core",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_info",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook identifies this as the root accused record; it carries accused_vid, accused_srno, and fir_reg_num."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_address",
+          "evidence_grade": "confirmed",
+          "rationale": "Address child linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_acc_national_id",
+          "evidence_grade": "confirmed",
+          "rationale": "National identity child linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_bank_dtls",
+          "evidence_grade": "confirmed",
+          "rationale": "Bank detail child linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_dress",
+          "evidence_grade": "confirmed",
+          "rationale": "Appearance/dress detail linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_files",
+          "evidence_grade": "confirmed",
+          "rationale": "Accused files linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_id_marks",
+          "evidence_grade": "confirmed",
+          "rationale": "Identification marks linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_med_exam",
+          "evidence_grade": "confirmed",
+          "rationale": "Medical examination detail linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_phy_feature",
+          "evidence_grade": "confirmed",
+          "rationale": "Physical features linked directly by accused_vid."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_detail",
+          "table_schema": "fir",
+          "table_name": "t_fir_accused_vda_dtls",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Direct accused_vid reference; workbook flow image does not describe its business timing."
+        },
+        {
+          "phase_order": "1",
+          "phase": "FIR and accused identity",
+          "path_role": "profile_mapping",
+          "table_schema": "fir",
+          "table_name": "t_fir_multi_accused",
+          "evidence_grade": "confirmed",
+          "rationale": "Maps multi-accused information to the root accused."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "fir",
+          "table_name": "t_accused_procl_offender",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook treats proclaimed-offender data as a special accused status, not a universal step."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "notc_ordr",
+          "table_name": "t_fir_lo_circular",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Look-out circular is a conditional tracing measure."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "notc_ordr",
+          "table_name": "t_freezing_order_accused",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook shows freezing-order property/account branches; conditional, not universal."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "court",
+          "table_name": "t_accused_warrants",
+          "evidence_grade": "database_confirmed",
+          "rationale": "A warrant can arise before arrest or later for non-appearance; it is not a fixed linear stage."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "court",
+          "table_name": "t_accused_warrant_review",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Review follows a warrant branch, not every accused."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "court",
+          "table_name": "t_declare_reward",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Reward declaration is an exceptional tracing/enforcement branch."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "court",
+          "table_name": "t_externment_proposal",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Externment proposal is an exceptional preventive/enforcement branch."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "conditional",
+          "table_schema": "court",
+          "table_name": "t_externment_acts",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Act/section detail for an externment branch."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "specialized",
+          "table_schema": "imot",
+          "table_name": "t_imot_addnl_accused_terrorists",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook describes this as specialized IMOT accused information."
+        },
+        {
+          "phase_order": "2",
+          "phase": "Tracing and coercive branches",
+          "path_role": "specialized",
+          "table_schema": "imot",
+          "table_name": "t_imot_addn_acc_train_country",
+          "evidence_grade": "confirmed",
+          "rationale": "Child detail for the specialized IMOT branch."
+        },
+        {
+          "phase_order": "3",
+          "phase": "Arrest or surrender",
+          "path_role": "core",
+          "table_schema": "arrest",
+          "table_name": "t_arrest_memo",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook identifies this as the arrest anchor and shows links to fir_reg_num, accused_vid, and accused_srno."
+        },
+        {
+          "phase_order": "3",
+          "phase": "Arrest or surrender",
+          "path_role": "arrest_detail",
+          "table_schema": "arrest",
+          "table_name": "t_arrest_addresses",
+          "evidence_grade": "confirmed",
+          "rationale": "Arrest-address detail linked to the arrest/person context."
+        },
+        {
+          "phase_order": "3",
+          "phase": "Arrest or surrender",
+          "path_role": "arrest_detail",
+          "table_schema": "arrest",
+          "table_name": "t_arrest_phy_feature",
+          "evidence_grade": "confirmed",
+          "rationale": "Physical-feature detail captured in the arrest context."
+        },
+        {
+          "phase_order": "3",
+          "phase": "Arrest or surrender",
+          "path_role": "staging_only",
+          "table_schema": "saveforms",
+          "table_name": "t_arrest_saved",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Saved-form table is draft/staging evidence and should not be treated as a completed arrest event without status checks."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "casediary",
+          "table_name": "t_accused_case_progress",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Case-progress events occur during investigation and can repeat."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "interro",
+          "table_name": "t_interrogation_info",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Interrogation can occur after arrest or at later investigation points and can repeat."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "seizure",
+          "table_name": "t_property_attachment",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Property attachment is a conditional investigative/coercive event."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "seizure",
+          "table_name": "t_property_curr_accused",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook shows a direct accused-to-currency/property association."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "fir",
+          "table_name": "t_fir_property_attachment",
+          "evidence_grade": "database_confirmed",
+          "rationale": "FIR-side accused property attachment is a conditional branch."
+        },
+        {
+          "phase_order": "4",
+          "phase": "Investigation and custody evidence",
+          "path_role": "parallel",
+          "table_schema": "court",
+          "table_name": "t_accused_fingerprints",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook links fingerprints directly to the FIR accused; timing must be verified from dates."
+        },
+        {
+          "phase_order": "5",
+          "phase": "Remand and bail",
+          "path_role": "conditional_repeatable",
+          "table_schema": "court",
+          "table_name": "t_accused_remand",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook shows remand requests/orders with request, sanction, and extension dates."
+        },
+        {
+          "phase_order": "5",
+          "phase": "Remand and bail",
+          "path_role": "conditional_repeatable",
+          "table_schema": "bail",
+          "table_name": "t_accused_bail_details",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook shows grant, hearing, release, start/end, and cancellation-related dates."
+        },
+        {
+          "phase_order": "5",
+          "phase": "Remand and bail",
+          "path_role": "conditional_repeatable",
+          "table_schema": "bail",
+          "table_name": "t_acc_bail_cancel_review",
+          "evidence_grade": "confirmed",
+          "rationale": "Review/cancellation is a later conditional bail branch."
+        },
+        {
+          "phase_order": "5",
+          "phase": "Remand and bail",
+          "path_role": "parallel_preventive",
+          "table_schema": "kalandra",
+          "table_name": "t_kal_acc_bail_cancel_review",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Kalandra is a preventive/petty-case path and should remain separate from the FIR prosecution path."
+        },
+        {
+          "phase_order": "6",
+          "phase": "Police final report or charge-sheet",
+          "path_role": "core_or_terminal",
+          "table_schema": "finalreport",
+          "table_name": "t_accused_chargesheet",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Accused-level charge-sheet/final-report data; outcome can terminate police investigation or move the case to court."
+        },
+        {
+          "phase_order": "6",
+          "phase": "Police final report or charge-sheet",
+          "path_role": "detail",
+          "table_schema": "finalreport",
+          "table_name": "t_chargesheet_acts",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Acts/sections attached to the accused charge-sheet."
+        },
+        {
+          "phase_order": "6",
+          "phase": "Police final report or charge-sheet",
+          "path_role": "detail",
+          "table_schema": "finalreport",
+          "table_name": "t_chargesheet_convictions",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Prior/related conviction detail carried with the charge-sheet; not itself the current-case judgment."
+        },
+        {
+          "phase_order": "7",
+          "phase": "Court process",
+          "path_role": "conditional_repeatable",
+          "table_schema": "court",
+          "table_name": "t_charges_framed_acts",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Charges framed belongs to court proceedings after filing/cognizance, subject to case outcome."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "terminal_or_repeatable",
+          "table_schema": "disposal",
+          "table_name": "t_accused_disposal",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook treats accused disposal as the parent for current-case outcome."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "detail",
+          "table_schema": "disposal",
+          "table_name": "t_accused_disposal_acts",
+          "evidence_grade": "confirmed",
+          "rationale": "Acts/sections attached to the accused disposal."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "detail",
+          "table_schema": "disposal",
+          "table_name": "t_accused_punishment",
+          "evidence_grade": "confirmed",
+          "rationale": "Punishment/sentence detail follows a conviction-type disposal."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "detail",
+          "table_schema": "disposal",
+          "table_name": "t_accused_jail_details",
+          "evidence_grade": "confirmed",
+          "rationale": "Jail/sentence period and last-release information."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "history",
+          "table_schema": "disposal",
+          "table_name": "t_accused_confessed_cases",
+          "evidence_grade": "confirmed",
+          "rationale": "Other confessed-case history, not necessarily the current case event."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "history",
+          "table_schema": "disposal",
+          "table_name": "t_accused_convict_cases",
+          "evidence_grade": "confirmed",
+          "rationale": "Other conviction history, not necessarily the current case event."
+        },
+        {
+          "phase_order": "8",
+          "phase": "Judgment disposal and custody outcome",
+          "path_role": "conditional",
+          "table_schema": "disposal",
+          "table_name": "t_court_compensation",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Compensation is conditional on the court outcome."
+        },
+        {
+          "phase_order": "9",
+          "phase": "Appeal",
+          "path_role": "conditional_repeatable",
+          "table_schema": "appeal",
+          "table_name": "t_accused_appeal",
+          "evidence_grade": "confirmed",
+          "rationale": "Workbook shows result and punishment-retention fields; an appeal is optional and may repeat across court levels."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_profile",
+          "table_schema": "crmprof",
+          "table_name": "t_criminal_dossier",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Dossier is a consolidated criminal profile, not a single lifecycle event."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_register",
+          "table_schema": "dbank",
+          "table_name": "t_db_drug_peddler_conviction",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Conviction data-bank record is a downstream register."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_register",
+          "table_schema": "dbank",
+          "table_name": "t_db_sex_offender_conviction",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Conviction data-bank record is a downstream register."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_register",
+          "table_schema": "dbank",
+          "table_name": "t_db_village_convicts",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Conviction data-bank record is a downstream register."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_profile",
+          "table_schema": "other_reg",
+          "table_name": "t_info_sheet_details",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Information-sheet detail is a profile/register record rather than a universal case event."
+        },
+        {
+          "phase_order": "10",
+          "phase": "Post-case intelligence and registers",
+          "path_role": "derived_profile",
+          "table_schema": "stranger",
+          "table_name": "t_stranger_roll",
+          "evidence_grade": "database_confirmed",
+          "rationale": "Stranger-roll entry is a separate register, not a mandatory criminal-case stage."
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "src_workbook",
+      "label": "CCTNS_Modules_Search&View_Figma_26052026_V2 (1).xlsx — accused flow and table sheets"
+    },
+    {
+      "id": "src_pasted",
+      "label": "User-provided information_schema.columns result for column accused_vid"
+    },
+    {
+      "id": "src_phase_map",
+      "label": "Reviewed accused_vid table-to-phase classification",
+      "path": "table_phase_map.csv",
+      "query": {
+        "description": "Counts each of the 53 direct accused_vid tables once in one interpreted lifecycle area.",
+        "engine": "PostgreSQL",
+        "language": "sql",
+        "sql": "WITH phase_map(phase_order, phase, qualified_table) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_info'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_address'),\n        (1, 'FIR and accused identity', 'fir.t_fir_acc_national_id'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_bank_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_dress'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_files'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_id_marks'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_med_exam'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_phy_feature'),\n        (1, 'FIR and accused identity', 'fir.t_fir_accused_vda_dtls'),\n        (1, 'FIR and accused identity', 'fir.t_fir_multi_accused'),\n        (2, 'Tracing and coercive branches', 'fir.t_accused_procl_offender'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_fir_lo_circular'),\n        (2, 'Tracing and coercive branches', 'notc_ordr.t_freezing_order_accused'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrants'),\n        (2, 'Tracing and coercive branches', 'court.t_accused_warrant_review'),\n        (2, 'Tracing and coercive branches', 'court.t_declare_reward'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_proposal'),\n        (2, 'Tracing and coercive branches', 'court.t_externment_acts'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addnl_accused_terrorists'),\n        (2, 'Tracing and coercive branches', 'imot.t_imot_addn_acc_train_country'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_memo'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_addresses'),\n        (3, 'Arrest or surrender', 'arrest.t_arrest_phy_feature'),\n        (3, 'Arrest or surrender', 'saveforms.t_arrest_saved'),\n        (4, 'Investigation and custody evidence', 'casediary.t_accused_case_progress'),\n        (4, 'Investigation and custody evidence', 'interro.t_interrogation_info'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_attachment'),\n        (4, 'Investigation and custody evidence', 'seizure.t_property_curr_accused'),\n        (4, 'Investigation and custody evidence', 'fir.t_fir_property_attachment'),\n        (4, 'Investigation and custody evidence', 'court.t_accused_fingerprints'),\n        (5, 'Remand and bail', 'court.t_accused_remand'),\n        (5, 'Remand and bail', 'bail.t_accused_bail_details'),\n        (5, 'Remand and bail', 'bail.t_acc_bail_cancel_review'),\n        (5, 'Remand and bail', 'kalandra.t_kal_acc_bail_cancel_review'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_accused_chargesheet'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_acts'),\n        (6, 'Police final report or charge-sheet', 'finalreport.t_chargesheet_convictions'),\n        (7, 'Court process', 'court.t_charges_framed_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_disposal_acts'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_punishment'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_jail_details'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_confessed_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_accused_convict_cases'),\n        (8, 'Judgment disposal and custody outcome', 'disposal.t_court_compensation'),\n        (9, 'Appeal', 'appeal.t_accused_appeal'),\n        (10, 'Post-case intelligence and registers', 'crmprof.t_criminal_dossier'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_drug_peddler_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_sex_offender_conviction'),\n        (10, 'Post-case intelligence and registers', 'dbank.t_db_village_convicts'),\n        (10, 'Post-case intelligence and registers', 'other_reg.t_info_sheet_details'),\n        (10, 'Post-case intelligence and registers', 'stranger.t_stranger_roll')\n)\nSELECT phase_order, phase, count(DISTINCT qualified_table)::bigint AS table_count\nFROM phase_map\nGROUP BY phase_order, phase\nORDER BY phase_order;",
+        "metric_definitions": [
+          "table_count = count of distinct schema-qualified tables assigned to the lifecycle area",
+          "Counts describe schema footprint, not event frequency, duration, or mandatory completion"
+        ],
+        "filters": [
+          "column_name = accused_vid",
+          "53 user-provided production-visible tables"
+        ]
+      }
+    },
+    {
+      "id": "src_mha_matrix",
+      "label": "Ministry of Home Affairs — Matrix of mandatory Data Sets to be shared as per Law",
+      "href": "https://www.mha.gov.in/sites/default/files/2022-09/CCTNSMHA_11012016%5B1%5D.pdf"
+    },
+    {
+      "id": "src_mha_2025",
+      "label": "Ministry of Home Affairs — Lok Sabha Unstarred Question No. 4954 (1 April 2025)",
+      "href": "https://www.mha.gov.in/MHA1/Par2017/pdfs/par2025-pdfs/LS01042025/4954.pdf"
+    },
+    {
+      "id": "src_mha_cctns",
+      "label": "Ministry of Home Affairs — CCTNS/ICJS overview",
+      "href": "https://www.mha.gov.in/en/divisionofmha/women-safety-division/cctns"
+    },
+    {
+      "id": "src_journey_model",
+      "label": "Reviewed CCTNS accused journey stage model",
+      "path": "source_notes.md",
+      "query": {
+        "description": "Reproduces the ten-stage interpreted journey table documented in the report.",
+        "engine": "PostgreSQL",
+        "language": "sql",
+        "sql": "WITH journey_stages(stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence) AS (\n    VALUES\n        (1, 'FIR and accused identity', 'Backbone start', 'An FIR exists and the person is added or identified as an accused.', 'fir.t_fir_registration; fir.t_fir_accused_info', 'FIR registration date; accused profile record_created_on is audit-only', 'fir_reg_num + accused_srno; accused_vid for the person', 'Confirmed anchor; FIR event date still to query'),\n        (2, 'Tracing and coercive branches', 'Optional, may occur before or after arrest', 'Notice, look-out circular, warrant, proclaimed-offender order, reward, externment, freezing order, or IMOT detail is recorded when applicable.', 'notc_ordr.*, court.t_accused_warrants, fir.t_accused_procl_offender', 'Issue/order/review date specific to each branch', 'accused_vid plus FIR/case keys; branch-specific serial number', 'Tables confirmed; relative order is case-dependent'),\n        (3, 'Arrest or surrender', 'Conditional but central when custody occurs', 'The arrest/surrender memo establishes the custody event and captures person-search, address, physical and related details.', 'arrest.t_arrest_memo', 'arrest_surrender_dt (business event); record_created_on (audit)', 'arr_surr_srno; fir_reg_num; accused_vid; accused_srno', 'Confirmed in workbook and lookup extract'),\n        (4, 'Investigation and custody evidence', 'Parallel and repeatable', 'Case progress, interrogation, fingerprints, seizure and property attachment are recorded as investigation develops.', 'casediary.t_accused_case_progress; interro.t_interrogation_info; seizure.*', 'interro_dt and table-specific case-progress/seizure/attachment dates', 'accused_vid and case keys; some children inherit a module parent key', 'Direct links confirmed; event order must come from dates'),\n        (5, 'Remand and bail', 'Conditional and repeatable; interleaves with investigation', 'Police/court remand, extensions, bail hearings, grant, release and cancellation/review can occur in cycles.', 'court.t_accused_remand; bail.t_accused_bail_details; bail.t_acc_bail_cancel_review', 'remand_req_frm_dt, remand_sanc_dt, remand_extn_till_dt, bail_grant_dt, bail_release_dt', 'accused_vid + accused_srno + fir_reg_num; arr_surr_srno when tied to arrest', 'Confirmed fields in workbook lookup sheets'),\n        (6, 'Police final report or charge-sheet', 'Backbone decision point', 'Investigation reaches a police outcome: charge-sheet/supplementary charge-sheet or another final-report outcome.', 'finalreport.t_accused_chargesheet and detail tables', 'Charge-sheet/final-report submission and acceptance dates', 'accused_vid + accused_srno + fir_reg_num; chargesheet_srno for children', 'Official domain and direct tables confirmed; date columns to query'),\n        (7, 'Court process', 'Conditional and repeatable', 'Charges are framed and hearings/process events, including warrants for non-appearance, may follow.', 'court.t_charges_framed_acts; court.t_accused_warrants', 'Charges-framed, hearing, warrant issue and review dates', 'accused_vid plus FIR/court-case identifiers', 'Official process confirmed; production event fields to query'),\n        (8, 'Judgment, disposal and custody outcome', 'Terminal for a court level; custody can continue', 'The accused receives a disposal outcome; conviction-type outcomes may add punishment, jail/sentence and release details.', 'disposal.t_accused_disposal; t_accused_punishment; t_accused_jail_details', 'Judgment/disposal date, sentence_from_dt, sentence_to_dt, jail_last_release_dt', 'accused_vid + accused_srno + fir_reg_num; accused_disposal_srno for children', 'Confirmed parent/detail structure; judgment date to query'),\n        (9, 'Appeal', 'Optional and repeatable across court levels', 'An appeal records the appellate result and whether punishment is retained or modified.', 'appeal.t_accused_appeal', 'Appeal filing, order and result dates', 'accused_vid + accused_srno + fir_reg_num; accused_appeal_srno', 'Confirmed table and result fields; event dates to query'),\n        (10, 'Post-case intelligence and registers', 'Derived/administrative, not a legal step', 'Dossiers, conviction data banks, information sheets and other registers consolidate or reuse the person''s history.', 'crmprof.*, dbank.*, other_reg.*, stranger.*', 'Register effective/entry date; do not substitute audit timestamps for conviction date', 'accused_vid plus source-case identifiers where present', 'Direct tables confirmed; derivation rules to query')\n)\nSELECT stage, journey_phase, path_status, business_event, anchor_tables, date_to_verify, join_context, confidence FROM journey_stages;",
+        "tables_used": [
+          "fir.t_fir_accused_info",
+          "arrest.t_arrest_memo",
+          "court.t_accused_remand",
+          "bail.t_accused_bail_details",
+          "finalreport.t_accused_chargesheet",
+          "disposal.t_accused_disposal",
+          "appeal.t_accused_appeal"
+        ],
+        "metric_definitions": [
+          "stage is an interpreted lifecycle order, not elapsed time or a mandatory funnel"
+        ]
+      }
+    },
+    {
+      "id": "src_key_model",
+      "label": "Reviewed CCTNS accused identifier grain model",
+      "path": "source_notes.md",
+      "query": {
+        "description": "Reproduces the identifier-grain table documented in the report.",
+        "engine": "PostgreSQL",
+        "language": "sql",
+        "sql": "WITH key_model(identifier, grain, role, verification) AS (\n    VALUES\n        ('accused_vid', 'Person across cases', 'Cross-module identity anchor', 'Check count(distinct fir_reg_num) per accused_vid and duplicates/merges'),\n        ('fir_reg_num', 'FIR/case registration', 'Case context', 'Join to fir.t_fir_registration and confirm the true FIR date field'),\n        ('accused_srno', 'One accused occurrence in one FIR', 'Case-specific accused identity', 'Test uniqueness with fir_reg_num and compare fir_accused_srno aliases'),\n        ('arr_surr_srno', 'Arrest/surrender event', 'Custody-event parent for arrest details', 'Inspect FK declarations and re-arrest chains'),\n        ('Module serial numbers', 'Repeatable event/detail parent', 'Examples: remand_srno, bailer_srno, accused_disposal_srno, accused_appeal_srno', 'Use pg_constraint output; do not infer joins only from similar names')\n)\nSELECT identifier, grain, role, verification FROM key_model;",
+        "tables_used": [
+          "fir.t_fir_accused_info",
+          "arrest.t_arrest_memo"
+        ]
+      }
+    }
+  ],
+  "package_info": {
+    "audience": "technical",
+    "report_mode": "html",
+    "supporting_files": [
+      "table_phase_map.csv",
+      "verification_queries.sql",
+      "source_notes.md"
+    ]
+  }
+}
