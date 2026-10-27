@@ -1,0 +1,122 @@
+%% Visible content: table name, PK and FK only.
+%% PK/FK evidence: supplied Q2 and prior archived constraints for supporting tables.
+%% FK: — means no FK returned within reviewed coverage; not verified means coverage is incomplete.
+%% Solid arrows traverse confirmed FK links; thick arrows show journey progression; dashed arrows are logical/optional links.
+%% The journey starts at the FIR accused root using accused_srno; the serial is not itself a declared PK/FK.
+flowchart TB
+    ROOT["fir.t_fir_accused_info<br/>PK: accused_vid<br/>FK: —"]
+    T0["fir.t_fir_accused_dress<br/>PK: acc_dress_srno<br/>FK: accused_vid"]
+    T2["fir.t_fir_multi_accused<br/>PK: fir_multi_acc_srno<br/>FK: accused_vid"]
+    NOTICE["notc_ordr.t_fir_notice_requests<br/>PK: not verified<br/>FK: not verified"]
+    T6["fir.t_accused_procl_offender<br/>PK: procl_offend_srno<br/>FK: accused_vid"]
+    T10["notc_ordr.t_fir_notice_requests_accused<br/>PK: accused_person_cd<br/>FK: accused_person_cd, notice_req_num"]
+    T9["notc_ordr.t_fir_lo_circular<br/>PK: lo_circular_num<br/>FK: —"]
+    T11["notc_ordr.t_freezing_order_accused<br/>PK: accused_person_cd<br/>FK: —"]
+    T3["court.t_declare_reward<br/>PK: reward_srno<br/>FK: accused_vid"]
+    T5["court.t_externment_proposal<br/>PK: externment_reg_num<br/>FK: —"]
+    T4["court.t_externment_acts<br/>PK: externment_act_srno<br/>FK: externment_reg_num"]
+    T8["imot.t_imot_addnl_accused_terrorists<br/>PK: imot_acc_terror_srno<br/>FK: fir_reg_num"]
+    T7["imot.t_imot_addn_acc_train_country<br/>PK: imot_trn_country_srno<br/>FK: imot_acc_terror_srno"]
+    T13["arrest.t_arrest_memo<br/>PK: arr_surr_srno<br/>FK: —"]
+    T12["arrest.t_arrest_addresses<br/>PK: arr_addr_srno<br/>FK: arr_surr_srno"]
+    T14["arrest.t_arrest_phy_feature<br/>PK: arr_phy_feat_srno<br/>FK: arr_surr_srno"]
+    T19["interro.t_interrogation_info<br/>PK: interro_srno<br/>FK: —"]
+    T17["court.t_accused_fingerprints<br/>PK: finger_print_srno<br/>FK: accused_vid"]
+    T20["seizure.t_property_attachment<br/>PK: prop_attach_srno<br/>FK: —"]
+    T21["seizure.t_property_curr_accused<br/>PK: curr_accused_srno<br/>FK: prop_curr_srno"]
+    T18["fir.t_fir_property_attachment<br/>PK: prop_attach_srno<br/>FK: accused_vid"]
+    T24["court.t_accused_remand<br/>PK: remand_srno<br/>FK: accused_vid"]
+    T23["bail.t_accused_bail_details<br/>PK: bailer_srno<br/>FK: —"]
+    T22["bail.t_acc_bail_cancel_review<br/>PK: bail_review_srno<br/>FK: bailer_srno"]
+    T26["finalreport.t_accused_chargesheet<br/>PK: chargesheet_srno<br/>FK: —"]
+    T27["finalreport.t_chargesheet_acts<br/>PK: fr_act_srno<br/>FK: —"]
+    T28["finalreport.t_chargesheet_convictions<br/>PK: acc_convict_srno<br/>FK: —"]
+    T29["court.t_charges_framed_acts<br/>PK: charges_framed_srno<br/>FK: fir_reg_num"]
+    COURTDISPOSAL["disposal.t_court_disposal<br/>PK: not verified<br/>FK: not verified"]
+    T32["disposal.t_accused_disposal<br/>PK: accused_disposal_srno<br/>FK: disposal_srno"]
+    T33["disposal.t_accused_disposal_acts<br/>PK: disposal_srno<br/>FK: accused_disposal_srno"]
+    T35["disposal.t_accused_punishment<br/>PK: acc_punish_srno<br/>FK: accused_disposal_srno"]
+    T34["disposal.t_accused_jail_details<br/>PK: acc_jail_srno<br/>FK: —"]
+    T36["disposal.t_court_compensation<br/>PK: compensation_srno<br/>FK: disposal_srno"]
+    T30["disposal.t_accused_confessed_cases<br/>PK: case_confessed_srno<br/>FK: —"]
+    T31["disposal.t_accused_convict_cases<br/>PK: convict_case_srno<br/>FK: —"]
+    COURTAPPEAL["appeal.t_court_appeal<br/>PK: not verified<br/>FK: not verified"]
+    T37["appeal.t_accused_appeal<br/>PK: accused_appeal_srno<br/>FK: appeal_srno"]
+    T42["other_reg.t_info_sheet_details<br/>PK: info_sheet_id<br/>FK: —"]
+    T44["reports.rep_fir_accused<br/>PK: acc_srno<br/>FK: —"]
+    S2["fir.t_fir_acc_national_id<br/>PK: national_id_srno<br/>FK: accused_vid"]
+    S3["fir.t_fir_accused_address<br/>PK: fir_acc_addr_srno<br/>FK: not verified"]
+    S4["fir.t_fir_accused_bank_dtls<br/>PK: bankcard_id_srno<br/>FK: accused_vid"]
+    S5["fir.t_fir_accused_files<br/>PK: accused_file_srno<br/>FK: not verified"]
+    S6["fir.t_fir_accused_id_marks<br/>PK: fir_acc_id_marks_srno<br/>FK: accused_vid"]
+    S7["fir.t_fir_accused_med_exam<br/>PK: acc_med_exam_srno<br/>FK: accused_vid"]
+    S8["fir.t_fir_accused_phy_feature<br/>PK: acc_phy_feat_srno<br/>FK: accused_vid"]
+    S9["fir.t_fir_accused_vda_dtls<br/>PK: accused_vda_srno<br/>FK: accused_vid"]
+    S1["court.t_accused_warrants<br/>PK: warrant_srno<br/>FK: accused_vid"]
+    S0["court.t_accused_warrant_review<br/>PK: warr_revw_srno<br/>FK: warrant_srno"]
+    S10["court.t_accused_remand_files<br/>PK: rem_file_srno<br/>FK: not verified"]
+    S11["appeal.t_accused_appeal_acts<br/>PK: acc_appeal_act_srno<br/>FK: accused_appeal_srno"]
+
+    ROOT ==> T19
+    T19 ==> T26
+    T26 ==> T29
+    T29 ==> T32
+    T32 -.-> T37
+    T37 -.-> T32
+    ROOT --> T6
+    ROOT -.-> T10
+    ROOT -.-> T9
+    ROOT -.-> T11
+    ROOT --> T3
+    ROOT -.-> T5
+    ROOT -.-> T8
+    ROOT -.-> T13
+    T13 -.-> T19
+    T13 -.-> T24
+    ROOT --> T24
+    T13 -.-> T23
+    T24 -.-> T19
+    T23 -.-> T19
+    ROOT --> T0
+    ROOT --> T2
+    ROOT --> T17
+    T19 -.-> T20
+    T19 -.-> T21
+    ROOT --> T18
+    T26 -.-> T27
+    T26 -.-> T28
+    T32 -.-> T34
+    COURTDISPOSAL --> T32
+    COURTDISPOSAL --> T36
+    ROOT -.-> T30
+    ROOT -.-> T31
+    ROOT -.-> T42
+    ROOT -.-> T44
+    NOTICE --> T10
+    COURTAPPEAL --> T37
+    T13 --> T12
+    T13 --> T14
+    T23 --> T22
+    T5 --> T4
+    T8 --> T7
+    T32 --> T33
+    T32 --> T35
+    ROOT --> S1
+    S1 --> S0
+    ROOT --> S2
+    ROOT -.-> S3
+    ROOT --> S4
+    ROOT -.-> S5
+    ROOT --> S6
+    ROOT --> S7
+    ROOT --> S8
+    ROOT --> S9
+    T24 -.-> S10
+    T37 --> S11
+
+    classDef core fill:#dbeafe,stroke:#1d4ed8,color:#172554,stroke-width:2px;
+    classDef detail fill:#f3f4f6,stroke:#6b7280,color:#111827;
+    classDef optional fill:#fef3c7,stroke:#b45309,color:#451a03;
+    class ROOT,T13,T19,T24,T23,T26,T29,T32,T37 core;
+    class T3,T4,T5,T6,T7,T8,T9,T10,T11,T30,T31,T42,T44 optional;
+    class NOTICE,COURTDISPOSAL,COURTAPPEAL,T0,T2,T12,T14,T17,T18,T20,T21,T22,T27,T28,T33,T34,T35,T36,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11 detail;
